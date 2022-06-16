@@ -16,4 +16,3 @@ docker-compose.override.yml
 /.idea
 /.vscode
 /nbproject/private/
-/database
