@@ -15,6 +15,6 @@ services:
     ports:
       - 3000:8080
     volumes:
-      - ./:/var/www/html
+      - ./src:/var/www/html
     networks:
       - school_net

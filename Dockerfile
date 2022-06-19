@@ -1,6 +1,6 @@
 ARG ALPINE_VERSION=3.16
 FROM alpine:${ALPINE_VERSION}
-LABEL Maintainer="Tim de Pater <code@trafex.nl>"
+LABEL Maintainer="Onojeta Brown <onosbrown.save@gmail.com>"
 LABEL Description="Lightweight container with Nginx 1.22 & PHP 8.1 based on Alpine Linux."
 # Setup document root
 WORKDIR /var/www/html
@@ -25,6 +25,7 @@ RUN apk add --no-cache \
   php81-xml \
   php81-xmlreader \
   php81-zlib \
+  php81-tokenizer \
   supervisor
 
 # Create symlink so programs depending on `php` still function
@@ -34,28 +35,37 @@ RUN ln -s /usr/bin/php81 /usr/bin/php
 COPY config/nginx.conf /etc/nginx/nginx.conf
 
 # Configure PHP-FPM
-COPY config/fpm-pool.conf /etc/php81/php-fpm.d/www.conf
+COPY config/fpm-pool.ini /etc/php81/php-fpm.d/www.conf
 COPY config/php.ini /etc/php81/conf.d/custom.ini
 
 # Configure supervisord
-COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY config/supervisord.ini /etc/supervisor.d/supervisord.ini
 # RUN mkdir -p /etc/supervisor.d/
 # COPY .docker/supervisord.ini /etc/supervisor.d/supervisord.ini
 
 # Make sure files/folders needed by the processes are accessable when they run under the nobody user
 RUN chown -R nobody.nobody /var/www/html /run /var/lib/nginx /var/log/nginx
 
+
+
 # Switch to use a non-root user from here on
 USER nobody
 
 # Add application
-COPY --chown=nobody src/ /var/www/html/
+COPY --chown=nobody ./src/ .
+RUN chown -R nobody.nobody .
+
+# Configure Laravel
+RUN find . -type f -exec chmod 644 {} \;
+RUN find . -type d -exec chmod 755 {} \;
+RUN chmod -R 777 storage
+RUN chmod -R 777 bootstrap/cache/
 
 # Expose the port nginx is reachable on
 EXPOSE 8080
 
 # Let supervisord start nginx & php-fpm
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor.d/supervisord.ini"]
 
 # Configure a healthcheck to validate that everything is up&running
 HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
