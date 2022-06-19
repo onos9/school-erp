@@ -1,0 +1,20 @@
+version: "3.8"
+
+networks:
+  school_net:
+    driver: bridge
+
+services:
+  app:
+    restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: school-erp
+    container_name: erp-app
+    ports:
+      - 3000:8080
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - school_net
