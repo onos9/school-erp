@@ -10,6 +10,10 @@ RUN apk add --no-cache \
   curl \
   nginx \
   php81 \
+  php81-pdo \
+  php81-pdo_mysql \
+  php81-json \
+  php81-bcmath \
   php81-ctype \
   php81-curl \
   php81-dom \
@@ -25,6 +29,8 @@ RUN apk add --no-cache \
   php81-xml \
   php81-xmlreader \
   php81-zlib \
+  php81-fileinfo \
+  php81-zip \
   php81-tokenizer \
   supervisor
 
@@ -40,13 +46,9 @@ COPY config/php.ini /etc/php81/conf.d/custom.ini
 
 # Configure supervisord
 COPY config/supervisord.ini /etc/supervisor.d/supervisord.ini
-# RUN mkdir -p /etc/supervisor.d/
-# COPY .docker/supervisord.ini /etc/supervisor.d/supervisord.ini
 
 # Make sure files/folders needed by the processes are accessable when they run under the nobody user
 RUN chown -R nobody.nobody /var/www/html /run /var/lib/nginx /var/log/nginx
-
-
 
 # Switch to use a non-root user from here on
 USER nobody
@@ -64,8 +66,9 @@ RUN chmod -R 777 bootstrap/cache/
 # Expose the port nginx is reachable on
 EXPOSE 8080
 
+# Configure a healthcheck to validate that everything is up&running
+HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
+
 # Let supervisord start nginx & php-fpm
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor.d/supervisord.ini"]
 
-# Configure a healthcheck to validate that everything is up&running
-HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
