@@ -130,7 +130,7 @@ class GroupChatController extends Controller
 
         $myRole = GroupUser::where('user_id', auth()->id())->where('group_id', $group->id)->first()->role;
 
-        return view('chat::group.show', compact('group','users','myGroups', 'remainingUsers', 'myRole','single_threads'));
+        return view('chat::group.show', compact('group', 'users', 'myGroups', 'remainingUsers', 'myRole','single_threads'));
     }
 
     public function edit($id)
@@ -451,7 +451,7 @@ class GroupChatController extends Controller
             'conversation.reply',
             'conversation.forwardFrom',
             'removeMessages.user',
-            'user',
+            'user','user.activeStatus'
         );
 
 

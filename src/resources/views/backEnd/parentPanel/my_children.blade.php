@@ -37,24 +37,33 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="single-meta">
-                                <div class="d-flex justify-content-between">
-                                    <div class="name">
-                                        @lang('common.roll_number')
-                                    </div>
-                                    <div class="value">
-                                        {{$student_detail->roll_no}}
+                            @if(generalSetting()->multiple_roll==0)
+                                <div class="single-meta">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="name">
+                                            @if(moduleStatusCheck('Lead')==true)
+                                            @lang('student.id_number')
+                                            @else  
+                                            @lang('student.roll_number')
+                                            @endif 
+                                        </div>
+                                        <div class="value">
+                                            {{$student_detail->roll_no}}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                           @endif
                             <div class="single-meta">
                                 <div class="d-flex justify-content-between">
                                     <div class="name">
-                                        @lang('common.class')
+                                        @lang('student.class')
                                     </div>
                                     <div class="value">
-                                        @if($student_detail->class !="" )
-                                            {{$student_detail->class->class_name}} ({{@$academic_year->year}})
+                                        @if($student_detail->defaultClass!="")
+                                            {{@$student_detail->defaultClass->class->class_name}}
+                                            {{-- ({{@$academic_year->year}}) --}}
+                                        @elseif ($student_detail->studentRecord !="")  
+                                        {{@$student_detail->studentRecord->class->class_name}}
                                         @endif
                                     </div>
                                 </div>
@@ -62,10 +71,16 @@
                             <div class="single-meta">
                                 <div class="d-flex justify-content-between">
                                     <div class="name">
-                                        @lang('common.section')
+                                        @lang('student.section')
                                     </div>
                                     <div class="value">
-                                        {{$student_detail->section !=""?$student_detail->section->section_name:""}}
+                                        
+                                        @if($student_detail->defaultClass!="")
+                                        {{@$student_detail->defaultClass->section->section_name}}
+                                       
+                                        @elseif ($student_detail->studentRecord !="")  
+                                        {{@$student_detail->studentRecord->section->section_name}}
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -105,7 +120,7 @@
                             <a class="nav-link" href="#studentDocuments" role="tab" data-toggle="tab">@lang('student.documents')</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#studentTimeline" role="tab" data-toggle="tab">@lang('student.timeline')</a>
+                            <a class="nav-link" href="#studentTimeline" role="tab" data-toggle="tab">@lang('student.student_record')</a>
                         </li>
 
                         @if(moduleStatusCheck('Wallet'))
@@ -213,6 +228,40 @@
                                         </div>
                                     </div>
                                 </div>
+                                {{-- changes for lead module --abunayem--}}
+                                @if(moduleStatusCheck('Lead')==true)
+                                  <div class="single-info">
+                                      <div class="row">
+                                          <div class="col-lg-5 col-md-6">
+                                              <div class="">
+                                                  @lang('lead::lead.city')
+                                              </div>
+                                          </div>
+
+                                          <div class="col-lg-7 col-md-7">
+                                              <div class="">
+                                                  {{@$student_detail->leadCity->city_name}}
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div class="single-info">
+                                    <div class="row">
+                                        <div class="col-lg-5 col-md-6">
+                                            <div class="">
+                                                @lang('lead::lead.source')
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-7 col-md-7">
+                                            <div class="">
+                                                {{@$student_detail->source->source_name}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                              @endif
+                                {{-- end --}}
                                 <div class="single-info">
                                     <div class="row">
                                         <div class="col-lg-5 col-md-6">
@@ -673,156 +722,181 @@
                         <!-- Start Fees Tab -->
                         <div role="tabpanel" class="tab-pane fade" id="studentFees">
                             <div class="table-responsive">
-                                <table class="display school-table school-table-style table_not_fixed" cellspacing="0" width="100%">
-                                    <thead>
-                                        <tr>
-                                            <th>@lang('fees.fees_group')</th>
-                                            <th>@lang('fees.fees_code')</th>
-                                            <th>@lang('fees.due_date')</th>
-                                            <th>@lang('common.status')</th>
-                                            <th>@lang('fees.amount') ({{generalSetting()->currency_symbol}})</th>
-                                            <th>@lang('fees.payment_id')</th>
-                                            <th>@lang('fees.mode')</th>
-                                            <th>@lang('common.date')</th>
-                                            <th>@lang('fees.discount') ({{generalSetting()->currency_symbol}})</th>
-                                            <th>@lang('fees.fine') ({{generalSetting()->currency_symbol}})</th>
-                                            <th>@lang('fees.paid') ({{generalSetting()->currency_symbol}})</th>
-                                            <th>@lang('fees.balance')</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $grand_total = 0;
-                                            $total_fine = 0;
-                                            $total_discount = 0;
-                                            $total_paid = 0;
-                                            $total_grand_paid = 0;
-                                            $total_balance = 0;
-                                        @endphp
-                                        @foreach($fees_assigneds as $fees_assigned)
-                                            @php
-                                                $grand_total += $fees_assigned->feesGroupMaster->amount;
-                                                $discount_amount = $fees_assigned->applied_discount;
-                                                $total_discount += $discount_amount;
-                                                $student_id = $fees_assigned->student_id;
-                                                $paid = App\SmFeesAssign::discountSum($fees_assigned->student_id, $fees_assigned->feesGroupMaster->feesTypes->id, 'amount');
-                                                $total_grand_paid += $paid;
-                                                $fine = App\SmFeesAssign::discountSum($fees_assigned->student_id, $fees_assigned->feesGroupMaster->feesTypes->id, 'fine');
-                                                $total_fine += $fine;
-                                                $total_paid = $discount_amount + $paid;
-                                            @endphp
-                                        <tr>
-                                            <td>{{@$fees_assigned->feesGroupMaster !=""?@$fees_assigned->feesGroupMaster->feesGroups->name:""}}</td>
-                                            <td>
-                                                @if($fees_assigned->feesGroupMaster !="" && $fees_assigned->feesGroupMaster->feesTypes !="")
-                                                    {{$fees_assigned->feesGroupMaster->feesTypes->name}}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if($fees_assigned->feesGroupMaster !="")
-                                                    {{$fees_assigned->feesGroupMaster->date != ""? dateConvert($fees_assigned->feesGroupMaster->date):''}}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if($fees_assigned->fees_amount == 0)
-                                                    <button class="primary-btn small bg-success text-white border-0">@lang('fees.paid')</button>
-                                                    @elseif($paid != 0)
-                                                    <button class="primary-btn small bg-warning text-white border-0">@lang('fees.partial_paid')</button>
-                                                    @elseif($paid == 0)
-                                                    <button class="primary-btn small bg-danger text-white border-0">@lang('fees.unpaid')</button>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @php
-                                                    echo $fees_assigned->feesGroupMaster->amount;
-                                                @endphp
-                                            </td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td>{{$discount_amount}}</td>
-                                            <td>{{$fine}}</td>
-                                            <td>{{$paid}}</td>
-                                            <td>
-                                                @php
-                                                    $rest_amount = $fees_assigned->fees_amount;
-                                                    $total_balance +=  $rest_amount;
-                                                    echo $rest_amount;
-                                                @endphp
-                                            </td>
-                                        </tr>
-                                            @php
-                                                $payments = App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id, $fees_assigned->student_id);
-                                                $i = 0;
-                                            @endphp
-                                            @foreach($payments as $payment)
-                                            <tr>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td class="text-right"><img src="{{asset('public/backEnd/img/table-arrow.png')}}"></td>
-                                                <td>
+                                @foreach($records as $record)
+                                    <div class="white-box no-search no-paginate no-table-info mb-2">
+                                        <div class="main-title">
+                                            <h3 class="mb-10">{{$record->class->class_name}} ({{$record->section->section_name}})</h3>
+                                        </div>
+                                            <table  class="display school-table school-table-style" cellspacing="0" width="100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th> @lang('fees.fees_group')</th>
+                                                        <th>@lang('fees.fees_code')</th>
+                                                        <th>@lang('fees.due_date')</th>
+                                                        <th>@lang('common.status')</th>
+                                                        <th>@lang('fees.amount') ({{generalSetting()->currency_symbol}})</th>
+                                                        <th>@lang('fees.payment_id')</th>
+                                                        <th>@lang('fees.mode')</th>
+                                                        <th>@lang('common.date')</th>
+                                                        <th>@lang('fees.discount') ({{generalSetting()->currency_symbol}})</th>
+                                                        <th>@lang('fees.fine')({{generalSetting()->currency_symbol}})</th>
+                                                        <th>@lang('fees.paid') ({{generalSetting()->currency_symbol}})</th>
+                                                        <th>@lang('fees.balance')</th>
+                                                    </tr>
+                                                </thead>
+        
+                                                <tbody>
                                                     @php
-                                                        $created_by = App\User::find($payment->created_by);
+                                                        @$grand_total = 0;
+                                                        @$total_fine = 0;
+                                                        @$total_discount = 0;
+                                                        @$total_paid = 0;
+                                                        @$total_grand_paid = 0;
+                                                        @$total_balance = 0;
                                                     @endphp
-                                                    @if($created_by != "")
-                                                        <a href="#" data-toggle="tooltip" data-placement="right" title="{{'Collected By: '.$created_by->full_name}}">{{$payment->fees_type_id.'/'.$payment->id}}</a>
-                                                </td>
-                                                    @endif
-                                                <td>
-                                                    {{$payment->payment_mode}}
-                                                </td>
-                                                <td class="nowrap">
-                                                    {{$payment->payment_date != ""? dateConvert($payment->payment_date):''}}
-                                                </td>
-                                                <td>
-                                                    {{$payment->discount_amount}}
-                                                </td>
-                                                <td>
-                                                    {{$payment->fine}}
-                                                    @if($payment->fine!=0)
-                                                        @if (strlen($payment->fine_title) > 14)
-                                                            <spna class="text-danger nowrap" title="{{$payment->fine_title}}">
-                                                                ({{substr($payment->fine_title, 0, 15) . '...'}})
-                                                            </spna>
-                                                        @else
-                                                            @if ($payment->fine_title=='')
+                                                    @foreach($fees_assigneds as $fees_assigned)
+                                                        @if($fees_assigned->record_id == $record->id)
+                                                        @php
+                                                            @$grand_total += @$fees_assigned->feesGroupMaster->amount;
+                                                        
+                                                            
+                                                        @endphp
+        
+                                                        @php
+                                                            @$discount_amount = $fees_assigned->applied_discount;
+                                                            @$total_discount += @$discount_amount;
+                                                            @$student_id = @$fees_assigned->student_id;
+                                                        @endphp
+                                                        @php
+                                                            @$paid = App\SmFeesAssign::discountSum(@$fees_assigned->student_id, @$fees_assigned->feesGroupMaster->feesTypes->id, 'amount', $fees_assigned->record_id);
+                                                            @$total_grand_paid += @$paid;
+                                                        @endphp
+                                                        @php
+                                                            @$fine = App\SmFeesAssign::discountSum(@$fees_assigned->student_id, @$fees_assigned->feesGroupMaster->feesTypes->id, 'fine', $fees_assigned->record_id);
+                                                            @$total_fine += @$fine;
+                                                        @endphp
+                                                            
+                                                        @php
+                                                            @$total_paid = @$discount_amount + @$paid;
+                                                        @endphp
+                                                    <tr>
+                                                        <td>{{@$fees_assigned->feesGroupMaster->feesGroups !=""?@$fees_assigned->feesGroupMaster->feesGroups->name:""}}</td>
+                                                        <td>{{@$fees_assigned->feesGroupMaster->feesTypes!=""?@$fees_assigned->feesGroupMaster->feesTypes->name:""}}</td>
+                                                        <td>
+                                                            @if(!empty(@$fees_assigned->feesGroupMaster))                                                                            
+                                                            {{@$fees_assigned->feesGroupMaster->date != ""? dateConvert(@$fees_assigned->feesGroupMaster->date):''}}
+                                                            @endif
+                                                        </td>
+                                                        @php
+                                                        $total_payable_amount=$fees_assigned->fees_amount;
+                                                            $rest_amount = $fees_assigned->feesGroupMaster->amount - $total_paid;
+                                                            $balance_amount=number_format($rest_amount+$fine, 2, '.', '');
+                                                            $total_balance +=  $balance_amount;
+                                                    @endphp
+                                                    <td>
+                                                        
+                                                        @if($balance_amount ==0)
+                                                            <button class="primary-btn small bg-success text-white border-0">@lang('fees.paid')</button>
+                                                        @elseif($paid != 0)
+                                                            <button class="primary-btn small bg-warning text-white border-0">@lang('fees.partial')</button>
+                                                        @elseif($paid == 0)
+                                                            <button class="primary-btn small bg-danger text-white border-0">@lang('fees.unpaid')</button>
+                                                        @endif
+                                                        
+                                                    </td>
+                                                        <td>
+                                                            @php
+                                                            echo number_format($fees_assigned->feesGroupMaster->amount, 2, '.', '');
+                                                        @endphp
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td> {{@$discount_amount}} </td>
+                                                        <td>{{@$fine}}</td>
+                                                        <td>{{@$paid}}</td>
+                                                        <td>
+                                                            @php 
+                                                                echo @$balance_amount;
+                                                            @endphp
+                                                        </td>
+                                                    </tr>
+                                                        @php 
+                                                            @$payments = App\SmFeesAssign::feesPayment(@$fees_assigned->feesGroupMaster->feesTypes->id, @$fees_assigned->student_id, $fees_assigned->recordDetail->id);
+                                                            $i = 0;
+                                                        @endphp
+        
+                                                        @foreach($payments as $payment)
+                                                        <tr>
+                                                            <td></td>
+                                                            <td></td>
+                                                            <td></td>
+                                                            <td></td>
+                                                            <td class="text-right"><img src="{{asset('public/backEnd/img/table-arrow.png')}}"></td>
+                                                            <td>
+                                                                @php
+                                                                    @$created_by = App\User::find(@$payment->created_by);
+                                                                @endphp
+                                                                @if(@$created_by != "")
+                                                                <a href="#" data-toggle="tooltip" data-placement="right" title="{{'Collected By: '.@$created_by->full_name}}">{{@$payment->fees_type_id.'/'.@$payment->id}}</a></td>
+                                                                @endif
+                                                            <td>
+                                                                {{$payment->payment_mode}}
+                                                            </td>
+                                                            <td class="nowrap">                                                                                
+                                                            {{@$payment->payment_date != ""? dateConvert(@$payment->payment_date):''}}
+                                                            </td>
+                                                            <td>
+                                                                {{@$payment->discount_amount}}
+                                                            </td>
+                                                            <td>
+                                                                {{@$payment->fine}}
+                                                                @if($payment->fine!=0)
+                                                                @if (strlen($payment->fine_title) > 14)
+                                                                <spna class="text-danger nowrap" title="{{$payment->fine_title}}">
+                                                                    ({{substr($payment->fine_title, 0, 15) . '...'}})
+                                                                </spna>
+                                                                @else
+                                                                @if ($payment->fine_title=='')
                                                                 {{$payment->fine_title}}
-                                                            @else
+                                                                @else
                                                                 <spna class="text-danger nowrap">
                                                                     ({{$payment->fine_title}})
                                                                 </spna>
-                                                            @endif
+                                                                @endif
+                                                                @endif
+                                                                @endif
+                                                            </td>
+                                                            <td>
+                                                                {{@$payment->amount}}
+                                                            </td>
+                                                            <td></td>
+                                                        </tr>
+                                                        @endforeach
                                                         @endif
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    {{$payment->amount}}
-                                                </td>
-                                                <td></td>
-                                            </tr>
-                                            @endforeach
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <th></th>
-                                            <th></th>
-                                            <th>@lang('fees.grand_total') ({{generalSetting()->currency_symbol}})</th>
-                                            <th></th>
-                                            <th>{{$grand_total}}</th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th>{{$total_discount}}</th>
-                                            <th>{{$total_fine}}</th>
-                                            <th>{{$total_grand_paid}}</th>
-                                            <th>{{$total_balance}}</th>
-                                            <th></th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                                                    @endforeach
+
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th>@lang('fees.grand_total') ({{@generalSetting()->currency_symbol}})</th>
+                                                        <th></th>
+                                                        <th>{{@$grand_total}}</th>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th>{{@$total_discount}}</th>
+                                                        <th>{{@$total_fine}}</th>
+                                                        <th>{{@$total_grand_paid}}</th>
+                                                        <th>{{number_format($total_balance, 2, '.', '')}} </th>
+                                                        <th></th>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                         <!-- End Profile Tab -->
@@ -903,11 +977,12 @@
 
                         <!-- Start Exam Tab -->
                         <div role="tabpanel" class="tab-pane fade" id="studentExam">
+                            @foreach ( $student_detail->studentRecords as $record)
                             @php
                                 $today = date('Y-m-d H:i:s');
                                 $exam_count= count($exam_terms);
                             @endphp
-                            @if($exam_count < 1)
+                            @if($exam_count > 1)
                             <div class="white-box no-search no-paginate no-table-info mb-2">
                                <table class="display school-table" cellspacing="0" width="100%">
                                     <thead>
@@ -935,7 +1010,7 @@
                             <div class="white-box no-search no-paginate no-table-info mb-2">
                                 @foreach($exam_terms as $exam)
                                 @php
-                                    $get_results = App\SmStudent::getExamResult(@$exam->id, @$student_detail);
+                                    $get_results = App\SmStudent::getExamResult(@$exam->id, @$record);
                                 @endphp
                                 @if($get_results)
                                 <div class="main-title">
@@ -991,7 +1066,7 @@
                                                     $get_subject_marks =  subjectFullMark ($mark->exam_type_id, $mark->subject_id );
 
                                                     $subject_marks = App\SmStudent::fullMarksBySubject($exam->id, $mark->subject_id);
-                                                    $schedule_by_subject = App\SmStudent::scheduleBySubject($exam->id, $mark->subject_id, @$student_detail);
+                                                    $schedule_by_subject = App\SmStudent::scheduleBySubject($exam->id, $mark->subject_id, @$record);
                                                     $result_subject = 0;
                                                     $grand_total_marks += $get_subject_marks;
                                                     if(@$mark->is_absent == 0){
@@ -1011,11 +1086,7 @@
                                                     </td>
                                                     <td>
                                                         {{@$mark->subject->subject_name}} ({{ @subjectFullMark($mark->exam_type_id, $mark->subject_id )}})
-                                                        {{-- @if (@$optional_subject_setup!='' && @$student_optional_subject!='')
-                                                            @if ($student_optional_subject->subject_id==$mark->subject->id)
-                                                                <small>(@lang('common.optional'))</small>
-                                                            @endif
-                                                        @endif --}}
+                                                      
                                                     </td>
                                                     <td>
                                                         {{@$mark->total_marks}}
@@ -1112,6 +1183,7 @@
 
                                 @endforeach
                             </div>
+                            @endforeach
                         </div>
                         <!-- End Exam Tab -->
 
@@ -1284,35 +1356,27 @@
                         <!-- Start Timeline Tab -->
                         <div role="tabpanel" class="tab-pane fade" id="studentTimeline">
                             <div class="white-box">
-                                @foreach($timelines as $timeline)
-                                <div class="student-activities">
-                                    <div class="single-activity">
-                                        <h4 class="title text-uppercase">
-                                        {{$timeline->date != ""? dateConvert($timeline->date):''}}
-                                        </h4>
-                                        <div class="sub-activity-box d-flex">
-                                            <h6 class="time text-uppercase">10.30 pm</h6>
-                                            <div class="sub-activity">
-                                                <h5 class="subtitle text-uppercase"> {{$timeline->title}}</h5>
-                                                <p>{{$timeline->description}}</p>
-                                            </div>
-                                            <div class="close-activity">
-                                                @if(file_exists($timeline->file))
-                                                 @if (@Auth::user()->role_id == 1)
-                                                    <a href="{{url($timeline->file)}}" class="primary-btn tr-bg text-uppercase bord-rad" download>
-                                                        @lang('common.download')<span class="pl ti-download"></span>
-                                                    </a>
-                                                    @else
-                                                    <a href="{{url($timeline->file)}}" class="primary-btn tr-bg text-uppercase bord-rad" download>
-                                                        @lang('common.download')<span class="pl ti-download"></span>
-                                                    </a>
-                                                 @endif
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
+                                
+                                <table id="" class="table simple-table table-responsive school-table"
+                                       cellspacing="0">
+                                    <thead class="d-block">
+                                        <tr class="d-flex">
+                                            <th class="col-4">@lang('common.class')</th>
+                                            <th class="col-4">@lang('common.section')</th>
+                                            <th class="col-4">@lang('student.id_number')</th>
+                                        </tr>
+                                    </thead>
+        
+                                    <tbody class="d-block">
+                                        @foreach ($student_detail->studentRecords as $record)
+                                            <tr class="d-flex">
+                                                <td class="col-4">{{ $record->class->class_name }}</td>
+                                                <td class="col-4">{{ $record->section->section_name }}</td>
+                                                <td class="col-4">{{ $record->roll_no }}</td>                                                
+                                            </tr>
+                                         @endforeach
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                         <!-- End Timeline Tab -->

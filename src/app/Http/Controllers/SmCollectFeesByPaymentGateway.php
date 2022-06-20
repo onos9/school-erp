@@ -135,6 +135,7 @@ class SmCollectFeesByPaymentGateway extends Controller
             $fees_payment->payment_date = date('Y-m-d');
             $fees_payment->payment_mode = 'Paypal';
             $fees_payment->created_by = $user->id;
+            $fees_payment->record_id = $request->record_id;
             $fees_payment->school_id = Auth::user()->school_id;
             $fees_payment->academic_id = getAcademicId();
             $fees_payment->active_status = 0;

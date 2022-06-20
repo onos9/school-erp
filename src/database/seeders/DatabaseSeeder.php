@@ -2,7 +2,70 @@
 
 namespace Database\Seeders;
 
+use App\SmSchool;
+use App\SmAcademicYear;
 use Illuminate\Database\Seeder;
+use Database\Seeders\ContinentsTableSeeder;
+use Database\Seeders\Lesson\SmTopicsTableSeeder;
+use Database\Seeders\Admin\SmVisitorsTableSeeder;
+use Database\Seeders\Exam\SmExamTypesTableSeeder;
+use Database\Seeders\Lesson\SmLessonsTableSeeder;
+use Database\Seeders\Fees\SmFeesAssignTableSeeder;
+use Database\Seeders\Fees\SmFeesGroupsTableSeeder;
+use Database\Seeders\Admin\SmComplaintsTableSeeder;
+use Database\Seeders\Fees\SmFeesPaymentTableSeeder;
+use Database\Seeders\Leave\SmLeaveTypesTableSeeder;
+use Database\Seeders\Transport\SmRoutesTableSeeder;
+use Database\Seeders\Academics\SmClassesTableSeeder;
+use Database\Seeders\Fees\SmFeesDiscountTableSeeder;
+use Database\Seeders\Academics\SmSectionsTableSeeder;
+use Database\Seeders\Academics\SmSubjectsTableSeeder;
+use Database\Seeders\Communicate\SmSmTodoTableSeeder;
+use Database\Seeders\Exam\SmExamSchedulesTableSeeder;
+use Database\Seeders\HomeWork\SmHomeworksTableSeeder;
+use Database\Seeders\Inventory\SmSupplierTableSeeder;
+use Database\Seeders\Lesson\SmLessonPlansTableSeeder;
+use Database\Seeders\Transport\SmVehiclesTableSeeder;
+use Database\Seeders\Admin\SmPostalReceiveTableSeeder;
+use Database\Seeders\Dormitory\SmRoomListsTableSeeder;
+use Database\Seeders\Dormitory\SmRoomTypesTableSeeder;
+use Database\Seeders\HumanResources\StaffsTableSeeder;
+use Database\Seeders\Inventory\SmItemStoreTableSeeder;
+use Database\Seeders\Academics\SmClassRoomsTableSeeder;
+use Database\Seeders\Accounts\SmIncomeHeadsTableSeeder;
+use Database\Seeders\Admin\SmPostalDispatchTableSeeder;
+use Database\Seeders\Exam\SmExamAttendancesTableSeeder;
+use Database\Seeders\Student\SmStudentGroupTableSeeder;
+use Database\Seeders\Accounts\SmBankAccountsTableSeeder;
+use Database\Seeders\Accounts\SmExpenseHeadsTableSeeder;
+use Database\Seeders\Admin\SmContactMessagesTableSeeder;
+use Database\Seeders\Fees\SmFeesCarryForwardTableSeeder;
+use Database\Seeders\OnlineExam\SmOnlineExamTableSeeder;
+use Database\Seeders\Student\SmOptionSubjectTableSeeder;
+use Database\Seeders\Library\SmBookCategoriesTableSeeder;
+use Database\Seeders\SystemSettings\SmHolidayTableSeeder;
+use Database\Seeders\Academics\SmAcademicYearsTableSeeder;
+use Database\Seeders\Communicate\SmNoticeBoardTableSeeder;
+use Database\Seeders\Communicate\SmSendMessageTableSeeder;
+use Database\Seeders\Exam\SmExamMarksRegistersTableSeeder;
+use Database\Seeders\Fees\SmFeesAssignDiscountTableSeeder;
+use Database\Seeders\Academics\SmAssignSubjectsTableSeeder;
+use Database\Seeders\Admin\SmStudentCertificateTableSeeder;
+use Database\Seeders\Communicate\SmEmailSmsLogsTableSeeder;
+use Database\Seeders\Dormitory\SmDormitoryListsTableSeeder;
+use Database\Seeders\Inventory\SmItemCategoriesTableSeeder;
+use Database\Seeders\Transport\SmAssignVehiclesTableSeeder;
+use Database\Seeders\HomeWork\SmHomeworkStudentsTableSeeder;
+use Database\Seeders\OnlineExam\SmQuestionGroupsTableSeeder;
+use Database\Seeders\Student\SmStudentAttendanceTableSeeder;
+use Database\Seeders\Student\SmStudentCategoriesTableSeeder;
+use Database\Seeders\HumanResources\SmDesignationsTableSeeder;
+use Database\Seeders\UploadContent\SmUploadContentTableSeeder;
+use Database\Seeders\Academics\SmAssignClassTeacherTableSeeder;
+use Database\Seeders\Academics\SmClassRoutineUpdatesTableSeeder;
+use Database\Seeders\HumanResources\SmStaffAttendancesTableSeeder;
+use Database\Seeders\FrontSettings\SmBackgroundSettingsTableSeeder;
+use Database\Seeders\FrontSettings\SmFrontendPermissionTableSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,201 +76,106 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-      $this->call([
-        // rolesSeeder::class,
-        // sm_base_groupsSeeder::class,
-        // sm_base_setupsSeeder::class,
-        // usersSeeder::class,
+//        $this->call(ContinentsTableSeeder::class);
+        $schools = SmSchool::query()->get();
+        $params = [];
+        foreach ($schools as $school) {
 
-        sm_classesSeeder::class,
-        sm_sectionsSeeder::class,
-        sm_class_sectionsSeeder::class,
-        sm_subjectsSeeder::class,
-        sm_assign_class_teachersSeeder::class,
-        sm_class_teachersSeeder::class, /*it's dependent sm_assign_class_teachersSeeder */
-        sm_visitorsSeeder::class,
-        continentsSeeder::class,/*check*/
-        // countriesSeeder::class,
-        // languagesSeeder::class,
-        // sm_about_pagesSeeder::class,
-        // sm_academic_yearsSeeder::class,
-        // sm_date_formatsSeeder::class,
+            $params['school_id'] = $school->id;
 
-        sm_designationsSeeder::class,
-        sm_human_departmentsSeeder::class,
-        sm_staffsSeeder::class,
-        sm_staff_attendencesSeeder::class,
-        sm_hr_payroll_generatesSeeder::class,
+            $this->callWith(SmVisitorsTableSeeder::class, array_merge($params, ['count' => 10]));
 
-        sm_expense_headsSeeder::class,
-        // sm_payment_methhodsSeeder::class,
-        sm_add_expensesSeeder::class,
-        sm_income_headsSeeder::class,
-        sm_add_incomesSeeder::class,
-        sm_bank_accountsSeeder::class,
+            $this->callWith(SmDesignationsTableSeeder::class, array_merge($params, ['count' => 5]));
+            $this->callWith(SmVehiclesTableSeeder::class, array_merge($params, ['count' => 5]));
 
-        sm_admission_queriesSeeder::class,
-        sm_admission_query_followupsSeeder::class,
+//            $this->callWith(SmAcademicYearsTableSeeder::class, array_merge($params, ['count' => 1]));
 
-        sm_assign_subjectsSeeder::class,
+            $this->callWith(SmExpenseHeadsTableSeeder::class, array_merge($params, ['count' => 10]));
+            $this->callWith(SmIncomeHeadsTableSeeder::class, array_merge($params, ['count' => 10]));
+            $this->callWith(SmBankAccountsTableSeeder::class, array_merge($params, ['count' => 10]));
+            $this->callWith(SmBookCategoriesTableSeeder::class, array_merge($params, ['count' => 10]));
+            $this->callWith(SmContactMessagesTableSeeder::class, array_merge($params, ['count' => 10]));
+            $this->callWith(SmDormitoryListsTableSeeder::class, array_merge($params, ['count' => 7]));
+            $this->callWith(SmRoomTypesTableSeeder::class, array_merge($params, ['count' => 6]));
+            $this->callWith(SmRoomListsTableSeeder::class, array_merge($params, ['count' => 10]));
 
-
-
-        sm_vehiclesSeeder::class,
-        sm_routesSeeder::class,
-        sm_assign_vehiclesSeeder::class,
-
-        sm_background_settingsSeeder::class,
-        sm_book_categoriesSeeder::class,
-        sm_booksSeeder::class,
-        sm_book_issuesSeeder::class,
-
-        sm_chart_of_accountsSeeder::class,
-        sm_class_roomsSeeder::class,
-        sm_class_routine_updatesSeeder::class,
-
-
-        sm_class_routinesSeeder::class,
-        sm_class_timesSeeder::class,
-        sm_complaintsSeeder::class,
-        sm_contact_messagesSeeder::class,
-
-
-
-        sm_contact_pagesSeeder::class,
-        sm_content_typesSeeder::class,
-        sm_countriesSeeder::class,
-        sm_coursesSeeder::class,
-        sm_currenciesSeeder::class,
-        sm_custom_linksSeeder::class,
-        sm_dashboard_settingsSeeder::class,
-        sm_email_settingsSeeder::class,
-        sm_email_sms_logsSeeder::class,
-
-        sm_dormitory_listsSeeder::class,
-        sm_room_typesSeeder::class,
-        sm_room_listsSeeder::class,
-
-
-        sm_sessionsSeeder::class,
-        sm_student_categoriesSeeder::class,
-        sm_studentsSeeder::class,
-
-        sm_exam_typesSeeder::class,
-        sm_exam_setupsSeeder::class,
-        sm_examsSeeder::class,
-        sm_exam_schedulesSeeder::class,
-        sm_exam_schedule_subjectsSeeder::class,
-
-        sm_fees_groupsSeeder::class,
-        sm_fees_typesSeeder::class,
-        sm_fees_mastersSeeder::class,
-        sm_fees_discountsSeeder::class,
-        sm_fees_assign_discountsSeeder::class,
-        sm_fees_assignsSeeder::class,
-        sm_fees_paymentsSeeder::class,
-        sm_fees_carry_forwardsSeeder::class,
         
-        sm_exam_marks_registersSeeder::class,
+            $this->callWith(SmStudentCategoriesTableSeeder::class, array_merge($params, ['count' => 6]));
 
-        sm_frontend_persmissionsSeeder::class,
-        sm_holidaysSeeder::class,
-        sm_homework_studentsSeeder::class,
-        sm_homeworksSeeder::class,
-        sm_eventsSeeder::class,
-        sm_exam_attendance_childrenSeeder::class,
-        sm_exam_attendancesSeeder::class,
-        sm_hourly_ratesSeeder::class,
+             $this->callWith(StaffsTableSeeder::class, array_merge($params, ['count' => 5]));
+            $this->callWith(SmBackgroundSettingsTableSeeder::class, array_merge($params, ['count' => 2]));
+            $this->callWith(SmFrontendPermissionTableSeeder::class, array_merge($params, ['count' => 2]));
+            
 
-        sm_hr_payroll_earn_deducsSeeder::class,
-        sm_hr_salary_templatesSeeder::class,
-        sm_instructionsSeeder::class,
-        sm_inventory_paymentsSeeder::class,
-        
-        //*************** End ***********************
-
-        sm_item_categoriesSeeder::class,
-        sm_item_issuesSeeder::class,
-        sm_item_receive_childrenSeeder::class,
-        sm_item_receivesSeeder::class,
-        sm_item_sell_childrenSeeder::class,
-        sm_item_sellsSeeder::class,
-        sm_item_storesSeeder::class,
-        sm_itemsSeeder::class,
-        sm_language_phrasesSeeder::class,
-        sm_languagesSeeder::class,
+            $academicYears = SmAcademicYear::where('school_id', $school->id)->get();
 
 
-        sm_leave_typesSeeder::class,
-        sm_leave_definesSeeder::class,
-        sm_leave_requestsSeeder::class,
+            foreach ($academicYears as $academicYear) {
+                $params['academic_id'] = $academicYear->id;
+                $this->callWith(SmStudentGroupTableSeeder::class, array_merge($params, ['count' => 6]));
+                $this->callWith(SmSectionsTableSeeder::class, array_merge($params, ['count' => 5]));
 
-        sm_lessonSeeder::class,
-        sm_lesson_topicSeeder::class,
+                $this->callWith(SmSubjectsTableSeeder::class, array_merge($params, ['count' => 10]));
+                $this->callWith(SmClassesTableSeeder::class, array_merge($params, ['count' => 10]));
 
+                $this->callWith(SmStudentAttendanceTableSeeder::class, array_merge($params, ['count' => 10]));
 
-        // sm_library_membersSeeder::class,
-        sm_mark_storesSeeder::class,
-        sm_marks_gradesSeeder::class,
-        sm_marks_register_childrenSeeder::class,
-        sm_marks_registersSeeder::class,
-        sm_marks_send_smsSeeder::class,
-        sm_module_linksSeeder::class,
-        sm_modulesSeeder::class,
-        sm_newsSeeder::class,
-        sm_news_categoriesSeeder::class,
-        sm_notice_boardsSeeder::class,
-        sm_notificationsSeeder::class,
-
-        sm_question_groupsSeeder::class,
-        sm_question_levelsSeeder::class,
-        sm_question_banksSeeder::class,
-
-        sm_online_examsSeeder::class,
-        sm_online_exam_questionsSeeder::class,
-        sm_online_exam_question_assignsSeeder::class,
-        sm_online_exam_marksSeeder::class,
-
-        sm_parentsSeeder::class,
-        sm_payment_gateway_settingsSeeder::class,
-        sm_postal_dispatchesSeeder::class,
-        sm_postal_receivesSeeder::class,
-        sm_product_purchasesSeeder::class,
+                $this->callWith(SmRoutesTableSeeder::class, array_merge($params, ['count' => 10]));
+                $this->callWith(SmClassRoomsTableSeeder::class, array_merge($params, ['count' => 10]));
+                $this->callWith(SmComplaintsTableSeeder::class, array_merge($params, ['count' => 10]));
+                $this->callWith(SmComplaintsTableSeeder::class, array_merge($params, ['count' => 10]));
+                $this->callWith(SmEmailSmsLogsTableSeeder::class, array_merge($params, ['count' => 10]));
 
 
-        sm_result_storesSeeder::class,
-        sm_role_permissionsSeeder::class,
-        sm_seat_plan_childrenSeeder::class,
-        sm_seat_plansSeeder::class,
-        sm_send_messagesSeeder::class,
-        sm_setup_adminsSeeder::class,
-        sm_sms_gatewaysSeeder::class,
+                 $this->callWith(SmExamTypesTableSeeder::class, array_merge($params, ['count' => 3]));
+                $this->callWith(SmStaffAttendancesTableSeeder::class, array_merge($params, ['count' => 1]));
+                $this->callWith(SmAssignSubjectsTableSeeder::class, array_merge($params, ['count' => 1]));
+                $this->callWith(SmAssignVehiclesTableSeeder::class, array_merge($params, ['count' => 1]));
+                $this->callWith(SmClassRoutineUpdatesTableSeeder::class, array_merge($params, ['count' => 1]));
+                $this->callWith(SmExamSchedulesTableSeeder::class, array_merge($params, ['count' => 1]));
+                $this->callWith(SmExamAttendancesTableSeeder::class, array_merge($params, ['count' => 1]));
+                 $this->callWith(SmExamMarksRegistersTableSeeder::class, array_merge($params, ['count' => 1]));
+            
+                $this->callWith(SmFeesGroupsTableSeeder::class, array_merge($params, ['count' => 5]));
 
-        sm_student_attendancesSeeder::class,
-        sm_student_certificatesSeeder::class,
-        sm_student_documentsSeeder::class,
-        sm_student_excel_formatsSeeder::class,
-        sm_student_groupsSeeder::class,
-        sm_student_homeworksSeeder::class,
-        sm_student_id_cardsSeeder::class,
-        sm_student_promotionsSeeder::class,
-        sm_student_take_online_exam_questionsSeeder::class,
-        sm_student_take_online_examsSeeder::class,
-        sm_student_take_onln_ex_ques_optionsSeeder::class,
-        sm_student_timelinesSeeder::class,
-        sm_suppliersSeeder::class,
-        sm_system_versionsSeeder::class,
-        sm_teacher_upload_contentsSeeder::class,
-        sm_temporary_meritlistSeeder::class,
-        sm_temporary_meritlistsSeeder::class,
-        sm_testimonialsSeeder::class,
-        sm_to_dosSeeder::class,
-        sm_upload_contentsSeeder::class,
-        // sm_user_logsSeeder::class,
-        sm_optional_subject_assign::class,
-        SmSubjectAttendanceSeeder::class,
-        // SmSchoolSeeder::class, 
-      ]);
-        
+                $this->callWith(SmFeesDiscountTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmFeesAssignDiscountTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmFeesAssignTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmFeesPaymentTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmFeesCarryForwardTableSeeder::class, array_merge($params, ['count' => 5]));
+
+                $this->callWith(SmLeaveTypesTableSeeder::class, array_merge($params, ['count' => 5]));
+
+                $this->callWith(SmLessonsTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmTopicsTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmLessonPlansTableSeeder::class, array_merge($params, ['count' => 5]));
+
+                $this->callWith(SmHomeworksTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmHomeworkStudentsTableSeeder::class, array_merge($params, ['count' => 5]));
+
+                $this->callWith(SmItemCategoriesTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmItemStoreTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmSupplierTableSeeder::class, array_merge($params, ['count' => 5]));
+
+                $this->callWith(SmQuestionGroupsTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmQuestionGroupsTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmOnlineExamTableSeeder::class, array_merge($params, ['count' => 5]));
+
+                $this->callWith(SmHolidayTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmNoticeBoardTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmPostalDispatchTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmPostalReceiveTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmSendMessageTableSeeder::class, array_merge($params, ['count' => 5]));
+
+                $this->callWith(SmUploadContentTableSeeder::class, array_merge($params, ['count' => 5]));
+                
+                $this->callWith(SmStudentCertificateTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmSmTodoTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmOptionSubjectTableSeeder::class, array_merge($params, ['count' => 5]));
+                $this->callWith(SmAssignClassTeacherTableSeeder::class, array_merge($params, ['count' => 5]));
+
+            }
+        }
+
     }
 }

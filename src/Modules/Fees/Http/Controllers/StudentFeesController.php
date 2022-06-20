@@ -4,17 +4,16 @@ namespace Modules\Fees\Http\Controllers;
 
 use App\User;
 use App\SmClass;
-use App\SmParent;
+use App\SmSchool;
 use App\SmStudent;
 use App\SmAddIncome;
 use App\SmBankAccount;
-use App\SmNotification;
 use App\SmPaymentMethhod;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use App\SmPaymentGatewaySetting;
 use Illuminate\Routing\Controller;
 use Brian2694\Toastr\Facades\Toastr;
-use Illuminate\Support\Facades\Auth;
 use Modules\Fees\Entities\FmFeesType;
 use Modules\Fees\Entities\FmFeesGroup;
 use Modules\Fees\Entities\FmFeesInvoice;
@@ -23,56 +22,74 @@ use Modules\Fees\Entities\FmFeesTransaction;
 use Modules\Fees\Entities\FmFeesInvoiceChield;
 use Modules\Wallet\Entities\WalletTransaction;
 use Modules\Fees\Entities\FmFeesTransactionChield;
+use Modules\Fees\Http\Controllers\FeesExtendedController;
+use Modules\MercadoPago\Http\Controllers\MercadoPagoController;
 
 class StudentFeesController extends Controller
 {
     public function studentFeesList($id)
     {
-        $student_id = SmStudent::find($id);
+        $student_id = $id;
+        $records = StudentRecord::where('is_promote',0)
+                ->where('student_id', $student_id)
+                ->where('academic_id',getAcademicId())
+                ->with('feesInvoice')
+                ->get();
 
-        $studentInvoices = FmFeesInvoice::where('student_id',$student_id->id)
-                            ->where('school_id',Auth::user()->school_id)
-                            ->where('academic_id',getAcademicId())
-                            ->get();
-                            
-        return view('fees::student.feesInfo',compact('studentInvoices','student_id'));
+        return view('fees::student.feesInfo',compact('student_id','records'));
     }
 
     public function studentAddFeesPayment($id)
     {
         try{
-            $classes = SmClass::where('school_id',Auth::user()->school_id)
+            $classes = SmClass::where('school_id',auth()->user()->school_id)
             ->where('academic_id',getAcademicId())
             ->get();
 
-            $feesGroups = FmFeesGroup::where('school_id',Auth::user()->school_id)
+            $feesGroups = FmFeesGroup::where('school_id',auth()->user()->school_id)
                         ->where('academic_id', getAcademicId())
                         ->get();
 
-            $feesTypes = FmFeesType::where('school_id',Auth::user()->school_id)
+            $feesTypes = FmFeesType::where('school_id',auth()->user()->school_id)
                         ->where('academic_id', getAcademicId())
                         ->get();
 
             $paymentMethods = SmPaymentMethhod::whereNotIn('method', ["Cash"])
-                                ->where('school_id',Auth::user()->school_id)
-                                ->get();
+                            ->where('school_id',auth()->user()->school_id);
+
+            if(!moduleStatusCheck('RazorPay')){
+                $paymentMethods = $paymentMethods->where('method', '!=', 'RazorPay');
+            }
+
+            if(!moduleStatusCheck('MercadoPago')){
+                $paymentMethods = $paymentMethods->where('method', '!=', 'MercadoPago');
+            }
+
+            $paymentMethods = $paymentMethods->get();
+
             
-            $bankAccounts = SmBankAccount::where('school_id',Auth::user()->school_id)
+            $bankAccounts = SmBankAccount::where('school_id',auth()->user()->school_id)
                             ->where('active_status',1)
                             ->where('academic_id', getAcademicId())
                             ->get();
             
             $invoiceInfo = FmFeesInvoice::find($id);
             $invoiceDetails = FmFeesInvoiceChield::where('fees_invoice_id',$invoiceInfo->id)
-                            ->where('school_id', Auth::user()->school_id)
+                            ->where('school_id', auth()->user()->school_id)
                             ->where('academic_id', getAcademicId())
                             ->get();
 
             $stripe_info = SmPaymentGatewaySetting::where('gateway_name', 'stripe')
-                            ->where('school_id', Auth::user()->school_id)
+                            ->where('school_id', auth()->user()->school_id)
                             ->first();
+            $razorpay_info = null;
+            if(moduleStatusCheck('RazorPay')){
+                $razorpay_info = SmPaymentGatewaySetting::where('gateway_name', 'RazorPay')
+                    ->where('school_id', auth()->user()->school_id)
+                    ->first();
+            }
 
-            return view('fees::student.studentAddPayment',compact('classes','feesGroups','feesTypes','paymentMethods','bankAccounts','invoiceInfo','invoiceDetails','stripe_info'));
+            return view('fees::student.studentAddPayment',compact('classes','feesGroups','feesTypes','paymentMethods','bankAccounts','invoiceInfo','invoiceDetails','stripe_info', 'razorpay_info'));
         }catch(\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -99,27 +116,35 @@ class StudentFeesController extends Controller
         try{
             $destination = 'public/uploads/student/document/';
             $file = fileUpload($request->file('file'), $destination);
-            $student=SmStudent::with('parents')->find($request->student_id);
+
+            $record = StudentRecord::find($request->student_id);
+            $student=SmStudent::with('parents')->find($record->student_id);
+
             if($request->payment_method == "Wallet"){
-                $currentBalance = User::find(Auth::user()->id);
-                if($currentBalance->wallet_balance == 0){
+                $user = User::find(auth()->user()->id);
+                if($user->wallet_balance == 0){
                     Toastr::warning('Insufficiant Balance', 'Warning');
                     return redirect()->back();
-                }elseif($currentBalance->wallet_balance >= $request->total_paid_amount){
-                    $currentBalance->wallet_balance = $currentBalance->wallet_balance - $request->total_paid_amount;
-                    $currentBalance->update();
+                }elseif($user->wallet_balance >= $request->total_paid_amount){
+                    $user->wallet_balance = $user->wallet_balance - $request->total_paid_amount;
+                    $user->update();
                 }else{
                     Toastr::warning('Total Amount Is Grater Than Wallet Amount', 'Warning');
                     return redirect()->back();
                 }
                 $addPayment = new WalletTransaction();
-                $addPayment->amount= $request->total_paid_amount;
+                if($request->add_wallet > 0){
+                    $addAmount = $request->total_paid_amount - $request->add_wallet;
+                    $addPayment->amount= $addAmount;
+                }else{
+                    $addPayment->amount= $request->total_paid_amount;
+                }
                 $addPayment->payment_method= $request->payment_method;
-                $addPayment->user_id= $currentBalance->id;
+                $addPayment->user_id= $user->id;
                 $addPayment->type= 'expense';
                 $addPayment->status= 'approve';
                 $addPayment->note= 'Fees Payment';
-                $addPayment->school_id= Auth::user()->school_id;
+                $addPayment->school_id= auth()->user()->school_id;
                 $addPayment->academic_id= getAcademicId();
                 $addPayment->save();
 
@@ -127,12 +152,14 @@ class StudentFeesController extends Controller
                 $storeTransaction->fees_invoice_id = $request->invoice_id;
                 $storeTransaction->payment_note = $request->payment_note;
                 $storeTransaction->payment_method = $request->payment_method;
+                $storeTransaction->add_wallet_money = $request->add_wallet;
                 $storeTransaction->bank_id = $request->bank;
-                $storeTransaction->student_id = $request->student_id;
-                $storeTransaction->user_id = Auth::user()->id;
+                $storeTransaction->student_id = $record->student_id;
+                $storeTransaction->record_id = $record->id;
+                $storeTransaction->user_id = auth()->user()->id;
                 $storeTransaction->file = $file;
                 $storeTransaction->paid_status = 'approve';
-                $storeTransaction->school_id = Auth::user()->school_id;
+                $storeTransaction->school_id = auth()->user()->school_id;
                 $storeTransaction->academic_id = getAcademicId();
                 $storeTransaction->save();
 
@@ -141,19 +168,47 @@ class StudentFeesController extends Controller
                 
                     $storeFeesInvoiceChield = FmFeesInvoiceChield::find($id);
                     $storeFeesInvoiceChield->due_amount = $request->due[$key];
-                    $storeFeesInvoiceChield->paid_amount = $storeFeesInvoiceChield->paid_amount + $request->paid_amount[$key];
+                    $storeFeesInvoiceChield->paid_amount = $storeFeesInvoiceChield->paid_amount + $request->paid_amount[$key] - $request->extraAmount[$key];
                     $storeFeesInvoiceChield ->update();
                     
                     if($request->paid_amount[$key] > 0){
                         $storeTransactionChield = new FmFeesTransactionChield();
                         $storeTransactionChield->fees_transaction_id = $storeTransaction->id;
                         $storeTransactionChield->fees_type = $type;
-                        $storeTransactionChield->paid_amount = $request->paid_amount[$key];
+                        $storeTransactionChield->paid_amount = $request->paid_amount[$key] - $request->extraAmount[$key];
                         $storeTransactionChield->note = $request->note[$key];
-                        $storeTransactionChield->school_id = Auth::user()->school_id;
+                        $storeTransactionChield->school_id = auth()->user()->school_id;
                         $storeTransactionChield->academic_id = getAcademicId();
                         $storeTransactionChield->save();
                     }
+                }
+
+                if ($request->add_wallet > 0) {
+                    $user->wallet_balance = $user->wallet_balance + $request->add_wallet;
+                    $user->update();
+        
+                    $addPayment = new WalletTransaction();
+                    $addPayment->amount = $request->add_wallet;
+                    $addPayment->payment_method = $request->payment_method;
+                    $addPayment->user_id = $user->id;
+                    $addPayment->type = 'diposit';
+                    $addPayment->status = 'approve';
+                    $addPayment->note = 'Fees Extra Payment Add';
+                    $addPayment->school_id = auth()->user()->school_id;
+                    $addPayment->academic_id = getAcademicId();
+                    $addPayment->save();
+        
+                    $school = SmSchool::find($user->school_id);
+                    $compact['full_name'] = $user->full_name;
+                    $compact['method'] = $request->payment_method;
+                    $compact['create_date'] = date('Y-m-d');
+                    $compact['school_name'] = $school->school_name;
+                    $compact['current_balance'] = $user->wallet_balance;
+                    $compact['add_balance'] = $request->add_wallet;
+                    $compact['previous_balance'] = $user->wallet_balance - $request->add_wallet;
+        
+                    @send_mail($user->email, $user->full_name, "fees_extra_amount_add", $compact);
+                    sendNotification($user->id, null, null, $user->role_id, "Fees Xtra Amount Add");
                 }
 
                 // Income
@@ -169,21 +224,22 @@ class StudentFeesController extends Controller
                 $add_income->income_head_id = $income_head->income_head_id;
                 $add_income->payment_method_id = $payment_method->id;
                 $add_income->created_by = Auth()->user()->id;
-                $add_income->school_id = Auth::user()->school_id;
+                $add_income->school_id = auth()->user()->school_id;
                 $add_income->academic_id = getAcademicId();
                 $add_income->save();
-            }elseif($request->payment_method == "Cheque" || $request->payment_method == "Bank"){
+            }elseif($request->payment_method == "Cheque" || $request->payment_method == "Bank" || $request->payment_method == "MercadoPago"){
                 $storeTransaction = new FmFeesTransaction();
                 $storeTransaction->fees_invoice_id = $request->invoice_id;
                 $storeTransaction->payment_note = $request->payment_note;
                 $storeTransaction->payment_method = $request->payment_method;
                 $storeTransaction->add_wallet_money = $request->add_wallet;
                 $storeTransaction->bank_id = $request->bank;
-                $storeTransaction->student_id = $request->student_id;
-                $storeTransaction->user_id = Auth::user()->id;
+                $storeTransaction->student_id = $record->student_id;
+                $storeTransaction->record_id = $record->id;
+                $storeTransaction->user_id = auth()->user()->id;
                 $storeTransaction->file = $file;
                 $storeTransaction->paid_status = 'pending';
-                $storeTransaction->school_id = Auth::user()->school_id;
+                $storeTransaction->school_id = auth()->user()->school_id;
                 $storeTransaction->academic_id = getAcademicId();
                 $storeTransaction->save();
                 
@@ -194,21 +250,30 @@ class StudentFeesController extends Controller
                         $storeTransactionChield->fees_type = $type;
                         $storeTransactionChield->paid_amount = $request->paid_amount[$key] - $request->extraAmount[$key];
                         $storeTransactionChield->note = $request->note[$key];
-                        $storeTransactionChield->school_id = Auth::user()->school_id;
+                        $storeTransactionChield->school_id = auth()->user()->school_id;
                         $storeTransactionChield->academic_id = getAcademicId();
                         $storeTransactionChield->save();
                     }
                 }
-            }else{
+
+                if(moduleStatusCheck('MercadoPago')){
+                    if(@$request->payment_method == "MercadoPago"){
+                        $controller = new MercadoPagoController();
+                        return $controller->feesAuthentication($storeTransaction->id, $request->total_paid_amount);
+                    }
+                }
+
+            } else{
                 $storeTransaction = new FmFeesTransaction();
                 $storeTransaction->fees_invoice_id = $request->invoice_id;
                 $storeTransaction->payment_note = $request->payment_note;
                 $storeTransaction->payment_method = $request->payment_method;
-                $storeTransaction->student_id = $request->student_id;
+                $storeTransaction->student_id = $record->student_id;
+                $storeTransaction->record_id = $record->id;
                 $storeTransaction->add_wallet_money = $request->add_wallet;
-                $storeTransaction->user_id = Auth::user()->id;
+                $storeTransaction->user_id = auth()->user()->id;
                 $storeTransaction->paid_status = 'pending';
-                $storeTransaction->school_id = Auth::user()->school_id;
+                $storeTransaction->school_id = auth()->user()->school_id;
                 $storeTransaction->academic_id = getAcademicId();
                 $storeTransaction->save();
 
@@ -219,7 +284,7 @@ class StudentFeesController extends Controller
                         $storeTransactionChield->fees_type = $type;
                         $storeTransactionChield->paid_amount = $request->paid_amount[$key]- $request->extraAmount[$key];
                         $storeTransactionChield->note = $request->note[$key];
-                        $storeTransactionChield->school_id = Auth::user()->school_id;
+                        $storeTransactionChield->school_id = auth()->user()->school_id;
                         $storeTransactionChield->academic_id = getAcademicId();
                         $storeTransactionChield->save();
                     }
@@ -234,17 +299,23 @@ class StudentFeesController extends Controller
                 $data['student_id'] = $request->student_id;
                 $data['stripeToken'] = $request->stripeToken;
                 $data['transcationId'] = $storeTransaction->id;
-                $classMap = config('paymentGateway.'.$data['payment_method']);
-                $make_payment = new $classMap();
-                $url = $make_payment->handle($data);
-                if(!$url){
-                    $url = 'fees/student-fees-list';
+                if($data['payment_method'] == 'RazorPay'){
+                    $extendedController = new FeesExtendedController();
+                    $extendedController->addFeesAmount($storeTransaction->id, null);
+                } else{
+                    $classMap = config('paymentGateway.'.$data['payment_method']);
+                    $make_payment = new $classMap();
+                    $url = $make_payment->handle($data);
+                    if(!$url){
+                        $url = 'fees/student-fees-list';
+                    }
+                    if($request->wantsJson()){
+                        return response()->json(['goto'=>$url]);
+                    }else{
+                        return redirect($url);
+                    }
                 }
-                if($request->wantsJson()){
-                    return response()->json(['goto'=>$url]);
-                }else{
-                    return redirect($url);
-                }
+
             }
 
             //Notification
@@ -253,7 +324,7 @@ class StudentFeesController extends Controller
             sendNotification("Add Fees Payment", null, 1, 1);
             
             Toastr::success('Save Successful', 'Success');
-            return redirect()->back();
+            return redirect()->to(url('fees/student-fees-list',$record->student_id));
         }catch(\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();

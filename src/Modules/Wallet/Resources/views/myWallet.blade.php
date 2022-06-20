@@ -21,7 +21,23 @@
     </div>
 </div>
 @endsection
+
 @push('script')
+        @if(moduleStatusCheck('RazorPay') == TRUE)
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+            <script>
+                @if(moduleStatusCheck('RazorPay'))
+                var payment = false;
+                function demoSuccessHandler(transaction) {
+                    payment = true;
+                    $('form#addWalletAmount').submit();
+                    $('#addWalletPayment').modal('hide');
+                }
+                @endif
+            </script>
+
+        @endif
 <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
 <script type="text/javascript">
     var paymentValue= '';
@@ -32,8 +48,8 @@ $(function() {
         var $form = $("form#addWalletAmount");
         var publisherKey = '{!!$stripe_info->gateway_publisher_key !!}';
         var ccFalse= false;
-        $('form#addWalletAmount').on('submit', function(e) {
-            e.preventDefault();
+        $(document).on('submit', 'form#addWalletAmount', function(e) {
+
             if(paymentValue == "Stripe"){
                 if (!ccFalse){
                     e.preventDefault();
@@ -46,6 +62,32 @@ $(function() {
                     }, stripeResponseHandler);
                 }
             }
+            @if(moduleStatusCheck('RazorPay'))
+            if (paymentValue == 'RazorPay') {
+                if (!payment) {
+                    e.preventDefault();
+                    let value = parseFloat($('#walletAmount').val());
+                    if (isNaN(value)) {
+                        value = 0;
+                    }
+                    value = value * 100;
+                    if (value > 0) {
+                        var options = {
+                            key: "{{ $razorpay_info->gateway_secret_key }}",
+                            amount: value,
+                            name: 'Add Wallet Balance',
+                            image: 'https://i.imgur.com/n5tjHFD.png',
+                            handler: demoSuccessHandler
+                        }
+
+                        window.r = new Razorpay(options);
+                        r.open();
+                    } else {
+                        toastr.error('Please make some payment');
+                    }
+                }
+            }
+            @endif
         });
 
         function stripeResponseHandler(status, response) {

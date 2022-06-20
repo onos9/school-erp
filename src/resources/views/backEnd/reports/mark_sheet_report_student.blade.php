@@ -584,7 +584,7 @@
                                                     <div class="offset-2">
                                                     </div>
                                                 </div>
-                                                <div class="report-admit-img profile_100" style="background-image: url({{ file_exists(@$studentDetails->student_photo) ? asset($studentDetails->student_photo) : asset('public/uploads/staff/demo/staff.jpg') }})"></div>
+                                                <div class="report-admit-img profile_100" style="background-image: url({{ file_exists(@$studentDetails->studentDetail->student_photo) ? asset($studentDetails->studentDetail->student_photo) : asset('public/uploads/staff/demo/staff.jpg') }})"></div>
                                     
                                             </div>
                                             {{--Start  Result Table --}}
@@ -595,7 +595,7 @@
                                                         <th colspan="1" class="text_left">
                                                             <div class="main-title">
                                                                 <h2 class="mb-20">
-                                                                    {{$student_detail->full_name}}
+                                                                    {{$student_detail->studentDetail->full_name}}
                                                                 </h2>
                                                             </div>
                                                             <div class="marks_wrap_area d-block">
@@ -644,7 +644,7 @@
                                                                                 </p>&nbsp; 
                                                                                 <p>
                                                                                     <strong>
-                                                                                        : {{$student_detail->roll_no}}
+                                                                                        : {{$student_detail->studentDetail->roll_no}}
                                                                                     </strong>
                                                                                 </p>
                                                                             </li>
@@ -664,7 +664,7 @@
                                                                                 </p>&nbsp; 
                                                                                 <p> 
                                                                                     <strong> 
-                                                                                        : {{$student_detail->date_of_birth != ""? dateConvert($student_detail->date_of_birth):''}}
+                                                                                        : {{$student_detail->studentDetail->date_of_birth != ""? dateConvert($student_detail->studentDetail->date_of_birth):''}}
                                                                                     </strong>
                                                                                 </p>
                                                                             </li>

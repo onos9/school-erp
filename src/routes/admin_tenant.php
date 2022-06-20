@@ -348,9 +348,9 @@ Route::group(['middleware' => ['XSS','subscriptionAccessUrl']], function () {
         Route::get('fees-discount-delete/{id}', ['as' => 'fees_discount_delete', 'uses' => 'Admin\FeesCollection\SmFeesDiscountController@delete'])->middleware('userRolePermission:134');
         Route::get('fees-discount-assign/{id}', ['as' => 'fees_discount_assign', 'uses' => 'Admin\FeesCollection\SmFeesDiscountController@feesDiscountAssign'])->middleware('userRolePermission:135');
         Route::post('fees-discount-assign-search', 'Admin\FeesCollection\SmFeesDiscountController@feesDiscountAssignSearch')->name('fees-discount-assign-search');
-        Route::get('fees-discount-assign-store', 'Admin\FeesCollection\SmFeesDiscountController@feesDiscountAssignStore');
+        Route::post('fees-discount-assign-store', 'Admin\FeesCollection\SmFeesDiscountController@feesDiscountAssignStore');
 
-        Route::get('fees-generate-modal/{amount}/{student_id}/{type}/{master}/{assign_id}', 'Admin\FeesCollection\SmFeesController@feesGenerateModal')->name('fees-generate-modal')->middleware('userRolePermission:111');
+        Route::get('fees-generate-modal/{amount}/{student_id}/{type}/{master}/{assign_id}/{record_id}', 'Admin\FeesCollection\SmFeesController@feesGenerateModal')->name('fees-generate-modal')->middleware('userRolePermission:111');
         Route::get('fees-discount-amount-search', 'Admin\FeesCollection\SmFeesDiscountController@feesDiscountAmountSearch');
         // delete fees payment
         Route::post('fees-payment-delete', 'Admin\FeesCollection\SmFeesController@feesPaymentDelete')->name('fees-payment-delete');
@@ -1051,6 +1051,7 @@ Route::group(['middleware' => ['XSS','subscriptionAccessUrl']], function () {
 
 
 
+
         Route::get('class-routine-new', 'Admin\Academics\SmClassRoutineNewController@classRoutineSearch')->name('class_routine_new');/* change method for class routine update ->abunayem */
         Route::post('day-wise-class-routine', 'Admin\Academics\SmClassRoutineNewController@dayWiseClassRoutine')->name('dayWise_class_routine');
         Route::get('print-teacher-routine/{teacher_id}', 'Admin\Academics\SmClassRoutineNewController@printTeacherRoutine')->name('print-teacher-routine');
@@ -1148,7 +1149,7 @@ Route::group(['middleware' => ['XSS','subscriptionAccessUrl']], function () {
         //student import
         Route::get('import-student', ['as' => 'import_student', 'uses' => 'SmStudentAdmissionController@importStudent'])->middleware('userRolePermission:63');
         Route::get('download_student_file', ['as' => 'download_student_file', 'uses' => 'SmStudentAdmissionController@downloadStudentFile']);
-        Route::post('student-bulk-store', ['as' => 'student_bulk_store', 'uses' => 'SmStudentAdmissionController@studentBulkStore']);
+        Route::post('student-bulk-store', ['as' => 'student_bulk_store', 'uses' => 'Admin\StudentInfo\SmStudentAdmissionController@studentBulkStore']);
 
         //Ajax Sibling section
         Route::get('ajaxSectionSibling', 'Admin\StudentInfo\SmStudentAjaxController@ajaxSectionSibling');
@@ -1166,6 +1167,8 @@ Route::group(['middleware' => ['XSS','subscriptionAccessUrl']], function () {
         
         // student list
         Route::get('student-list', ['as' => 'student_list', 'uses' => 'Admin\StudentInfo\SmStudentAdmissionController@studentDetails'])->middleware('userRolePermission:64');
+        Route::get('student-settings', ['as' => 'student_settings', 'uses' => 'Admin\StudentInfo\SmStudentAdmissionController@settings'])->middleware('userRolePermission:951');
+        Route::post('student/field/switch',['as' => 'student_switch', 'uses' => 'Admin\StudentInfo\SmStudentAdmissionController@statusUpdate']);
         // student search
 
         Route::post('student-list-search', 'DatatableQueryController@studentDetailsDatatable')->name('student-list-search');
@@ -1314,10 +1317,10 @@ Route::group(['middleware' => ['XSS','subscriptionAccessUrl']], function () {
 
         Route::get('add-staff', ['as' => 'addStaff', 'uses' => 'Admin\Hr\SmStaffController@addStaff'])->middleware('userRolePermission:161');
         Route::post('staff-store', ['as' => 'staffStore', 'uses' => 'Admin\Hr\SmStaffController@staffStore']);
-        Route::post('staff-pic-store', ['as' => 'staffPicStore', 'uses' => 'Admin\Hr\SmStaffController@staffPicStore'])->middleware('userRolePermission:163');
+        Route::post('staff-pic-store', ['as' => 'staffPicStore', 'uses' => 'Admin\Hr\SmStaffController@staffPicStore']);
 
 
-        Route::get('edit-staff/{id}', ['as' => 'editStaff', 'uses' => 'Admin\Hr\SmStaffController@editStaff'])->middleware('userRolePermission:163');
+        Route::get('edit-staff/{id}', ['as' => 'editStaff', 'uses' => 'Admin\Hr\SmStaffController@editStaff']);
         Route::post('update-staff', ['as' => 'staffUpdate', 'uses' => 'Admin\Hr\SmStaffController@staffUpdate']);
         Route::post('staff-profile-update/{id}', ['as' => 'staffProfileUpdate', 'uses' => 'Admin\Hr\SmStaffController@staffProfileUpdate']);
 
@@ -1326,6 +1329,8 @@ Route::group(['middleware' => ['XSS','subscriptionAccessUrl']], function () {
         Route::get('delete-staff-view/{id}', ['as' => 'deleteStaffView', 'uses' => 'Admin\Hr\SmStaffController@deleteStaffView']);
 
         Route::get('deleteStaff/{id}', 'Admin\Hr\SmStaffController@deleteStaff')->name('deleteStaff')->middleware('userRolePermission:164');
+        Route::get('staff-settings', 'Admin\Hr\SmStaffController@settings')->name('staff_settings')->middleware('userRolePermission:952');
+        Route::post('staff/field/switch',['as' => 'staff_switch', 'uses' => 'Admin\Hr\SmStaffController@statusUpdate']);
         Route::get('staff-disable-enable', 'Admin\Hr\SmStaffController@staffDisableEnable');
 
         Route::get('upload-staff-documents/{id}', 'Admin\Hr\SmStaffController@uploadStaffDocuments');
@@ -1953,5 +1958,15 @@ Route::group(['middleware' => ['XSS','subscriptionAccessUrl']], function () {
     //footer widget
     Route::get('custom-links', 'Admin\FrontSettings\SmFooterWidgetController@index')->name('custom-links')->middleware('userRolePermission:527');
     Route::post('custom-links-update', 'Admin\FrontSettings\SmFooterWidgetController@update')->name('custom-links-update')->middleware('userRolePermission:528');
+    //student class assign -abunayem
+    Route::get('student/{id}/assign-class', 'Admin\StudentInfo\SmStudentAdmissionController@assignClass')->name('student.assign-class')->middleware('userRolePermission:527');
+ 
+    Route::post('student/record-delete', 'Admin\StudentInfo\SmStudentAdmissionController@deleteRecord')->name('student.record.delete')->middleware('userRolePermission:527');
+    Route::get('ajax-get-academic','Admin\StudentInfo\SmStudentAdmissionController@getSchool')
+    ->name('get-school')->middleware('userRolePermission:527');
+    Route::post('student/record-store', 'Admin\StudentInfo\SmStudentAdmissionController@recordStore')->name('student.record.store');
+    Route::get('student/assign-edit/{student_id}/{record_id}', 'Admin\StudentInfo\SmStudentAdmissionController@recordEdit')->name('student_assign_edit');
+    Route::post('student/record-update', 'Admin\StudentInfo\SmStudentAdmissionController@recordUpdate')->name('student.record.update');
+    Route::get('student/check-exit', 'Admin\StudentInfo\SmStudentAdmissionController@checkExitStudent');
 
 });

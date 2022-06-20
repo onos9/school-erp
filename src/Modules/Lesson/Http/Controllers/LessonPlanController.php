@@ -2,27 +2,28 @@
 
 namespace Modules\Lesson\Http\Controllers;
 
-use App\SmAssignSubject;
 use App\SmClass;
-use App\SmClassRoom;
-use App\SmClassRoutineUpdate;
-use App\SmClassSection;
-use App\SmClassTime;
-use App\SmGeneralSettings;
-use App\SmSection;
 use App\SmStaff;
+use App\SmSection;
 use App\SmSubject;
 use App\SmWeekend;
-use Brian2694\Toastr\Facades\Toastr;
 use Carbon\Carbon;
+use App\SmClassRoom;
+use App\SmClassTime;
+use App\SmClassSection;
+use App\SmAssignSubject;
 use Carbon\CarbonPeriod;
+use App\SmGeneralSettings;
 use Illuminate\Http\Request;
+use App\SmClassRoutineUpdate;
 use Illuminate\Routing\Controller;
+use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
+use Modules\Lesson\Entities\SmLesson;
 use Illuminate\Support\Facades\Validator;
 use Modules\Lesson\Entities\LessonPlanner;
-use Modules\Lesson\Entities\SmLesson;
 use Modules\Lesson\Entities\SmLessonTopic;
+use Modules\Lesson\Entities\LessonPlanTopic;
 use Modules\Lesson\Entities\SmLessonTopicDetail;
 
 class LessonPlanController extends Controller
@@ -126,38 +127,23 @@ class LessonPlanController extends Controller
     {
 
         try {
-            if ($request->file('photo') != "") {
-                $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
-                $file = $request->file('photo');
-                $fileSize = filesize($file);
-                $fileSizeKb = ($fileSize / 1000000);
-                if ($fileSizeKb >= $maxFileSize) {
-                    Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
-                    return redirect()->back();
-                }
-                $file = $request->file('photo');
-                $document_photo = 'lesson-' . md5($file->getClientOriginalName() . time()) . "." . $file->getClientOriginalExtension();
-                $file->move('Modules/Lesson/Resources/assets/document', $document_photo);
-                $document_photo = 'Modules/Lesson/Resources/assets/document/' . $document_photo;
-            }
-            $topic = SmLessonTopicDetail::find($request->topic);
-            $topic_id = $topic->topic_id;
+            //  return  $request->all();
+            $path = "Modules/Lesson/Resources/assets/document/";          
 
             $lesson = SmLesson::find($request->lesson);
             $lesson_id = $lesson->id;
-
+            
             $lessonPlanner = new LessonPlanner;
             $lessonPlanner->day = $request->day;
             $lessonPlanner->lesson_id = $lesson_id;
-            $lessonPlanner->topic_id = $topic_id;
-
             $lessonPlanner->lesson_detail_id = $request->lesson;
-            $lessonPlanner->topic_detail_id = $request->topic;
-            $lessonPlanner->sub_topic = $request->sub_topic;
-            $lessonPlanner->lecture_youube_link = $request->youtube_link;
-            if ($request->file('photo') != "") {
-                $lessonPlanner->attachment = $document_photo;
+            if ($request->customize !="customize") {
+                $lessonPlanner->topic_id = $request->topic;
+                $lessonPlanner->sub_topic = $request->sub_topic;
+                $lessonPlanner->topic_detail_id = $request->topic;
             }
+            $lessonPlanner->lecture_youube_link = $request->youtube_link;
+            $lessonPlanner->attachment = fileUpload($request->file('photo'), $path);           
             $lessonPlanner->teaching_method = $request->teaching_method;
             $lessonPlanner->general_objectives = $request->general_Objectives;
             $lessonPlanner->previous_knowlege = $request->previous_knowledge;
@@ -176,10 +162,22 @@ class LessonPlanController extends Controller
             $lessonPlanner->academic_id = getAcademicId();
             $lessonPlanner->save();
 
+            if ($request->customize=="customize") {
+                foreach ($request->topic as $key=>$topic) {
+                    if ($topic !='') {
+                        $LessonPlanTopic  = new LessonPlanTopic;
+                        $LessonPlanTopic->topic_id = $topic;
+                        $LessonPlanTopic->sub_topic_title = $request->sub_topic[$key] ?? '';
+                        $LessonPlanTopic->lesson_planner_id = $lessonPlanner->id;
+                        $LessonPlanTopic->save();
+                    }
+                }
+            }
+
             Toastr::success('Operation successful', 'Success');
             return redirect()->back();
         } catch (\Exception $e) {
-
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -224,7 +222,7 @@ class LessonPlanController extends Controller
             $subjects = SmAssignSubject::where('class_id', $class_id)->where('section_id', $section_id)->get();
             return view('lesson::lessonPlan.view_lesson_plan', compact('lessonPlanDetail', 'lesson_date', 'rooms', 'lessons', 'subjects', 'day', 'class_time_id', 'class_id', 'section_id', 'assinged_subject', 'assinged_room', 'subject_id', 'room_id', 'assigned_id', 'teacher_detail'));
         } catch (\Exception $e) {
-          
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -257,6 +255,7 @@ class LessonPlanController extends Controller
             $lessonPlanDetail = LessonPlanner::find($lessonPlan_id);
             $topic = SmLessonTopicDetail::where('lesson_id', $lessonPlanDetail->lesson_detail_id)
                 ->get();
+           
             $lessons = SmLesson::where('class_id', $class_id)
                 ->where('section_id', $section_id)
                 ->where('subject_id', $subject_id)
@@ -281,46 +280,31 @@ class LessonPlanController extends Controller
             $subjects = SmAssignSubject::where('class_id', $class_id)->where('section_id', $section_id)->get();
             return view('lesson::lessonPlan.edit_lesson_planner_form', compact('lessonPlanDetail', 'topic', 'lesson_date', 'rooms', 'lessons', 'subjects', 'day', 'class_time_id', 'class_id', 'section_id', 'assinged_subject', 'assinged_room', 'subject_id', 'room_id', 'assigned_id', 'teacher_detail'));
         } catch (\Exception $e) {
-           
+          
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
     }
     public function updateLessonPlan(Request $request)
     {
+        //   return $request->all();
 
         try {
-            if ($request->file('photo') != "") {
-                $maxFileSize = generalSetting()->file_size;
-                $file = $request->file('photo');
-                $fileSize = filesize($file);
-                $fileSizeKb = ($fileSize / 1000000);
-                if ($fileSizeKb >= $maxFileSize) {
-                    Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
-                    return redirect()->back();
-                }
-                $file = $request->file('photo');
-                $document_photo = 'lesson-' . md5($file->getClientOriginalName() . time()) . "." . $file->getClientOriginalExtension();
-                $file->move('Modules/Lesson/Resources/assets/document', $document_photo);
-                $document_photo = $document_photo;
-            }
-            $topic = SmLessonTopicDetail::find($request->topic);
-            $topic_id = $topic->topic_id;
 
-            $lesson = SmLesson::find($request->lesson);
-            $lesson_id = $lesson->lesson_id;
+            $path = 'Modules/Lesson/Resources/assets/document/';
 
             $lessonPlanner = LessonPlanner::find($request->lessonPlan_id);
 
-            $lessonPlanner->lesson_id = $lesson_id;
-            $lessonPlanner->topic_id = $topic_id;
-
-            $lessonPlanner->lesson_detail_id = $request->lesson;
-            $lessonPlanner->topic_detail_id = $request->topic;
-            $lessonPlanner->sub_topic = $request->sub_topic;
+            $lessonPlanner->lesson_id = $request->lesson;
+            if ($request->customize != 'customize') {
+                $lessonPlanner->topic_id = $request->topic;
+                $lessonPlanner->lesson_detail_id = $request->lesson;
+                $lessonPlanner->topic_detail_id = $request->topic;
+                $lessonPlanner->sub_topic = $request->sub_topic;
+            }
             $lessonPlanner->lecture_youube_link = $request->youtube_link;
             if ($request->file('photo') != "") {
-                $lessonPlanner->attachment = $document_photo;
+                $lessonPlanner->attachment = fileUpdate($lessonPlanner->attachment, $request->file('photo'),$path);
             }
 
             $lessonPlanner->teaching_method = $request->teaching_method;
@@ -334,9 +318,22 @@ class LessonPlanController extends Controller
             $lessonPlanner->school_id = Auth::user()->school_id;
             $lessonPlanner->academic_id = getAcademicId();
             $lessonPlanner->save();
+            LessonPlanTopic::where('lesson_planner_id', $request->lessonPlan_id)->delete();
+            if ($request->customize=="customize") {
+                foreach ($request->topic as $key=>$topic) {
+                    if ($topic !='') {
+                        $LessonPlanTopic  = new LessonPlanTopic;
+                        $LessonPlanTopic->topic_id = $topic;
+                        $LessonPlanTopic->sub_topic_title = $request->sub_topic[$key] ?? '';
+                        $LessonPlanTopic->lesson_planner_id = $lessonPlanner->id;
+                        $LessonPlanTopic->save();
+                    }
+                }
+            }
             Toastr::success('Operation successful', 'Success');
             return redirect()->back();
         } catch (\Exception $e) {
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -400,7 +397,7 @@ class LessonPlanController extends Controller
         try {
             $lessons = SmLesson::groupBy('lesson_title')->get();
 
-            $topics_detail = SmLessonTopicDetail::with('lesson_title', 'lessonPlan')->get();
+            $topics_detail = SmLessonTopicDetail::with('lesson_title', 'lessonPlan','lessonPlan.lessonDetail')->get();
 
             return view('lesson::lessonPlan.manage_lesson', compact('lessons', 'topics_detail'));
         } catch (\Exception $e) {
@@ -705,7 +702,9 @@ class LessonPlanController extends Controller
     public function loadDefault()
     {
         $data['this_week'] = $weekNumber = date("W");
-        $data['period'] = CarbonPeriod::create(Carbon::now()->startOfWeek(Carbon::SATURDAY)->format('Y-m-d'), Carbon::now()->endOfWeek(Carbon::FRIDAY)->format('Y-m-d'));
+        $start_day = WEEK_DAYS[generalSetting()->week_start_id ?? 1];
+        $end_day = $start_day==0 ? 6 : $start_day-1;
+        $data['period'] = CarbonPeriod::create(Carbon::now()->startOfWeek($start_day)->format('Y-m-d'), Carbon::now()->endOfWeek($end_day)->format('Y-m-d'));
         $data['dates'] = [];
         foreach ($data['period'] as $date) {
             $data['dates'][] = $date->format('Y-m-d');
@@ -751,6 +750,45 @@ class LessonPlanController extends Controller
             return redirect()->back();
 
         }
+    }
+
+    public function deleteLessonTopic(Request $request)
+    {
+        $id = $request->lessonplantopic_id;
+        if ($request->filled('lessonplantopic_id') && $request->filled('lessonPlan_id')) {
+            LessonPlanTopic::where('id', $id)->delete();
+            return response()->json(['success'=>'Operation Success']);
+        }
+        return response()->json(['failed'=>'Operation Failed']);
+    }
+
+    public function setting()
+    {
+
+        try {
+            return view('lesson::lessonPlan.setting');
+        } catch (\Exception $e) {
+
+            Toastr::error('Operation Failed', 'Failed');
+            return redirect()->back();
+        }
+
+    }
+
+    public function postSetting(Request $request)
+    {
+        try {
+            $general_settings = SmGeneralSettings::where('school_id', auth()->user()->school_id)->first();
+            $general_settings->sub_topic_enable = $request->sub_topic_enable;
+            $general_settings->save();
+            session()->forget('generalSetting');
+            Toastr::success('Operation successful', 'Success');
+            return redirect()->back();
+        } catch (\Exception $e) {
+            Toastr::error('Operation Failed', 'Failed');
+            return redirect()->back();
+        }
+
     }
 
 }

@@ -40,7 +40,7 @@ class AjaxController extends Controller
     //get topic from lesson 
     public function ajaxSelectTopic(Request $request){
         try {
-         
+           
             $topic_all=SmLessonTopicDetail::where('lesson_id', $request->lesson_id)
                                         ->distinct('topic_id')
                                         ->get();
@@ -55,7 +55,22 @@ class AjaxController extends Controller
         }
     }
 
-
+    public function ajaxGetTopicRow(Request $request)
+    {
+        $topics = SmLessonTopicDetail::where('lesson_id', $request->lesson_id)
+                                        ->distinct('topic_id')
+                                        ->get();
+        return view('lesson::topic_row', compact('topics'));
+    }
+    //edit lesson plan
+    public function getTopicRow($lessonPlanDetail)
+    {
+       return $topics = SmLessonTopicDetail::where('lesson_id', $lessonPlanDetail->lesson_detail_id)
+                                        ->distinct('topic_id')
+                                        ->get();
+                                     
+        return view('lesson::topic_row', compact('topics', 'lessonPlanDetail'));
+    }
     public function getSubject(Request $request){
 
 

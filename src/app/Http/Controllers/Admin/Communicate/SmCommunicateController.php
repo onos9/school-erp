@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Notifications\CommunicateNotification;
 use Modules\RolePermission\Entities\InfixRole;
 use App\Http\Requests\Admin\Communicate\SendEmailSmsRequest;
-
+use App\Models\StudentRecord;
 
 class SmCommunicateController extends Controller
 {
@@ -239,9 +239,13 @@ class SmCommunicateController extends Controller
                         $to_email = [];
                         $to_mobile = [];
                         foreach ($selectedSections as $key => $value) {
+                            $student_ids = StudentRecord::where('class_id', $class_id)
+                                            ->where('section_id', $value)
+                                            ->where('academic_id', getAcademicId())
+                                            ->where('school_id', auth()->user()->school_id)
+                                            ->pluck('student_id')->unique();
                             $students = SmStudent::select('email', 'full_name', 'mobile')
-                                ->where('class_id', $class_id)
-                                ->where('section_id', $value)
+                                ->whereIn('id', $student_ids)
                                 ->where('active_status', 1)
                                 ->get();
 
@@ -266,9 +270,13 @@ class SmCommunicateController extends Controller
                         $class_id = $request->class_id;
                         $selectedSections = $request->message_to_section;
                         foreach ($selectedSections as $key => $value) {
+                            $student_ids = StudentRecord::where('class_id', $class_id)
+                                            ->where('section_id', $value)
+                                            ->where('academic_id', getAcademicId())
+                                            ->where('school_id', auth()->user()->school_id)
+                                            ->pluck('student_id')->unique();
                             $students = SmStudent::select('email', 'full_name', 'mobile')
-                                ->where('class_id', $class_id)
-                                ->where('section_id', $value)
+                                ->whereIn('id', $student_ids)
                                 ->where('active_status', 1)
                                 ->get();
 

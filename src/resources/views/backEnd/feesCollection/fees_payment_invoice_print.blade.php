@@ -37,121 +37,121 @@
     border: 1px solid #726E6D;
     padding: .3rem;
     text-align: center;
-  }
-  th{
-    border: 1px solid #726E6D;
-    text-transform: capitalize;
-    text-align: center;
-    padding: .5rem;
-  }
-  thead{
-    font-weight:bold;
-    text-align:center;
-    color: #222;
-    font-size: 10px
-  }
-  .custom_table{
-    width: 100%;
-  }
-  table.custom_table thead th {
-    padding-right: 0;
-    padding-left: 0;
-  }
-  table.custom_table thead tr > th {
-    border: 0;
-    padding: 0;
-}
-table.custom_table thead tr th .fees_title{
-  font-size: 12px;
-  font-weight: 600;
-  border-top: 1px solid #726E6D;
-  padding-top: 10px;
-  margin-top: 10px;
-}
-.border-top{
-  border-top: 0 !important;
-}
-  .custom_table th ul li {
-    display: flex;
-    justify-content: space-between;
-  }
-  .custom_table th ul li p {
-    margin-bottom: 5px;
-    font-weight: 500;
-    font-size: 12px;
-}
-tbody td p{
-  text-align: right;
-}
-tbody td{
-  padding: 0.3rem;
-}
-table{
-  border-spacing: 10px;
-  width: 95%;
-  margin: auto;
-}
-.fees_pay{
-  text-align: center;
-}
-.border-0{
-  border: 0 !important;
-}
-.copy_collect{
-  text-align: center;
-  font-weight: 500;
-  color: #000;
-}
+    }
+      th{
+        border: 1px solid #726E6D;
+        text-transform: capitalize;
+        text-align: center;
+        padding: .5rem;
+      }
+      thead{
+        font-weight:bold;
+        text-align:center;
+        color: #222;
+        font-size: 10px
+      }
+      .custom_table{
+        width: 100%;
+      }
+      table.custom_table thead th {
+        padding-right: 0;
+        padding-left: 0;
+      }
+      table.custom_table thead tr > th {
+        border: 0;
+        padding: 0;
+      }
+      table.custom_table thead tr th .fees_title{
+        font-size: 12px;
+        font-weight: 600;
+        border-top: 1px solid #726E6D;
+        padding-top: 10px;
+        margin-top: 10px;
+      }
+      .border-top{
+        border-top: 0 !important;
+      }
+        .custom_table th ul li {
+          display: flex;
+          justify-content: space-between;
+        }
+        .custom_table th ul li p {
+          margin-bottom: 5px;
+          font-weight: 500;
+          font-size: 12px;
+      }
+      tbody td p{
+        text-align: right;
+      }
+      tbody td{
+        padding: 0.3rem;
+      }
+      table{
+        border-spacing: 10px;
+        width: 95%;
+        margin: auto;
+      }
+      .fees_pay{
+        text-align: center;
+      }
+      .border-0{
+        border: 0 !important;
+      }
+      .copy_collect{
+        text-align: center;
+        font-weight: 500;
+        color: #000;
+      }
 
-.copyies_text{
-  display: flex;
-  justify-content: space-between;
-  margin: 10px 0;
-}
-.copyies_text li{
-  text-transform: capitalize;
-  color: #000;
-  font-weight: 500;
-  border-top: 1px dashed #ddd;
-}
-.school_name{
-  font-size: 14px;
-  font-weight: 600;
-  }
-  .print_btn{
-    float:right;
-    padding: 20px;
-    font-size: 12px;
-  }
-  .fees_book_title{
-    display: inline-block;
-    width: 100%;
-    text-align: center;
-    font-size: 12px;
-    margin-top: 5px;
-    border-top: 1px solid #ddd;
-    padding: 5px;
-  }
-.footer{
-  width: 95%;
-  margin: auto;
-  display: flex;
-  justify-content: space-between;
-  position: fixed;
-  bottom: 30px;
-  margin: auto;
-  left: 0;
-  right: 0;
-}
-.footer .footer_widget{
-  width: 30%;
-}
-.footer .footer_widget .copyies_text{
-  justify-content: space-between;
-}
-</style>
-<style type="text/css" media="print">
-    @page { size: A4 landscape; }
+      .copyies_text{
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+      }
+      .copyies_text li{
+        text-transform: capitalize;
+        color: #000;
+        font-weight: 500;
+        border-top: 1px dashed #ddd;
+      }
+      .school_name{
+        font-size: 14px;
+        font-weight: 600;
+        }
+      .print_btn{
+        float:right;
+        padding: 20px;
+        font-size: 12px;
+      }
+      .fees_book_title{
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        font-size: 12px;
+        margin-top: 5px;
+        border-top: 1px solid #ddd;
+        padding: 5px;
+      }
+      .footer{
+        width: 95%;
+        margin: auto;
+        display: flex;
+        justify-content: space-between;
+        position: fixed;
+        bottom: 30px;
+        margin: auto;
+        left: 0;
+        right: 0;
+      }
+      .footer .footer_widget{
+        width: 30%;
+      }
+      .footer .footer_widget .copyies_text{
+        justify-content: space-between;
+      }
+  </style>
+  <style type="text/css" media="print">
+      @page { size: A4 landscape; }
   </style>
   </head>
   <script>
@@ -187,7 +187,7 @@ table{
               <ul>
                 <li>
                   <p>
-                    @lang('student.admission_no'): {{@$student->admission_no}}
+                    @lang('student.admission_no'): {{@$student->studentDetail->admission_no}}
                   </p> 
                   <p>
                     @lang('common.date'): {{date('d/m/Y')}}
@@ -195,7 +195,7 @@ table{
                 </li>
                 <li>
                   <p>
-                    @lang('student.student_name'): {{@$student->full_name}} 
+                    @lang('student.student_name'): {{@$student->studentDetail->full_name}} 
                   </p>
                 </li>
                 <li>
@@ -203,7 +203,7 @@ table{
                     @lang('common.class'): {{@$student->class->class_name}}
                   </p> 
                   <p>
-                    @lang('student.roll'):{{@$student->roll_no}}
+                    @lang('student.roll'):{{@$student->studentDetail->roll_no}}
                   </p>
                 </li>
                 <li>
@@ -234,7 +234,7 @@ table{
                   <ul>
                     <li>
                       <p>
-                        @lang('student.admission_no'): {{@$student->admission_no}}
+                        @lang('student.admission_no'): {{@$student->studentDetail->admission_no}}
                       </p> 
                       <p>
                         @lang('common.date'): {{date('d/m/Y')}}
@@ -242,7 +242,7 @@ table{
                     </li>
                     <li>
                       <p>
-                        @lang('student.student_name'): {{@$student->full_name}} 
+                        @lang('student.student_name'): {{@$student->studentDetail->full_name}} 
                       </p>
                     </li>
                     <li>
@@ -250,7 +250,7 @@ table{
                         @lang('common.class'): {{@$student->class->class_name}}
                       </p> 
                       <p>
-                        @lang('student.roll'):{{@$student->roll_no}}
+                        @lang('student.roll'):{{@$student->studentDetail->roll_no}}
                       </p>
                     </li>
                     <li>
@@ -282,7 +282,7 @@ table{
                 <ul>
                   <li>
                     <p>
-                      @lang('student.admission_no'): {{@$student->admission_no}}
+                      @lang('student.admission_no'): {{@$student->studentDetail->admission_no}}
                     </p> 
                     <p>
                       @lang('common.date'): {{date('d/m/Y')}}
@@ -290,7 +290,7 @@ table{
                   </li>
                   <li>
                     <p>
-                      @lang('student.student_name'): {{@$student->full_name}} 
+                      @lang('student.student_name'): {{@$student->studentDetail->full_name}} 
                     </p>
                   </li>
                   <li>
@@ -298,7 +298,7 @@ table{
                       @lang('common.class'): {{@$student->class->class_name}}
                     </p> 
                     <p>
-                      @lang('student.roll'):{{@$student->roll_no}}
+                      @lang('student.roll'):{{@$student->studentDetail->roll_no}}
                     </p>
                   </li>
                   <li>
@@ -345,10 +345,10 @@ table{
               $total_discount += $discount_amount;
               $student_id = $fees_assigned->student_id;
               //Sum of total paid amount of single fees type
-              $paid = \App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id,$fees_assigned->student_id)->sum('amount');
+              $paid = \App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id,$fees_assigned->student_id, $fees_assigned->record_id)->sum('amount');
               $total_grand_paid += $paid;
               //Sum of total fine for single fees type
-            $fine = \App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id,$fees_assigned->student_id)->sum('fine');
+            $fine = \App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id,$fees_assigned->student_id, $fees_assigned->record_id)->sum('fine');
             $total_fine += $fine;
             $total_paid = $discount_amount + $paid;
           @endphp

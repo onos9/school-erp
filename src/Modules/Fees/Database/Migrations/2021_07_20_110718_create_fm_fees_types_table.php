@@ -18,6 +18,8 @@ class CreateFmFeesTypesTable extends Migration
             $table->string('name', 230)->nullable();
             $table->text('description')->nullable();
             $table->integer('fees_group_id')->nullable()->default(1)->unsigned();
+            $table->string('type')->nullable()->default("fees")->comment('fees, lms');
+            $table->integer('course_id')->nullable()->comment('Only For Lms');
             $table->integer('created_by')->nullable()->default(1)->unsigned();
             $table->integer('updated_by')->nullable()->default(1)->unsigned();
             $table->integer('school_id')->nullable()->default(1)->unsigned();

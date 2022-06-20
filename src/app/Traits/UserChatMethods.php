@@ -17,7 +17,7 @@ trait UserChatMethods{
     {
          
 
-         if (\Request::is('chat/*')) {
+         if (\Request::is('chat/*') || \Request::is('api/chat/*')) {
             if ($this->role_id){
                 // return $this->getProfileAttribute();
                 if($this->role_id == 2){
@@ -40,7 +40,7 @@ trait UserChatMethods{
 
     public function activeStatus()
     {
-        return $this->hasOne(Status::class);
+        return $this->hasOne(Status::class)->withDefault();
     }
 
     public function groups()

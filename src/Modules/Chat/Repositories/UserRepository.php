@@ -50,13 +50,15 @@ class UserRepository {
 
     public function blockAction($type, $user)
     {
+        $block = BlockUser::where('block_by', auth()->id())->where('block_to', $user)->first();
         if ($type == 'block'){
-            BlockUser::create([
-                'block_by' => auth()->id(),
-                'block_to' => $user
-            ]);
+            if (!$block) {
+                BlockUser::create([
+                    'block_by' => auth()->id(),
+                    'block_to' => $user
+                ]);
+            }
         }else{
-            $block = BlockUser::where('block_by', auth()->id())->where('block_to', $user)->first();
             $block->delete();
         }
 

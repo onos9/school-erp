@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Console;
- 
+
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Modules\Lead\Console\ReminderLead;
@@ -12,10 +12,11 @@ class Kernel extends ConsoleKernel
 {
     public function __construct(Application $app, Dispatcher $events)
     {
-        parent::__construct($app, $events);
-        if (moduleStatusCheck("Lead")==true) {
-           $this->commands = array_merge($this->commands, [ReminderLead::class]);
+
+        if (moduleStatusCheck("Lead") == true) {
+            $this->commands = array_merge($this->commands, [ReminderLead::class]);
         }
+        parent::__construct($app, $events);
     }
 
     /**
@@ -23,20 +24,20 @@ class Kernel extends ConsoleKernel
      *
      * @var array
      */
-   
+
     protected $commands = [
         Commands\DemoCron::class
     ];
 
 
-    protected $PurchaseVerificationMiddleware =[
+    protected $PurchaseVerificationMiddleware = [
         'purchaseVerification' => \App\Http\Middleware\PurchaseVerification::class,
     ];
 
     //    protected $middleware = [
     //     \App\http\Middleware\CustomerMiddleware::class,
     // ];
-    
+
     /**
      * Define the application's command schedule.
      *
@@ -50,14 +51,18 @@ class Kernel extends ConsoleKernel
 
         /**
          *  Example command of cron job
-        * /opt/cpanel/ea-php74/root/usr/bin/php /home/uxseqmbj/public_html/infix_5/artisan absent_notification:sms > /dev/null 2>&1
-        */
+         * /opt/cpanel/ea-php74/root/usr/bin/php /home/uxseqmbj/public_html/infix_5/artisan absent_notification:sms > /dev/null 2>&1
+         */
         // $schedule->command('absent_notification:sms')->everyMinute();
         // $schedule->command('absent_notification:sms')->dailyAt(’13:00′);
 
         $schedule->command('queue:work')->everyMinute()->withoutOverlapping();
-        if (moduleStatusCheck("Lead")==true) {
+        if (moduleStatusCheck("Lead") == true) {
             $schedule->command('lead:reminder')->everyTenMinutes()->withoutOverlapping();
+        }
+
+        if (config('app.app_sync')) {
+            $schedule->command('reset:application')->dailyAt('02:00 pm')->withoutOverlapping();
         }
     }
 

@@ -14,6 +14,7 @@ Author E-mail: info@spondonit.com
 =====================================================================*/
 @import url("https://fonts.googleapis.com/css?family=Poppins:300,400,400i,500,600");
 @import url("https://fonts.googleapis.com/css?family=Poppins:300,400,400i,500,600");
+@import url("https://fonts.googleapis.com/css?family=Noto+Kufi+Arabic:300,400,400i,500,600");
 /* line 16, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/style.scss */
 .rtl {
   text-align: right;
@@ -74,8 +75,31 @@ Author E-mail: info@spondonit.com
 }
 
 /* line 38, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_predefine.scss */
-.common-box-shadow, .primary-btn:hover, .primary-btn.fix-gr-bg:hover, .nice-select .list, .sms-accordion .card, .school-table .dropdown .dropdown-toggle:hover, .school-table .dropdown .dropdown-toggle:focus, .school-table .dropdown .dropdown-menu, .bootstrap-datetimepicker-widget table td.hour:hover, .bootstrap-datetimepicker-widget table td.minute:hover, .bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up:hover:after, .bootstrap-datetimepicker-widget table td span.glyphicon-chevron-down:hover:after, .datepicker.dropdown-menu, .datepicker table tr td.active.day, .datepicker table tr td.day:hover, .datepicker thead tr:first-child th:hover, .pagination .page-link:hover, .common-calendar .fc-month-view .fc-day.fc-widget-content.fc-today, .common-calendar .fc-state-default.fc-corner-left:hover,
-.common-calendar .fc-button.fc-state-default:hover, .admin .navbar .right-navbar .dropdown .badge, .single-cms-box:hover .single-cms {
+.common-box-shadow,
+.primary-btn:hover,
+.primary-btn.fix-gr-bg:hover,
+.nice-select .list,
+.sms-accordion .card,
+.school-table .dropdown .dropdown-toggle:hover,
+.school-table .dropdown .dropdown-toggle:focus,
+.school-table .dropdown .dropdown-menu,
+.bootstrap-datetimepicker-widget table td.hour:hover,
+.bootstrap-datetimepicker-widget table td.minute:hover,
+.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up:hover:after,
+.bootstrap-datetimepicker-widget
+  table
+  td
+  span.glyphicon-chevron-down:hover:after,
+.datepicker.dropdown-menu,
+.datepicker table tr td.active.day,
+.datepicker table tr td.day:hover,
+.datepicker thead tr:first-child th:hover,
+.pagination .page-link:hover,
+.common-calendar .fc-month-view .fc-day.fc-widget-content.fc-today,
+.common-calendar .fc-state-default.fc-corner-left:hover,
+.common-calendar .fc-button.fc-state-default:hover,
+.admin .navbar .right-navbar .dropdown .badge,
+.single-cms-box:hover .single-cms {
   box-shadow: 0px 10px 20px rgba(108, 39, 255, 0.3);
 }
 
@@ -85,7 +109,17 @@ Author E-mail: info@spondonit.com
 }
 
 /* line 46, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_predefine.scss */
-.white-text, .bootstrap-datetimepicker-widget table td.hour:hover, .bootstrap-datetimepicker-widget table td.minute:hover, .bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up:hover:after, .bootstrap-datetimepicker-widget table td span.glyphicon-chevron-down:hover:after, .datepicker table tr td.active.day, .datepicker table tr td.day:hover, .datepicker thead tr:first-child th:hover {
+.white-text,
+.bootstrap-datetimepicker-widget table td.hour:hover,
+.bootstrap-datetimepicker-widget table td.minute:hover,
+.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up:hover:after,
+.bootstrap-datetimepicker-widget
+  table
+  td
+  span.glyphicon-chevron-down:hover:after,
+.datepicker table tr td.active.day,
+.datepicker table tr td.day:hover,
+.datepicker thead tr:first-child th:hover {
   color: #ffffff;
 }
 
@@ -154,9 +188,33 @@ Author E-mail: info@spondonit.com
 /* Start Gradient Area css
 ============================================================================================ */
 /* line 100, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_predefine.scss */
-.gradient-bg, .primary-btn.white:hover, .nice-select.tr-bg:hover, .school-table .dropdown .dropdown-toggle:hover, .school-table .dropdown .dropdown-toggle:focus, .bootstrap-datetimepicker-widget table td.hour:hover, .bootstrap-datetimepicker-widget table td.minute:hover, .bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up:hover:after, .bootstrap-datetimepicker-widget table td span.glyphicon-chevron-down:hover:after, .datepicker table tr td.active.day, .datepicker table tr td.day:hover, .datepicker thead tr:first-child th:hover, .pagination .page-link:hover, .common-calendar .fc-month-view .fc-day.fc-widget-content.fc-today, .common-calendar .fc-state-default.fc-corner-left:hover,
-.common-calendar .fc-button.fc-state-default:hover, .admin .navbar .right-navbar .dropdown .badge, .admin .navbar .right-navbar .dropdown .primary-btn, .student-activities .single-activity .title:before, .single-cms-box:hover .single-cms .overlay, .client .events-item:hover .card .card-body .date, .client.light .overview-area .nav-tabs .nav-link:hover,
-.client.light .overview-area .nav-tabs .nav-link.active, .client.color .overview-area .nav-tabs .nav-link:hover,
+.gradient-bg,
+.primary-btn.white:hover,
+.nice-select.tr-bg:hover,
+.school-table .dropdown .dropdown-toggle:hover,
+.school-table .dropdown .dropdown-toggle:focus,
+.bootstrap-datetimepicker-widget table td.hour:hover,
+.bootstrap-datetimepicker-widget table td.minute:hover,
+.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up:hover:after,
+.bootstrap-datetimepicker-widget
+  table
+  td
+  span.glyphicon-chevron-down:hover:after,
+.datepicker table tr td.active.day,
+.datepicker table tr td.day:hover,
+.datepicker thead tr:first-child th:hover,
+.pagination .page-link:hover,
+.common-calendar .fc-month-view .fc-day.fc-widget-content.fc-today,
+.common-calendar .fc-state-default.fc-corner-left:hover,
+.common-calendar .fc-button.fc-state-default:hover,
+.admin .navbar .right-navbar .dropdown .badge,
+.admin .navbar .right-navbar .dropdown .primary-btn,
+.student-activities .single-activity .title:before,
+.single-cms-box:hover .single-cms .overlay,
+.client .events-item:hover .card .card-body .date,
+.client.light .overview-area .nav-tabs .nav-link:hover,
+.client.light .overview-area .nav-tabs .nav-link.active,
+.client.color .overview-area .nav-tabs .nav-link:hover,
 .client.color .overview-area .nav-tabs .nav-link.active {
   background: -webkit-linear-gradient(90deg, #7c32ff 0%, #c738d8 100%);
   background: -moz-linear-gradient(90deg, #7c32ff 0%, #c738d8 100%);
@@ -212,7 +270,7 @@ Author E-mail: info@spondonit.com
   display: inline-block;
   color: #415094;
   letter-spacing: 1px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", "Noto Kufi Arabic", sans-serif;
   font-size: 12px;
   font-weight: 500;
   line-height: 40px;
@@ -307,8 +365,18 @@ Author E-mail: info@spondonit.com
 
 /* line 198, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_predefine.scss */
 .primary-btn.fix-gr-bg {
-  background: -webkit-linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
-  background: -moz-linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
+  background: -webkit-linear-gradient(
+    90deg,
+    #7c32ff 0%,
+    #c738d8 51%,
+    #7c32ff 100%
+  );
+  background: -moz-linear-gradient(
+    90deg,
+    #7c32ff 0%,
+    #c738d8 51%,
+    #7c32ff 100%
+  );
   background: -o-linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
   background: -ms-linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
   background: linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
@@ -570,7 +638,7 @@ textarea.primary-input {
 .common-checkbox:checked + label:before {
   content: "\e64d";
   border: 0px;
-  font-family: 'themify';
+  font-family: "themify";
   border-radius: 2px;
   display: inline-block;
   font-size: 16px;
@@ -631,7 +699,7 @@ textarea.primary-input {
 /* line 445, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_predefine.scss */
 .nice-select:after {
   content: "\e62a";
-  font-family: 'themify';
+  font-family: "themify";
   border: 0;
   transform: rotate(0deg);
   margin-top: -16px;
@@ -779,7 +847,7 @@ textarea.primary-input {
 
 /* line 541, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_predefine.scss */
 .nice-select.bb:before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   bottom: -1px;
@@ -869,7 +937,10 @@ textarea.primary-input {
 }
 
 /* line 612, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_predefine.scss */
-.select2-container-multi .select2-choices .select2-search-choice .select2-search-choice-close {
+.select2-container-multi
+  .select2-choices
+  .select2-search-choice
+  .select2-search-choice-close {
   left: 6px;
   height: 16px;
   min-width: 17px;
@@ -878,7 +949,10 @@ textarea.primary-input {
 }
 
 /* line 618, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_predefine.scss */
-.select2-container-multi .select2-choices .select2-search-choice .select2-search-choice-close:hover {
+.select2-container-multi
+  .select2-choices
+  .select2-search-choice
+  .select2-search-choice-close:hover {
   background-position: right 0px;
 }
 
@@ -1010,7 +1084,7 @@ html[dir="rtl"] .main-title h3 {
 body.admin {
   line-height: 24px;
   font-size: 13px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", "Noto Kufi Arabic", sans-serif;
   font-weight: 400;
   color: #828bb2;
   background: url(../../img/body-bg.jpg) no-repeat center;
@@ -1100,7 +1174,8 @@ a {
 }
 
 /* line 68, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_reset.scss */
-a:hover, a:focus {
+a:hover,
+a:focus {
   text-decoration: none;
   outline: none;
 }
@@ -1593,7 +1668,8 @@ html[dir="rtl"] .to-do-list.up_buttom {
 }
 
 /* line 15, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_component.scss */
-.white-box.single-summery:before, .white-box.single-summery:after {
+.white-box.single-summery:before,
+.white-box.single-summery:after {
   content: "";
   background: transparent;
   min-height: 100px;
@@ -1726,7 +1802,8 @@ html[dir="rtl"] .to-do-list.up_buttom {
 }
 
 /* line 120, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_component.scss */
-.school-table .dropdown .dropdown-toggle:hover, .school-table .dropdown .dropdown-toggle:focus {
+.school-table .dropdown .dropdown-toggle:hover,
+.school-table .dropdown .dropdown-toggle:focus {
   color: #ffffff;
   border: 1px solid transparent;
 }
@@ -1922,7 +1999,8 @@ html[dir="rtl"] .to-do-list.up_buttom {
 }
 
 /* line 270, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_component.scss */
-.bootstrap-datetimepicker-widget table td.hour, .bootstrap-datetimepicker-widget table td.minute {
+.bootstrap-datetimepicker-widget table td.hour,
+.bootstrap-datetimepicker-widget table td.minute {
   -webkit-transition: all 0.4s ease 0s;
   -moz-transition: all 0.4s ease 0s;
   -o-transition: all 0.4s ease 0s;
@@ -1930,7 +2008,8 @@ html[dir="rtl"] .to-do-list.up_buttom {
 }
 
 /* line 280, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_component.scss */
-.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up, .bootstrap-datetimepicker-widget table td span.glyphicon-chevron-down {
+.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up,
+.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-down {
   position: relative;
   width: 30px;
   height: 30px;
@@ -1938,7 +2017,8 @@ html[dir="rtl"] .to-do-list.up_buttom {
 }
 
 /* line 286, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_component.scss */
-.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up:after, .bootstrap-datetimepicker-widget table td span.glyphicon-chevron-down:after {
+.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-up:after,
+.bootstrap-datetimepicker-widget table td span.glyphicon-chevron-down:after {
   display: inline-block;
   font-family: "themify";
   font-size: 12px;
@@ -1965,7 +2045,8 @@ html[dir="rtl"] .to-do-list.up_buttom {
 }
 
 /* line 316, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_component.scss */
-.bootstrap-datetimepicker-widget table td span.timepicker-hour, .bootstrap-datetimepicker-widget table td span.timepicker-minute {
+.bootstrap-datetimepicker-widget table td span.timepicker-hour,
+.bootstrap-datetimepicker-widget table td span.timepicker-minute {
   border: 1px solid #7c32ff;
   background: transparent;
   color: #415094;
@@ -2050,7 +2131,7 @@ html[dir="rtl"] .to-do-list.up_buttom {
 
 /* line 387, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_component.scss */
 .datepicker thead tr:first-child th:after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0px;
   top: 0px;
@@ -2309,7 +2390,8 @@ html[dir="rtl"] .to-do-list.up_buttom {
 }
 
 /* line 558, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_component.scss */
-.main-wrapper .fstResults .fstResultItem:hover, .main-wrapper .fstResults .fstResultItem.fstSelected {
+.main-wrapper .fstResults .fstResultItem:hover,
+.main-wrapper .fstResults .fstResultItem.fstSelected {
   color: #828bb2;
 }
 
@@ -2468,7 +2550,7 @@ html[dir="rtl"] .to-do-list.up_buttom {
   color: #415094;
   background: #ffffff;
   border: 1px solid #c738d8;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", "Noto Kufi Arabic", sans-serif;
   font-size: 12px;
   text-align: center;
 }
@@ -2554,7 +2636,7 @@ body.login .footer_area a {
 
 /* line 19, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_login.scss */
 .login-area a:hover {
-  opacity: .8;
+  opacity: 0.8;
 }
 
 /* line 23, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_login.scss */
@@ -2707,7 +2789,7 @@ body.login .footer_area a {
 
 /* line 110, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_login.scss */
 .login-area input[type="checkbox"] + label:before {
-  content: '';
+  content: "";
   display: block;
   width: 12px;
   height: 12px;
@@ -2716,7 +2798,7 @@ body.login .footer_area a {
   position: absolute;
   left: 0;
   top: 4px;
-  opacity: .6;
+  opacity: 0.6;
   -webkit-transition: all 0.4s ease 0s;
   -moz-transition: all 0.4s ease 0s;
   -o-transition: all 0.4s ease 0s;
@@ -2826,7 +2908,8 @@ body.login .footer_area a {
 }
 
 /* line 60, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_sidebar.scss */
-#sidebar ul li a:hover, #sidebar ul li a.active {
+#sidebar ul li a:hover,
+#sidebar ul li a.active {
   color: #ffffff;
   background: #415094;
   border-left: 6px solid #7c32ff;
@@ -2837,7 +2920,7 @@ body.login .footer_area a {
 /* line 69, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_sidebar.scss */
 #sidebar ul li ul {
   background: #415094;
-  opacity: .7;
+  opacity: 0.7;
 }
 
 /* line 73, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_sidebar.scss */
@@ -2916,7 +2999,8 @@ html[dir="rtl"] #sidebar ul li a {
 }
 
 /* line 241, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/style.scss */
-html[dir="rtl"] #sidebar ul li a:hover, html[dir="rtl"] #sidebar ul li a.active {
+html[dir="rtl"] #sidebar ul li a:hover,
+html[dir="rtl"] #sidebar ul li a.active {
   border-left: 0;
   border-right: 6px solid #7c32ff;
 }
@@ -3148,7 +3232,8 @@ html[dir="rtl"] #sidebar .dropdown-toggle:after {
 }
 
 /* line 162, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_header.scss */
-.admin .navbar .right-navbar .dropdown .dropdown-menu.profile-box .name, .admin .navbar .right-navbar .dropdown .dropdown-menu.profile-box .message {
+.admin .navbar .right-navbar .dropdown .dropdown-menu.profile-box .name,
+.admin .navbar .right-navbar .dropdown .dropdown-menu.profile-box .message {
   max-width: 440px;
 }
 
@@ -3708,7 +3793,7 @@ html[dir="rtl"] .sms-breadcrumb .bc-pages a:last-child {
 /* line 174, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_student.scss */
 .student-activities .single-activity .title:before,
 .student-activities .single-activity .sub-activity:before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -3721,7 +3806,7 @@ html[dir="rtl"] .sms-breadcrumb .bc-pages a:last-child {
 /* line 185, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_student.scss */
 .student-activities .single-activity .title:after,
 .student-activities .single-activity .sub-activity:after {
-  content: '';
+  content: "";
   position: absolute;
   left: -27px;
   top: 12px;
@@ -3877,7 +3962,7 @@ table.dataTable thead .sorting {
 }
 
 /* line 352, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_student.scss */
-.radio-img input[type=radio] {
+.radio-img input[type="radio"] {
   opacity: 0;
   display: none;
 }
@@ -3995,7 +4080,7 @@ table.dataTable thead .sorting {
 
 /* line 46, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_front-cms.scss */
 .single-cms-box:hover .single-cms .overlay {
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* line 51, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_front-cms.scss */
@@ -4116,13 +4201,13 @@ table.dataTable thead .sorting {
 /* line 16, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_settings.scss */
 .base-setup .card .card-header .icon-only:before {
   content: "\e62a";
-  font-family: 'themify';
+  font-family: "themify";
 }
 
 /* line 21, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/admin/_settings.scss */
 .base-setup .card .card-header .icon-only.collapsed:before {
   content: "\e627";
-  font-family: 'themify';
+  font-family: "themify";
 }
 
 /*---------------------------------------------------- */
@@ -4135,7 +4220,7 @@ table.dataTable thead .sorting {
 /* line 1, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_reset.scss */
 body.client {
   font-size: 14px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", "Noto Kufi Arabic", sans-serif;
   font-weight: 400;
   color: #828bb2;
   line-height: 26px;
@@ -4213,7 +4298,8 @@ body.client.color {
 /* line 31, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_predefine.scss */
 .client.light .title,
 .client.light .client-btn,
-.client.light .footer_area .f_widget .f_title h4, .client.color .title,
+.client.light .footer_area .f_widget .f_title h4,
+.client.color .title,
 .client.color .client-btn,
 .client.color .footer_area .f_widget .f_title h4 {
   color: #415094;
@@ -4367,7 +4453,14 @@ body.client.color {
 }
 
 /* line 107, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_header.scss */
-.client .header-area .navbar .nav .nav-item.submenu ul .nav-item:hover .nav-link {
+.client
+  .header-area
+  .navbar
+  .nav
+  .nav-item.submenu
+  ul
+  .nav-item:hover
+  .nav-link {
   background: #415094;
   color: #fff;
 }
@@ -4473,7 +4566,8 @@ body.client.color {
 }
 
 /* line 188, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_header.scss */
-.client.light .header-area .navbar .nav .nav-item .nav-link, .client.color .header-area .navbar .nav .nav-item .nav-link {
+.client.light .header-area .navbar .nav .nav-item .nav-link,
+.client.color .header-area .navbar .nav .nav-item .nav-link {
   color: #415094;
 }
 
@@ -4536,7 +4630,12 @@ html[dir="rtl"] .client .header-area .navbar .nav .nav-item {
 .client .home-banner-area {
   min-height: 720px;
   display: flex;
-  background: linear-gradient(0deg, rgba(124, 50, 255, 0.6), rgba(199, 56, 216, 0.6)), url(../../img/client/home-banner1.jpg) no-repeat center;
+  background: linear-gradient(
+      0deg,
+      rgba(124, 50, 255, 0.6),
+      rgba(199, 56, 216, 0.6)
+    ),
+    url(../../img/client/home-banner1.jpg) no-repeat center;
   background-size: cover;
   z-index: 1;
 }
@@ -4552,7 +4651,12 @@ html[dir="rtl"] .client .header-area .navbar .nav .nav-item {
 .client .banner-area {
   min-height: 450px;
   display: flex;
-  background: linear-gradient(0deg, rgba(124, 50, 255, 0.6), rgba(199, 56, 216, 0.6)), url(../../img/client/common-banner1.jpg) no-repeat center;
+  background: linear-gradient(
+      0deg,
+      rgba(124, 50, 255, 0.6),
+      rgba(199, 56, 216, 0.6)
+    ),
+    url(../../img/client/common-banner1.jpg) no-repeat center;
   background-size: cover;
   z-index: 1;
 }
@@ -4667,12 +4771,12 @@ html[dir="rtl"] .client .header-area .navbar .nav .nav-item {
 
 /* line 103, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
 .client .news-item .news-img img {
-  opacity: .75;
+  opacity: 0.75;
 }
 
 /* line 107, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
 .client .news-item .news-img:hover img {
-  opacity: .2;
+  opacity: 0.2;
 }
 
 /* line 112, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
@@ -4708,7 +4812,7 @@ html[dir="rtl"] .client .header-area .navbar .nav .nav-item {
 
 /* line 128, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
 .client .news-item .news-text h4 a:hover {
-  opacity: .8;
+  opacity: 0.8;
 }
 
 /* line 133, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
@@ -4838,7 +4942,7 @@ html[dir="rtl"] .client .header-area .navbar .nav .nav-item {
 
 /* line 222, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
 .client .academic-item .academic-text h4 a:hover {
-  opacity: .6;
+  opacity: 0.6;
 }
 
 /* line 227, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
@@ -5092,7 +5196,8 @@ html[dir="rtl"] .client .header-area .navbar .nav .nav-item {
 }
 
 /* line 432, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
-.client .overview-area .nav-tabs .nav-link:hover, .client .overview-area .nav-tabs .nav-link.active {
+.client .overview-area .nav-tabs .nav-link:hover,
+.client .overview-area .nav-tabs .nav-link.active {
   background: #ffffff;
   color: #415094;
 }
@@ -5172,7 +5277,8 @@ html[dir="rtl"] .client .header-area .navbar .nav .nav-item {
 .client.light .news-details-area h3,
 .client.light .contact_info .info_item i,
 .client.light .contact_info .info_item h6,
-.client.light .contact_info .info_item h6 a, .client.color .notice-item h4,
+.client.light .contact_info .info_item h6 a,
+.client.color .notice-item h4,
 .client.color .academic-item .academic-text h4 a,
 .client.color .info-area .info-content h2,
 .client.color .department-area h3,
@@ -5188,18 +5294,21 @@ html[dir="rtl"] .client .header-area .navbar .nav .nav-item {
 }
 
 /* line 512, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
-.client.light .fact-area .white-box.single-summery, .client.color .fact-area .white-box.single-summery {
+.client.light .fact-area .white-box.single-summery,
+.client.color .fact-area .white-box.single-summery {
   box-shadow: 0px 10px 15px rgba(236, 208, 244, 0.3);
 }
 
 /* line 515, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
-.client.light .info-area .info-content, .client.color .info-area .info-content {
+.client.light .info-area .info-content,
+.client.color .info-area .info-content {
   background: rgba(65, 80, 148, 0.05);
 }
 
 /* line 518, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_home.scss */
 .client.light .overview-area .nav-tabs .nav-link:hover,
-.client.light .overview-area .nav-tabs .nav-link.active, .client.color .overview-area .nav-tabs .nav-link:hover,
+.client.light .overview-area .nav-tabs .nav-link.active,
+.client.color .overview-area .nav-tabs .nav-link:hover,
 .client.color .overview-area .nav-tabs .nav-link.active {
   color: #ffffff;
 }
@@ -5350,18 +5459,21 @@ html[dir="rtl"] .client .single-footer-widget .social_widget a {
 
 /* line 74, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_footer.scss */
 .client.light .single-footer-widget .copy_right_text p,
-.client.light .single-footer-widget .social_widget a, .client.color .single-footer-widget .copy_right_text p,
+.client.light .single-footer-widget .social_widget a,
+.client.color .single-footer-widget .copy_right_text p,
 .client.color .single-footer-widget .social_widget a {
   color: #415094;
 }
 
 /* line 79, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_footer.scss */
-.client.light .single-footer-widget .social_widget a:hover, .client.color .single-footer-widget .social_widget a:hover {
+.client.light .single-footer-widget .social_widget a:hover,
+.client.color .single-footer-widget .social_widget a:hover {
   color: #7c32ff;
 }
 
 /* line 83, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/client/_footer.scss */
-.client.light .single-footer-widget, .client.color .single-footer-widget {
+.client.light .single-footer-widget,
+.client.color .single-footer-widget {
   border-top: 1px solid rgba(65, 80, 148, 0.1);
 }
 
@@ -5421,17 +5533,26 @@ html[dir="rtl"] .dataTables_wrapper .dataTables_filter input:focus.placeholder {
 }
 
 /* line 108, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_mixins.scss */
-html[dir="rtl"] .dataTables_wrapper .dataTables_filter input:focus:-moz-placeholder {
+html[dir="rtl"]
+  .dataTables_wrapper
+  .dataTables_filter
+  input:focus:-moz-placeholder {
   left: -16px;
 }
 
 /* line 111, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_mixins.scss */
-html[dir="rtl"] .dataTables_wrapper .dataTables_filter input:focus::-moz-placeholder {
+html[dir="rtl"]
+  .dataTables_wrapper
+  .dataTables_filter
+  input:focus::-moz-placeholder {
   left: -16px;
 }
 
 /* line 114, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_mixins.scss */
-html[dir="rtl"] .dataTables_wrapper .dataTables_filter input:focus::-webkit-input-placeholder {
+html[dir="rtl"]
+  .dataTables_wrapper
+  .dataTables_filter
+  input:focus::-webkit-input-placeholder {
   left: -16px;
 }
 
@@ -5455,7 +5576,7 @@ html[dir="rtl"] .dataTables_wrapper .dataTables_paginate .paginate_button i {
 html[dir="rtl"] .dataTables_wrapper .dataTables_info {
   float: right;
   display: block;
-   width: 100%;
+  width: 100%;
 }
 
 /* line 488, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/style.scss */
@@ -5487,9 +5608,10 @@ html[dir="rtl"] .nice-select .option {
 }
 
 /* line 510, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/style.scss */
-html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="rtl"] table.dataTable td {
+html[dir="rtl"] table.dataTable,
+html[dir="rtl"] table.dataTable th,
+html[dir="rtl"] table.dataTable td {
   box-sizing: border-box;
-
 }
 
 /*font Variables*/
@@ -5575,7 +5697,8 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
 
 @media (max-width: 991px) {
   /* line 72, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_update.scss */
-  .client.light .header-area .navbar .nav .nav-item .nav-link, .client.color .header-area .navbar .nav .nav-item .nav-link {
+  .client.light .header-area .navbar .nav .nav-item .nav-link,
+  .client.color .header-area .navbar .nav .nav-item .nav-link {
     color: #fff !important;
   }
   /* line 75, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_update.scss */
@@ -5659,7 +5782,7 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
   padding: 5% 10%;
   color: #415094;
   letter-spacing: 1px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", "Noto Kufi Arabic", sans-serif;
   font-size: 12px;
   outline: none !important;
   text-align: center;
@@ -5986,7 +6109,8 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
     width: 97% !important;
   }
   /* line 376, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_update.scss */
-  .up_navbar .btn-dark:hover, .up_navbar .btn-dark:focus {
+  .up_navbar .btn-dark:hover,
+  .up_navbar .btn-dark:focus {
     border-color: transparent;
     outline: 0;
   }
@@ -6182,7 +6306,8 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
 }
 
 /* line 544, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_update.scss */
-.fc-state-active, .fc-state-down {
+.fc-state-active,
+.fc-state-down {
   background-color: #ccc;
   background-image: none;
   box-shadow: none;
@@ -6219,7 +6344,9 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
 
 @media (max-width: 575px) {
   /* line 573, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_update.scss */
-  .fc-toolbar.fc-header-toolbar .fc-left, .fc-toolbar.fc-header-toolbar .fc-right, .fc-toolbar.fc-header-toolbar .fc-center {
+  .fc-toolbar.fc-header-toolbar .fc-left,
+  .fc-toolbar.fc-header-toolbar .fc-right,
+  .fc-toolbar.fc-header-toolbar .fc-center {
     display: block;
     width: 100%;
     text-align: center;
@@ -6262,7 +6389,7 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
   bottom: 0;
   width: 40px;
   height: 40px;
-  transition: all .5s;
+  transition: all 0.5s;
   z-index: 4;
   font-size: 18px;
 }
@@ -6281,8 +6408,8 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
   right: 15px;
   bottom: 0;
   width: 6px;
-  transition: all .5s;
-  font-family: 'themify';
+  transition: all 0.5s;
+  font-family: "themify";
 }
 
 /* line 630, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_update.scss */
@@ -6299,7 +6426,7 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
   background: #fe005f;
   color: white;
   padding: 10px;
-  transition: all .5s;
+  transition: all 0.5s;
   opacity: 0;
   z-index: 5;
   font-weight: bolder;
@@ -6332,7 +6459,7 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
   top: 8px;
   right: 20px;
   content: "\e646";
-  font-family: 'themify';
+  font-family: "themify";
 }
 
 /* line 674, /Applications/MAMP/htdocs/InfixEduTheme/public/backEnd/scss/1_default/_update.scss */
@@ -6393,44 +6520,44 @@ html[dir="rtl"] table.dataTable, html[dir="rtl"] table.dataTable th, html[dir="r
 }
 
 /*---------------------------------------------------- */
-html[dir="rtl"] .up_navbar{}
-html[dir="rtl"] .up_navbar .container-fluid{}
-html[dir="rtl"] .up_navbar .container-fluid .row{
+html[dir="rtl"] .up_navbar {
+}
+html[dir="rtl"] .up_navbar .container-fluid {
+}
+html[dir="rtl"] .up_navbar .container-fluid .row {
   width: 100%;
   margin: 0;
 }
 html[dir="rtl"] .up_navbar .container-fluid .row .col-lg-12 {
   padding: 0 !important;
 }
-html[dir="rtl"] .up_navbar .container-fluid .row .col-lg-12 .up_dash_menu{
-
+html[dir="rtl"] .up_navbar .container-fluid .row .col-lg-12 .up_dash_menu {
 }
 html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
-	margin-left: 12px;
-	padding-left: 0px;
-	margin-left: 0 !important;
+  margin-left: 12px;
+  padding-left: 0px;
+  margin-left: 0 !important;
 }
 
 .nice-select.bb {
-	
-	float: right !important;
-	text-align: right !important;
-	padding-right: 0;
-	padding-left: 20px;
+  float: right !important;
+  text-align: right !important;
+  padding-right: 0;
+  padding-left: 20px;
 }
-.nice-select.bb::after{
+.nice-select.bb::after {
   left: 15px !important;
   right: auto !important;
 }
 
-.loader_style{
+.loader_style {
   margin-top: -30px;
   padding-right: 255px;
 }
 
-.loader_img_style{
+.loader_img_style {
   width: 25px;
-  height:25px;
+  height: 25px;
 }
 
 .loader {
@@ -6441,18 +6568,16 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   display: show;
 }
 
-
-
 /*# sourceMappingURL=../../css/1_default/style.map */
 
-.loader_style{
+.loader_style {
   margin-top: -30px;
   padding-right: 25px;
 }
 
-.loader_img_style{
+.loader_img_style {
   width: 25px;
-  height:25px;
+  height: 25px;
 }
 
 .loader {
@@ -6464,7 +6589,7 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
 }
 .upload_grid_wrapper {
   display: grid;
-  grid-template-columns: repeat(2,1fr);
+  grid-template-columns: repeat(2, 1fr);
   grid-gap: 15px;
 }
 
@@ -6486,12 +6611,12 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
 .single_upload_img {
   position: relative;
 }
-.quiestion_group{
+.quiestion_group {
   display: grid;
-  grid-template-columns: repeat(4,1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-gap: 15px;
 }
-.quiestion_group .single_question{
+.quiestion_group .single_question {
   position: relative;
   z-index: 1;
   overflow: hidden;
@@ -6499,30 +6624,30 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   background-size: cover;
   background-position: center center;
 }
-.quiestion_group .single_question.active .img_ovelay{
+.quiestion_group .single_question.active .img_ovelay {
   opacity: 1;
   visibility: visible;
   transform: scale(1);
 }
-.quiestion_group .single_question .thumb img{
+.quiestion_group .single_question .thumb img {
   width: 100%;
 }
-.quiestion_group .img_ovelay{
+.quiestion_group .img_ovelay {
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  background: rgba(65, 80, 148,.4);
+  background: rgba(65, 80, 148, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: .3s;
-  transform: scale(.8);
+  transition: 0.3s;
+  transform: scale(0.8);
 }
-.quiestion_group .img_ovelay input{
+.quiestion_group .img_ovelay input {
   width: 100%;
   height: 100%;
   opacity: 0;
@@ -6531,12 +6656,12 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   top: 0;
   left: 0;
 }
-.quiestion_group .single_question:hover .img_ovelay{
+.quiestion_group .single_question:hover .img_ovelay {
   opacity: 1;
   visibility: visible;
   transform: scale(1);
 }
-.quiestion_group .img_ovelay .icon{
+.quiestion_group .img_ovelay .icon {
   width: 30px;
   height: 30px;
   text-align: center;
@@ -6546,7 +6671,7 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   color: #000;
   display: inline-block;
 }
-.quiestion_group .img_ovelay .icon i{
+.quiestion_group .img_ovelay .icon i {
   line-height: 30px;
   font-size: 15px;
 }
@@ -6554,15 +6679,21 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
 .question_navigate a {
   margin: 0 5px;
   display: inline-block;
-  background: -webkit-linear-gradient( 
-90deg
-, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
-  background: -moz-linear-gradient( 90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
+  background: -webkit-linear-gradient(
+    90deg,
+    #7c32ff 0%,
+    #c738d8 51%,
+    #7c32ff 100%
+  );
+  background: -moz-linear-gradient(
+    90deg,
+    #7c32ff 0%,
+    #c738d8 51%,
+    #7c32ff 100%
+  );
   background: -o-linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
   background: -ms-linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
-  background: linear-gradient( 
-90deg
-, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
+  background: linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
   color: #ffffff;
   background-size: 200% auto;
   -webkit-transition: all 0.4s ease 0s;
@@ -6575,7 +6706,7 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   text-align: center !important;
 }
 .question_table {
-  border: 1px solid #D9DDE9;
+  border: 1px solid #d9dde9;
   margin-top: 20px;
   border-radius: 3px;
   padding: 20px;
@@ -6586,27 +6717,33 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   top: 11px;
   left: 6px;
 }
-.qustion_banner_img{
+.qustion_banner_img {
   max-width: 500px;
   margin: auto;
   margin-bottom: 40px;
 }
-.qustion_banner_img img{
+.qustion_banner_img img {
   width: 100%;
 }
 
-.question_navigate a.page-link{
+.question_navigate a.page-link {
   margin: 0 5px;
   display: inline-block;
-  background: -webkit-linear-gradient( 
-90deg
-, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
-  background: -moz-linear-gradient( 90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
+  background: -webkit-linear-gradient(
+    90deg,
+    #7c32ff 0%,
+    #c738d8 51%,
+    #7c32ff 100%
+  );
+  background: -moz-linear-gradient(
+    90deg,
+    #7c32ff 0%,
+    #c738d8 51%,
+    #7c32ff 100%
+  );
   background: -o-linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
   background: -ms-linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
-  background: linear-gradient( 
-90deg
-, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
+  background: linear-gradient(90deg, #7c32ff 0%, #c738d8 51%, #7c32ff 100%);
   color: #ffffff;
   background-size: 200% auto;
   -webkit-transition: all 0.4s ease 0s;
@@ -6617,7 +6754,7 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   border-radius: 5px !important;
   border: 0 !important;
   text-align: center !important;
-   padding: 10px 20px;
+  padding: 10px 20px;
   text-align: center !important;
   display: inline-block;
   width: auto;
@@ -6625,7 +6762,7 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
 .question_navigate .disabled .page-link {
   margin: 0 5px;
   display: inline-block;
-  background: #fff; 
+  background: #fff;
   color: #ffffff;
   background-size: 200% auto;
   -webkit-transition: all 0.4s ease 0s;
@@ -6636,7 +6773,7 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   border-radius: 5px !important;
   border: 0 !important;
   text-align: center !important;
-   padding: 10px 20px;
+  padding: 10px 20px;
   text-align: center !important;
   display: inline-block;
   width: auto;
@@ -6648,3 +6785,163 @@ html[dir="rtl"] .admin .navbar .right-navbar .dropdown .dropdown-toggle {
   align-items: center;
   justify-content: center;
 }
+
+html[dir="rtl"] input#search {
+  text-align: left;
+}
+
+html[dir="rtl"] .search-bar .ti-search {
+  left: auto;
+  right: 0;
+}
+
+html[dir="rtl"] li.nav-item.setting-area {
+  margin-right: 10px;
+}
+/* new  */
+.float_button {
+  text-align: left;
+  display: inline-block;
+  border-radius: 50px;
+  padding: 10px 30px 13px 50px;
+  -webkit-transition: 0.8s;
+  background-size: auto 200%;
+  position: fixed;
+  top: 165px;
+  right: 0;
+  transform: translateX(182px);
+  background-image: linear-gradient(
+    to top,
+    #b937e0 0%,
+    #7c32ff 50%,
+    #b937e0 100%
+  );
+  z-index: 9999999;
+}
+
+@media (max-width: 991px) {
+}
+
+.float_button:hover {
+  background-position: bottom center;
+  transform: translateX(20px);
+}
+
+.float_button i {
+  height: 30px;
+  width: 30px;
+  text-align: center;
+  line-height: 30px;
+  font-size: 16px;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: inline-block;
+  border-radius: 50%;
+  color: #fff;
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  margin-bottom: 0px;
+}
+@media (max-width: 575.98px) {
+  .float_button i {
+    left: 8px;
+    top: 8px;
+  }
+}
+.float_button h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 0;
+  padding-right: 10px;
+}
+
+/* preloader  */
+.prelaoder_wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #e7ecff;
+  z-index: 100000000;
+}
+.prelaoder_wrapper .preloader_img {
+  max-width: 120px;
+}
+/* new added  */
+html[dir="rtl"] .dataTables_wrapper .dataTables_info {
+  float: right;
+  width: auto;
+}
+html[dir="rtl"] .arrow::after {
+  right: auto;
+  left: 22px;
+}
+html[dir="rtl"] .common-radio:empty ~ label {
+  float: right;
+}
+html[dir="rtl"] .mr-20 {
+  margin-right: 0;
+  margin-left: 20px;
+}
+
+html[dir="rtl"] .primary-btn.fix-gr-bg .ti-pencil-alt {
+  float: right;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+html[dir="rtl"] .create-title::after {
+  right: auto;
+  left: 15px;
+}
+html[dir="rtl"] .dd-list .pull-right {
+  float: left;
+}
+html[dir="rtl"] .dd-list .pull-left {
+  float: right;
+}
+html[dir="rtl"] .dd-handle {
+  padding-right: 30px;
+}
+.loader {
+  float: left !important;
+  padding-left: 30px;
+}
+html[dir="rtl"] .loader {
+  float: left !important;
+  padding-left: 30px;
+}
+html[dir="rtl"] .pull-right.loader {
+  float: left !important;
+}
+html[dir="rtl"] .pull-right {
+  float: left !important;
+  padding-left: 30px;
+}
+html[dir="rtl"] .staff-details li.edit-button,
+html[dir="rtl"] .student-details li.edit-button {
+  flex: auto;
+  text-align: left;
+}
+
+html[dir="rtl"] .student-details .nav-tabs {
+  margin-left: 0;
+  margin-right: 30px;
+}
+html[dir="rtl"] .demo_addons{
+
+  float: left;
+  margin-right: 30px!important;
+  background: #8232fc;
+  color: #fff;
+  border-radius: 5px;
+  padding: 0px 10px;
+  font-size: 10px;
+
+}
+

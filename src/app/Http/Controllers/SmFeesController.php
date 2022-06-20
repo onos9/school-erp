@@ -254,7 +254,10 @@ class SmFeesController extends Controller
             }else{
                 $student = SmStudent::where('id',$id)->where('school_id',Auth::user()->school_id)->first();
             }
-            $fees_assigneds = SmFeesAssign::where('student_id', $id)->orderBy('id', 'desc')->where('school_id',Auth::user()->school_id)->get();
+            $fees_assigneds = SmFeesAssign::where('student_id', $id)
+                            ->orderBy('id', 'desc')
+                            ->where('school_id',Auth::user()->school_id)
+                            ->get();
             if (count($fees_assigneds) <= 0) {
                 Toastr::warning('Fees assign not yet!');
                 return redirect('/collect-fees');
@@ -280,7 +283,9 @@ class SmFeesController extends Controller
                 $d[$i]['balance'] = ((float) $d[$i]['amount'] + (float) $d[$i]['fine'])  - ((float) $d[$i]['paid'] + (float) $d[$i]['discount_amount']);
                 $i++;
             }
-            $fees_discounts = SmFeesAssignDiscount::where('student_id', $id)->where('school_id',Auth::user()->school_id)->get();
+            $fees_discounts = SmFeesAssignDiscount::where('student_id', $id)
+                            ->where('school_id',Auth::user()->school_id)
+                            ->get();
 
             $applied_discount = [];
             foreach ($fees_discounts as $fees_discount) {
@@ -536,11 +541,11 @@ class SmFeesController extends Controller
             //     $discount_assign->save();
             // }
 
-            $fees_assign=SmFeesAssign::where('fees_master_id',$request->master_id)->where('student_id',$request->student_id)->first();
+            $fees_assign=SmFeesAssign::where('fees_master_id',$request->master_id)->where('student_id',$request->student_id)->where('school_id',Auth::user()->school_id)->first();
             $fees_assign->fees_amount-=floatval($request->amount);
             $fees_assign->save();
             if (!empty($request->fine)) {
-                $fees_assign=SmFeesAssign::where('fees_master_id',$request->master_id)->where('student_id',$request->student_id)->first();
+                $fees_assign=SmFeesAssign::where('fees_master_id',$request->master_id)->where('student_id',$request->student_id)->where('school_id',Auth::user()->school_id)->first();
                 $fees_assign->fees_amount+=$request->fine;
                 $fees_assign->save();
             }
@@ -701,7 +706,6 @@ class SmFeesController extends Controller
             foreach ($students as $student) {
                 $fees_assigns = SmFeesAssign::where('student_id', $student->id)
                     ->where('school_id',Auth::user()->school_id)
-                    ->where('academic_id', getAcademicId())
                     ->whereHas('feesGroupMaster', function($q){
                         return $q->whereDate('date', '<', date('Y-m-d'));
                     })
@@ -759,7 +763,6 @@ class SmFeesController extends Controller
 
                 $fees_assigns = SmFeesAssign::with('feesGroupMaster')->where('student_id', $student->id)
                     ->where('school_id',Auth::user()->school_id)
-                    ->where('academic_id', getAcademicId())
                     ->whereHas('feesGroupMaster', function($q) use($fees_group){
                         return $q
                             // ->whereDate('date', '<', date('Y-m-d'))
@@ -1196,7 +1199,7 @@ class SmFeesController extends Controller
             }
             $parent = DB::table('sm_parents')->where('id', $student->parent_id)->where('school_id',Auth::user()->school_id)->first();
 
-            $unapplied_discount_amount = SmFeesAssignDiscount::where('student_id',$s_id)->sum('unapplied_amount');
+            $unapplied_discount_amount = SmFeesAssignDiscount::where('student_id',$s_id)->where('school_id',Auth::user()->school_id)->sum('unapplied_amount');
             return view('backEnd.feesCollection.fees_payment_invoice_print')->with(['fees_assigneds' => $fees_assigneds, 'student' => $student,'unapplied_discount_amount'=>$unapplied_discount_amount, 'parent' => $parent]);
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
@@ -1488,7 +1491,7 @@ class SmFeesController extends Controller
                 ->where('sm_fees_masters.fees_type_id',$bank_payment->fees_type_id)
                 ->where('sm_fees_assigns.student_id',$bank_payment->student_id)->first();
 
-            $fees_assign=SmFeesAssign::where('fees_master_id',$get_master_id->fees_master_id)->where('student_id',$bank_payment->student_id)->first();
+            $fees_assign=SmFeesAssign::where('fees_master_id',$get_master_id->fees_master_id)->where('student_id',$bank_payment->student_id)->where('school_id',Auth::user()->school_id)->first();
 
             // return $bank_payment;
 

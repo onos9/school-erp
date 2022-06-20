@@ -1,7 +1,7 @@
 @extends('backEnd.master')
-@section('title') 
-@lang('fees.fees_forward')
-@endsection
+    @section('title') 
+        @lang('fees.fees_forward')
+    @endsection
 @section('mainContent')
 @php  $setting = generalSetting(); 
 if(!empty($setting->currency_symbol)){ $currency = $setting->currency_symbol; }
@@ -70,104 +70,90 @@ else{ $currency = '$'; }
                     </div>
                 </div>
             </div>
-    @if(isset($students))
-
-        
+        @if(isset($students))
             {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'method' => 'POST', 'route' => 'fees-forward-store', 'enctype' => 'multipart/form-data'])}}
-       
-
-
-            <div class="row mt-40">
-                <div class="col-lg-12">
-                    <div class="row">
-                        <div class="col-lg-6 no-gutters">
-                            <div class="main-title">
-                                <h3 class="mb-0">@lang('fees.previous_Session_Balance_Fees')</h3>
+                <div class="row mt-40">
+                    <div class="col-lg-12">
+                        <div class="row">
+                            <div class="col-lg-6 no-gutters">
+                                <div class="main-title">
+                                    <h3 class="mb-0">@lang('fees.previous_Session_Balance_Fees')</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="update" value="{{isset($update)? 1 : ''}}">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <table id="table_id" class="display school-table" cellspacing="0" width="100%">
+                                    <thead>
+                                        @if(isset($update))
+                                            <tr>
+                                                <td colspan="6">
+                                                    <div class="alert">
+                                                    <h4 class="mb-0"> @lang('fees.previous_balance_can_only_update_now.') </h4>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                            <tr>
+                                                <th width="15%">@lang('student.student_name')</th>
+                                                <th width="15%">@lang('student.admission_no')</th>
+                                                <th width="15%">@lang('student.roll_no')</th>
+                                                <th width="15%">@lang('student.father_name')</th>
+                                                <th width="15%">@lang('fees.balance') ({{generalSetting()->currency_symbol}})</th>
+                                                <th width="25%">@lang('fees.short_note')</th>
+                                            </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($students as $student)
+                                            <tr>
+                                                <td>{{$student->studentDetail->full_name}} <input type="hidden" name="id[]" value="{{isset($update)? $student->studentDetail->forwardBalance->id: $student->student_id}}"></td>
+                                                <td>{{$student->studentDetail->admission_no}}</td>
+                                                <td>{{$student->studentDetail->roll_no}}</td>
+            
+                                                <td>{{$student->studentDetail->parents !=""?$student->studentDetail->parents->fathers_name:""}}</td>
+                                                <td>
+                                                    <div class="input-effect">
+                                                        <input oninput="numberCheckWithDot(this)" type="text" class="primary-input form-control" cols="0" rows="1" name="balance[{{isset($update)? $student->studentDetail->forwardBalance->id:$student->student_id}}]" maxlength="8" value="{{isset($update)?
+                                                        $student->studentDetail->forwardBalance->balance: ''}}">
+                                                        <label>@lang('fees.balance') <span></span></label>
+                                                        <span class="focus-border"></span>
+                                                        <span class="invalid-feedback">
+                                                            <strong>@lang('fees.error')</strong>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-effect">
+                                                        <input type="text" class="primary-input form-control" cols="0" rows="1" name="notes[{{isset($update)? $student->studentDetail->forwardBalance->id:$student->student_id}}]" value="{{isset($update)?
+                                                        $student->studentDetail->forwardBalance->notes: 'Fees Carry Forward'}}">
+                                                        <label>@lang('fees.short_note')<span></span></label>
+                                                        <span class="focus-border"></span>
+                                                        <span class="invalid-feedback">
+                                                            <strong>@lang('fees.error')</strong>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="text-center">
+                                                <button type="submit" class="primary-btn fix-gr-bg mb-0 submit">
+                                                    <span class="ti-save pr"></span>
+                                                        @lang('common.save')
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
                         </div>
                     </div>
-
-                    <input type="hidden" name="update" value="{{isset($update)? 1 : ''}}">
-                      
-                    <!-- </div> -->
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <table id="table_id" class="display school-table" cellspacing="0" width="100%">
-                                
-                                <thead>
-                                    @if(isset($update))
-                                    <tr>
-                                        <td colspan="6">
-                                            <div class="alert">
-                                            <h4 class="mb-0"> @lang('fees.previous_balance_can_only_update_now.') </h4>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endif
-                                    <tr>
-                                        <th width="15%">@lang('student.student_name')</th>
-                                        <th width="15%">@lang('student.admission_no')</th>
-                                        <th width="15%">@lang('student.roll_no')</th>
-                                        <th width="15%">@lang('student.father_name')</th>
-                                        <th width="15%">@lang('fees.balance') ({{generalSetting()->currency_symbol}})</th>
-                                        <th width="25%">@lang('fees.short_note')</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @foreach($students as $student)
-                                    <tr>
-                                        <td>{{$student->first_name.' '.$student->last_name}} <input type="hidden" name="id[]" value="{{isset($update)? $student->forwardBalance->id: $student->id}}"></td>
-                                        <td>{{$student->admission_no}}</td>
-                                        <td>{{$student->roll_no}}</td>
-    
-                                        <td>{{$student->parents !=""?$student->parents->fathers_name:""}}</td>
-                                        <td>
-                                            <div class="input-effect">
-                                                <input oninput="numberCheckWithDot(this)" type="text" class="primary-input form-control" cols="0" rows="1" name="balance[{{isset($update)? $student->forwardBalance->id:$student->id}}]" maxlength="8" value="{{isset($update)?
-                                                $student->forwardBalance->balance: ''}}">
-                                                <label>@lang('fees.balance') <span></span></label>
-                                                <span class="focus-border"></span>
-                                                <span class="invalid-feedback">
-                                                    <strong>@lang('fees.error')</strong>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="input-effect">
-                                                <input type="text" class="primary-input form-control" cols="0" rows="1" name="notes[{{isset($update)? $student->forwardBalance->id:$student->id}}]" value="{{isset($update)?
-                                                $student->forwardBalance->notes: 'Fees Carry Forward'}}">
-                                                <label>@lang('fees.short_note')<span></span></label>
-                                                <span class="focus-border"></span>
-                                                <span class="invalid-feedback">
-                                                    <strong>@lang('fees.error')</strong>
-                                                </span>
-                                            </div>
-                                        </td>
-
-                                    </tr>
-                                    @endforeach
-                                    
-                                </tbody>
-                                <tr>
-                                    <td colspan="6">
-                                        <div class="text-center">
-                                            <button type="submit" class="primary-btn fix-gr-bg mb-0 submit">
-                                                <span class="ti-save pr"></span>
-                                                @lang('common.save')
-                                            </button>
-                                        </div>
-                                    </td>
-                                    </tr>
-                            </table>
-                        </div>
-                    </div>
                 </div>
-            </div>
-    {{ Form::close() }}
-    @endif
-
+            {{ Form::close() }}
+        @endif
     </div>
 </section>
-
 @endsection

@@ -20,12 +20,12 @@ class SmBook extends Model
     
     public function bookCategory()
     {
-        return $this->belongsTo('App\SmBookCategory', 'book_category_id', 'id');
+        return $this->belongsTo('App\SmBookCategory', 'book_category_id', 'id')->withDefault();
     }
 
     public function bookSubject()
     {
-        return $this->belongsTo('App\LibrarySubject', 'book_subject_id', 'id');
+        return $this->belongsTo('App\LibrarySubject', 'book_subject_id', 'id')->withDefault();
     }
 
     public static function getMemberDetails($memberID)

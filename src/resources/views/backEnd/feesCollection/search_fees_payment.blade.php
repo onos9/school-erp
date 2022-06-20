@@ -26,6 +26,36 @@
                         <div class="row">
                             <input type="hidden" name="url" id="url" value="{{URL::to('/')}}">
                             <div class="col-lg-3 mt-30-md">
+                                <div class="input-effect">
+                                    <input name="date_from" readonly
+                                           class="primary-input date {{ $errors->has('date_from') ? ' is-invalid' : '' }}"
+                                           type="text" autocomplete="off"
+                                           value="{{ isset($date_from) ? ($date_from != '' ? $date_from : '') : old('date_from') }}">
+                                    <label>@lang('lead::lead.date_from') <span></span></label>
+                                    <span class="focus-border"></span>
+                                    @if ($errors->has('date_from'))
+                                        <span class="invalid-feedback" role="alert" style="display:block">
+                                            <strong>{{ $errors->first('date_from') }}</strong>
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-lg-3 mt-30-md">
+                                <div class="input-effect">
+                                    <input name="date_to" readonly
+                                           class="primary-input date {{ $errors->has('date_to') ? ' is-invalid' : '' }}"
+                                           type="text" autocomplete="off"
+                                           value="{{ isset($date_to) ? ($date_to != '' ? $date_to : '') : old('date_to') }}">
+                                    <label>@lang('lead::lead.date_to') <span></span> </label>
+                                    <span class="focus-border"></span>
+                                    @if ($errors->has('date_to'))
+                                        <span class="invalid-feedback invalid-select" role="alert" style="display:block">
+                                            <strong>{{ $errors->first('date_to') }}</strong>
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-lg-3 mt-30-md">
                                 <select class="w-100 bb niceSelect form-control {{ $errors->has('class') ? ' is-invalid' : '' }}" id="select_class" name="class">
                                     <option data-display="@lang('common.select_class') *" value="">@lang('common.select_class') *</option>
                                     @foreach(@$classes as $class)
@@ -52,7 +82,7 @@
                                 @endif
                             </div>
 
-                            <div class="col-lg-6 mt-30-md">
+                            <div class="col-lg-6 mt-30">
                                 <div class="input-effect">
                                     <input class="primary-input form-control" type="text" name="keyword">
                                     <label>@lang('common.search_by_name'), @lang('student.admission_no'),@lang('student.roll_no')</label>
@@ -82,80 +112,48 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="col-lg-12">
-
                         <table id="table_id" class="display school-table" cellspacing="0" width="100%">
-
                             <thead>
                                 <tr>
                                     <th>@lang('fees.payment_id')</th>
                                     <th>@lang('common.date')</th>
                                     <th>@lang('common.name')</th>
                                     <th>@lang('common.class')</th>
-                                    <th>@lang('fees.fees_group')</th>
                                     <th>@lang('fees.fees_type')</th>
                                     <th>@lang('fees.mode')</th>
                                     <th>@lang('fees.amount') ({{generalSetting()->currency_symbol}}) </th>
-                                    {{-- <th>@lang('fees.discount') ({{generalSetting()->currency_symbol}}) </th>
-                                    <th>@lang('fees.fine') ({{generalSetting()->currency_symbol}}) </th> --}}
                                     <th>@lang('common.action')</th>
                                 </tr>
                             </thead>
-
                             <tbody>
                                 @foreach($fees_payments as $fees_payment)
                                 <tr>
                                     <td>{{$fees_payment->id.'/'.$fees_payment->fees_type_id}}</td>
-                                    <td>
-                                        {{ dateConvert($fees_payment->payment_date)}}
-                                      
-                                    <!-- {{ $fees_payment->payment_date != ""? dateConvert($fees_payment->payment_date):''}} -->
-
-                                    </td>
-                                    <td>
-                                        {{@$fees_payment->studentInfo->full_name}}
-                                    </td>
-                                    <td>
-                                        {{@$fees_payment->studentInfo->class->class_name}}
-                                    </td>
-                                    <td>
-                                        {{@$fees_payment->name}}
-                                    </td>
-                                    <td>
-                                        {{@$fees_payment->feesType->name}}
-                                    </td>
-                                    <td>
-                                        {{$fees_payment->payment_mode}}
-                                    </td>
+                                    <td>{{ dateConvert($fees_payment->payment_date)}}</td>
+                                    <td>{{@$fees_payment->recordDetail->studentDetail->full_name}}</td>
+                                    <td>{{@$fees_payment->recordDetail->class->class_name}} ({{@$fees_payment->recordDetail->section->section_name}})</td>
+                                    <td>{{@$fees_payment->feesType->name}}</td>
+                                    <td>{{$fees_payment->payment_mode}}</td>
                                     <td>{{$fees_payment->amount}}</td>
-                                    {{-- <td>{{$fees_payment->discount_amount}}</td>
-                                    <td>{{$fees_payment->fine}}</td> --}}
-                                    <td><div class="dropdown">
+                                    <td>
+                                        <div class="dropdown">
                                             <button type="button" class="btn dropdown-toggle" data-toggle="dropdown">
                                                 @lang('common.select')
                                             </button>
-                                           
-
-                                        
                                             @if(userPermission(115)) 
                                                 <div class="dropdown-menu dropdown-menu-right">
                                                     @if($fees_payment->assign_id !=null)
-                                                    <a class="dropdown-item modalLink" data-modal-size="modal-lg" title="@lang('fees.edit_fees_payment')"  href="{{route('edit-fees-payment', [$fees_payment->id])}}" >@lang('fees.edit_fees') </a>
+                                                        <a class="dropdown-item modalLink" data-modal-size="modal-lg" title="@lang('fees.edit_fees_payment')"  href="{{route('edit-fees-payment', [$fees_payment->id])}}" >@lang('fees.edit_fees') </a>
                                                     @endif
-                                                    <a class="dropdown-item" href="{{route('fees_collect_student_wise', [$fees_payment->student_id])}}">@lang('common.view')</a>
-
+                                                    <a class="dropdown-item" target="_blank" href="{{route('fees_collect_student_wise', [@$fees_payment->recordDetail->id])}}">@lang('common.view')</a>
                                                     <a class="dropdown-item" data-toggle="modal" data-target="#deleteFeesPayment_{{$fees_payment->id}}" >@lang('common.delete')</a>
                                                 </div>
-
-                                                
                                             @endif
                                         </div>
                                     </td>
                                 </tr>
-
-
                                 <div class="modal fade admin-query" id="deleteFeesPayment_{{$fees_payment->id}}" >
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
@@ -169,19 +167,17 @@
                                                 </div>
                                                 <div class="mt-40 d-flex justify-content-between">
                                                     <button type="button" class="primary-btn tr-bg" data-dismiss="modal">@lang('common.cancel')</button>
-                                                     {{ Form::open(['route' => 'fees-payment-delete', 'method' => 'POST', 'enctype' => 'multipart/form-data']) }}
-                                                     <input type="hidden" name="id" id="feep_payment_id" value="{{$fees_payment->id}}">
-                                                     <input type="hidden" name="assign_id" id="assign_id" value="{{$fees_payment->assign_id}}">
-                                                     <input type="hidden" name="amount" id="feep_payment_amount" value="{{$fees_payment->amount}}">
-                                                    <button class="primary-btn fix-gr-bg" type="submit">@lang('common.delete')</button>
+                                                    {{ Form::open(['route' => 'fees-payment-delete', 'method' => 'POST', 'enctype' => 'multipart/form-data']) }}
+                                                        <input type="hidden" name="id" id="feep_payment_id" value="{{$fees_payment->id}}">
+                                                        <input type="hidden" name="assign_id" id="assign_id" value="{{$fees_payment->assign_id}}">
+                                                        <input type="hidden" name="amount" id="feep_payment_amount" value="{{$fees_payment->amount}}">
+                                                        <button class="primary-btn fix-gr-bg" type="submit">@lang('common.delete')</button>
                                                      {{ Form::close() }}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-
                                 @endforeach
                             </tbody>
                         </table>

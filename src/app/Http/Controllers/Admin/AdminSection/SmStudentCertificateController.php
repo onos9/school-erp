@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\AdminSection;
 
+use App\Models\StudentRecord;
 use App\SmClass;
 use App\SmStudent;
 use App\SmStudentCertificate;
@@ -16,12 +17,12 @@ use App\Http\Requests\Admin\AdminSection\GenerateCertificateSearchRequest;
 class SmStudentCertificateController extends Controller
 {
     public function __construct()
-	{
+    {
         $this->middleware('PM');
         // User::checkAuth();
-	}
+    }
 
- 
+
     public function index()
     {
 
@@ -43,7 +44,7 @@ class SmStudentCertificateController extends Controller
             'footer_left_text' => "nullable",
             'footer_center_text' => "nullable",
             'footer_right_text' => "nullable",
-            'student_photo' => "nullable",          
+            'student_photo' => "nullable",
             'file' => "required|mimes:pdf,txt,doc,docx,jpg,jpeg,png|dimensions:width=1100,height=850"
 
         ]);
@@ -51,7 +52,7 @@ class SmStudentCertificateController extends Controller
 
 
         try {
-    
+
             $destination = 'public/uploads/certificate/';
             $fileName = fileUpload($request->file,$destination);
 
@@ -69,10 +70,10 @@ class SmStudentCertificateController extends Controller
             $certificate->academic_id = getAcademicId();
 
             $result = $certificate->save();
-          
+
             Toastr::success('Operation successful', 'Success');
             return redirect()->back();
-            
+
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -83,8 +84,8 @@ class SmStudentCertificateController extends Controller
     {
 
         try {
-             if (checkAdmin()) {
-               $certificate = SmStudentCertificate::find($id);
+            if (checkAdmin()) {
+                $certificate = SmStudentCertificate::find($id);
             }else{
                 $certificate = SmStudentCertificate::where('id',$id)->first();
             }
@@ -98,13 +99,13 @@ class SmStudentCertificateController extends Controller
 
     public function update(SmStudentCertificateRequest $request, $id)
     {
-       
+
 
         try {
-           
+
             $destination = 'public/uploads/certificate/';
-              if (checkAdmin()) {
-               $certificate = SmStudentCertificate::find($request->id);
+            if (checkAdmin()) {
+                $certificate = SmStudentCertificate::find($request->id);
             }else{
                 $certificate = SmStudentCertificate::where('id',$request->id)->where('school_id',Auth::user()->school_id)->first();
             }
@@ -115,10 +116,10 @@ class SmStudentCertificateController extends Controller
             $certificate->footer_left_text = $request->footer_left_text;
             $certificate->footer_center_text = $request->footer_center_text;
             $certificate->footer_right_text = $request->footer_right_text;
-            $certificate->student_photo = $request->student_photo;           
+            $certificate->student_photo = $request->student_photo;
             $certificate->file = fileUpdate($certificate->file,$request->file,$destination);
             $result = $certificate->save();
-          
+
             Toastr::success('Operation successful', 'Success');
             return redirect('student-certificate');
 
@@ -134,8 +135,8 @@ class SmStudentCertificateController extends Controller
 
         try {
             // $certificate = SmStudentCertificate::find($id);
-              if (checkAdmin()) {
-               $certificate = SmStudentCertificate::find($id);
+            if (checkAdmin()) {
+                $certificate = SmStudentCertificate::find($id);
             }else{
                 $certificate = SmStudentCertificate::where('id',$id)->where('school_id',Auth::user()->school_id)->first();
             }
@@ -155,12 +156,13 @@ class SmStudentCertificateController extends Controller
     // for get route
     public function generateCertificate()
     {
-        
+
         try {
             $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
             $certificates = SmStudentCertificate::get();
             return view('backEnd.admin.generate_certificate', compact('classes', 'certificates'));
         } catch (\Exception $e) {
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -174,12 +176,18 @@ class SmStudentCertificateController extends Controller
             $certificate_id = $request->certificate;
             $class_id = $request->class;
 
-            if (!$request->section)
-                $students = SmStudent::with('class','parents','section','gender')->where('active_status', 1)->where('class_id', $request->class)
-                    ->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
-            else
-                $students = SmStudent::with('class','parents','section','gender')->where('active_status', 1)->where('class_id', $request->class)
-                    ->where('section_id', $request->section)->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
+            $students = StudentRecord::when($request->academic_year, function ($query) use ($request) {
+                $query->where('academic_id', $request->academic_year);
+            })
+                ->when($request->class, function ($query) use ($request) {
+                    $query->where('class_id', $request->class);
+                })
+                ->when($request->section, function ($query) use ($request) {
+                    $query->where('section_id', $request->section);
+                })
+                ->when(!$request->academic_year, function ($query) use ($request) {
+                    $query->where('academic_id', getAcademicId());
+                })->where('school_id', auth()->user()->school_id)->get();
 
             $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
             $certificates = SmStudentCertificate::where('active_status', 1)->where('school_id',Auth::user()->school_id)->get();
@@ -196,9 +204,9 @@ class SmStudentCertificateController extends Controller
         try {
             $s_ids = explode('-', $s_id);
             $students = [];
-            
+
             foreach ($s_ids as $sId) {
-                $students[] = SmStudent::find($sId);
+                $students[] = StudentRecord::find($sId);
             }
 
             $certificate = SmStudentCertificate::find($c_id);
@@ -208,7 +216,7 @@ class SmStudentCertificateController extends Controller
             $pdf->setPaper('A4', 'landscape');
             return $pdf->stream('certificate.pdf');
         } catch (\Exception $e) {
-            
+
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

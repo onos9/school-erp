@@ -19,18 +19,20 @@
 <section class="admin-visitor-area up_admin_visitor">
     <div class="container-fluid p-0">
         <div class="row">
+            <div class="col-lg-12 student-details up_admin_visitor">
+                <ul class="nav nav-tabs tabs_scroll_nav" role="tablist">
 
-            <div class="col-lg-12">
-                <div class="row">
-                    <div class="col-lg-4 no-gutters">
-                        <div class="main-title">
-                            <h3 class="mb-0">@lang('exam.online_exam_result')</h3>
-                        </div>
-                    </div>
-                </div>
+                @foreach($records as $key => $record) 
+                    <li class="nav-item">
+                        <a class="nav-link @if($key== 0) active @endif " href="#tab{{$key}}" role="tab" data-toggle="tab">{{$record->class->class_name}} ({{$record->section->section_name}}) </a>
+                    </li>
+                    @endforeach
 
-                <div class="row">
-                    <div class="col-lg-12">
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content mt-40">
+                    @foreach($records as $key => $record) 
+                        <div role="tabpanel" class="tab-pane fade  @if($key== 0) active show @endif" id="tab{{$key}}">
 
                         <table id="table_id" class="display school-table" cellspacing="0" width="100%">
 
@@ -46,7 +48,10 @@
                             </thead>
 
                             <tbody>
-                                @foreach($result_views as $result_view)
+                                @php  
+                                    $results = App\Models\StudentRecord::getInfixStudentTakeOnlineExamParent($id, $record->id);
+                                @endphp
+                                @foreach($results as $result_view)
                                 
                                     <tr>
                                         <td>{{$result_view->onlineExam !=""?@$result_view->onlineExam->title:""}}</td>
@@ -88,7 +93,7 @@
                                         @endphp
                                         @if($now >= $endTime)
                                         @if (moduleStatusCheck('OnlineExam')== TRUE)
-                                            <a class="btn btn-success" title="Answer Script"  href="{{route('om-parent_answer_script', [@$result_view->online_exam_id, @$result_view->student_id])}}" >@lang('exam.answer_script')</a>
+                                            <a class="btn btn-success" title="Answer Script"  href="{{route('om-parent_answer_script', [@$result_view->online_exam_id, @$result_view->student_id, $record->id])}}" >@lang('exam.answer_script')</a>
                                           
                                         @else
                                             <a class="btn btn-success modalLink" data-modal-size="modal-lg" title="Answer Script"  href="{{route('parent_answer_script', [@$result_view->online_exam_id, @$result_view->student_id])}}" >@lang('exam.answer_script')</a>
@@ -104,6 +109,7 @@
                             </tbody>
                         </table>
                     </div>
+                    @endforeach
                 </div>
             </div>
         </div>

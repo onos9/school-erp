@@ -134,7 +134,7 @@ class SmGeneralSettings extends Model
             }
             // check exam attendance and whereIn
 
-            $eligible_students       = SmStudent::whereIn('id',$examStudentsids)->where('class_id', $InputClassId)->where('section_id', $InputSectionId)->where('academic_id', getAcademicId())->get();
+            $eligible_students       = SmStudent::whereIn('id',$examStudentsids)->where('class_id', $InputClassId)->where('section_id', $InputSectionId)->get();
 
 
             //all subject list in a specific class/section

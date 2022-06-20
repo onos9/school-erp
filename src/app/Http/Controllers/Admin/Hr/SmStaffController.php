@@ -2,34 +2,38 @@
 
 namespace App\Http\Controllers\Admin\Hr;
 
-use App\ApiBaseMethod;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\Hr\staffRequest;
-use App\InfixModuleManager;
-use App\Models\SmCustomField;
-use App\Scopes\ActiveStatusSchoolScope;
-use App\SmBaseSetup;
-use App\SmDesignation;
-use App\SmGeneralSettings;
-use App\SmHrPayrollGenerate;
-use App\SmHumanDepartment;
-use App\SmLeaveRequest;
+use App\User;
 use App\SmStaff;
+use App\SmSchool;
+use App\SmUserLog;
+use App\SmBaseSetup;
+use App\ApiBaseMethod;
+use App\SmDesignation;
+use App\SmLeaveRequest;
+use App\SmGeneralSettings;
+use App\SmHumanDepartment;
 use App\SmStudentDocument;
 use App\SmStudentTimeline;
-use App\SmUserLog;
+use App\InfixModuleManager;
+use App\SmHrPayrollGenerate;
 use App\Traits\CustomFields;
-use App\User;
-use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\SmCustomField;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Facades\Image;
+use App\Scopes\ActiveStatusSchoolScope;
+use Illuminate\Support\Facades\Session;
+use App\Models\SmStaffRegistrationField;
 use Modules\MultiBranch\Entities\Branch;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\Admin\Hr\staffRequest;
+use CreateSmStaffRegistrationFieldsTable;
 use Modules\RolePermission\Entities\InfixRole;
 
 class SmStaffController extends Controller
@@ -146,8 +150,8 @@ class SmStaffController extends Controller
                 ->get(['id', 'base_setup_name']);
 
             $custom_fields = SmCustomField::where('form_name', 'staff_registration')->get();
-
-            return view('backEnd.humanResource.addStaff', compact('roles', 'departments', 'designations', 'marital_ststus', 'max_staff_no', 'genders', 'custom_fields'));
+            $is_required = SmStaffRegistrationField::where('school_id', auth()->user()->school_id)->where('is_required', 1)->pluck('field_name')->toArray();
+            return view('backEnd.humanResource.addStaff', compact('roles', 'departments', 'designations', 'marital_ststus', 'max_staff_no', 'genders', 'custom_fields', 'is_required'));
         } catch (\Exception $e) {
             return $e->getMessage();
             Toastr::error('Operation Failed', 'Failed');
@@ -157,6 +161,7 @@ class SmStaffController extends Controller
 
     public function staffPicStore(Request $r)
     {
+       
         try {
             $validator = Validator::make($r->all(), [
                 'logo_pic' => 'sometimes|required|mimes:jpg,png|max:40000',
@@ -195,6 +200,7 @@ class SmStaffController extends Controller
 
     public function staffStore(staffRequest $request)
     {
+        // return $request->all();
         // custom field validation start
         $validator = Validator::make($request->all(), $this->generateValidateRules("staff_registration"));
         if ($validator->fails()) {
@@ -212,7 +218,7 @@ class SmStaffController extends Controller
 
                 $user = new User();
                 $user->role_id = $request->role_id;
-                $user->username = $request->email;
+                $user->username = $request->mobile ? $request->mobile : $request->email;
                 $user->email = $request->email;
                 $user->full_name = $request->first_name . ' ' . $request->last_name;
                 $user->password = Hash::make(123456);
@@ -320,9 +326,20 @@ class SmStaffController extends Controller
 
     public function editStaff($id)
     {
-
+      
+        if (auth()->user()->staff->id != $id) {
+            abort_if(!userPermission(163), 404);
+        }
         try {
             $editData = SmStaff::find($id);
+            // $has_permission = [];
+            if (auth()->user()->staff->id == $id && auth()->user()->role_id !=1) {
+                $has_permission = SmStaffRegistrationField::where('school_id', auth()->user()->school_id)
+                ->where('staff_edit', 1)->pluck('field_name')->toArray();
+            } else {
+                $has_permission = SmStaffRegistrationField::where('school_id', auth()->user()->school_id)
+                ->pluck('field_name')->toArray();
+            }
             $max_staff_no = SmStaff::where('is_saas', 0)->where('school_id', Auth::user()->school_id)->max('staff_no');
 
             $roles = InfixRole::where('active_status', '=', 1)
@@ -333,17 +350,27 @@ class SmStaffController extends Controller
                 ->orderBy('id', 'desc')
                 ->get();
 
-            $departments = SmHumanDepartment::where('active_status', '=', '1')->where('school_id', Auth::user()->school_id)->get();
-            $designations = SmDesignation::where('active_status', '=', '1')->where('school_id', Auth::user()->school_id)->get();
-            $marital_ststus = SmBaseSetup::where('active_status', '=', '1')->where('base_group_id', '=', '4')->where('school_id', auth()->user()->school_id)->get();
-            $genders = SmBaseSetup::where('active_status', '=', '1')->where('base_group_id', '=', '1')->where('school_id', auth()->user()->school_id)->get();
+            $departments = SmHumanDepartment::where('active_status', '=', '1')
+            ->where('school_id', Auth::user()->school_id)->get();
+            $designations = SmDesignation::where('active_status', '=', '1')
+            ->where('school_id', Auth::user()->school_id)->get();
+            $marital_ststus = SmBaseSetup::where('active_status', '=', '1')
+            ->where('base_group_id', '=', '4')
+            ->where('school_id', auth()->user()->school_id)
+            ->get();
+            $genders = SmBaseSetup::where('active_status', '=', '1')
+            ->where('base_group_id', '=', '1')
+            ->where('school_id', auth()->user()->school_id)
+            ->get();
 
             // Custom Field Start
-            $custom_fields = SmCustomField::where('form_name', 'staff_registration')->where('school_id', Auth::user()->school_id)->get();
+            $custom_fields = SmCustomField::where('form_name', 'staff_registration')
+            ->where('school_id', Auth::user()->school_id)->get();
             $custom_filed_values = json_decode($editData->custom_field);
             $student = $editData;
             // Custom Field End
-            return view('backEnd.humanResource.editStaff', compact('editData', 'roles', 'departments', 'designations', 'marital_ststus', 'max_staff_no', 'genders', 'custom_fields', 'custom_filed_values', 'student'));
+            $is_required = SmStaffRegistrationField::where('school_id', auth()->user()->school_id)->where('is_required', 1)->pluck('field_name')->toArray();
+            return view('backEnd.humanResource.editStaff', compact('editData', 'roles', 'departments', 'designations', 'marital_ststus', 'max_staff_no', 'genders', 'custom_fields', 'custom_filed_values', 'student', 'is_required', 'has_permission'));
         } catch (\Exception $e) {
 
             Toastr::error('Operation Failed', 'Failed');
@@ -465,7 +492,6 @@ class SmStaffController extends Controller
 
     public function staffUpdate(StaffRequest $request)
     {
-
         // custom field validation start
         $validator = Validator::make($request->all(), $this->generateValidateRules("staff_registration"));
         if ($validator->fails()) {
@@ -492,45 +518,127 @@ class SmStaffController extends Controller
             $designation = 'public/uploads/resume/';
 
             $staff = SmStaff::find($request->staff_id);
-            $basic_salary = !empty($request->basic_salary) ? $request->basic_salary : 0;
-            $staff->staff_no = $request->staff_no;
-            $staff->role_id = $request->role_id;
-            $staff->department_id = $request->department_id;
-            $staff->designation_id = $request->designation_id;
-            $staff->first_name = $request->first_name;
-            $staff->last_name = $request->last_name;
-            $staff->full_name = $request->first_name . ' ' . $request->last_name;
-            $staff->fathers_name = $request->fathers_name;
-            $staff->mothers_name = $request->mothers_name;
-            $staff->email = $request->email;
-            $staff->staff_photo = fileUpdate($staff->staff_photo, $request->staff_photo, $designation);
-            $staff->gender_id = $request->gender_id;
-            $staff->marital_status = $request->marital_status;
-            $staff->date_of_birth = date('Y-m-d', strtotime($request->date_of_birth));
-            $staff->date_of_joining = date('Y-m-d', strtotime($request->date_of_joining));
-            $staff->mobile = $request->mobile;
-            $staff->emergency_mobile = $request->emergency_mobile;
-            $staff->current_address = $request->current_address;
-            $staff->permanent_address = $request->permanent_address;
-            $staff->qualification = $request->qualification;
-            $staff->experience = $request->experience;
-            $staff->epf_no = $request->epf_no;
-            $staff->basic_salary = $basic_salary;
-            $staff->contract_type = $request->contract_type;
-            $staff->location = $request->location;
-            $staff->bank_account_name = $request->bank_account_name;
-            $staff->bank_account_no = $request->bank_account_no;
-            $staff->bank_name = $request->bank_name;
-            $staff->bank_brach = $request->bank_brach;
-            $staff->facebook_url = $request->facebook_url;
-            $staff->twiteer_url = $request->twiteer_url;
-            $staff->linkedin_url = $request->linkedin_url;
-            $staff->instragram_url = $request->instragram_url;
-            $staff->user_id = $staff->user_id;
-            $staff->resume = fileUpdate($staff->resume, $request->resume, $designation);
-            $staff->joining_letter = fileUpdate($staff->joining_letter, $request->joining_letter, $designation);
-            $staff->other_document = fileUpdate($staff->other_document, $request->other_document, $designation);
-            $staff->driving_license = $request->driving_license;
+            if ($request->filled('basic_salary')) {
+                $basic_salary = !empty($request->basic_salary) ? $request->basic_salary : 0;
+            }
+            if ($request->filled('staff_no')) {
+                $staff->staff_no = $request->staff_no;
+            }
+            if ($request->filled('role_id')) {
+                $staff->role_id = $request->role_id;
+            }
+            if ($request->filled('department_id')) {
+                $staff->department_id = $request->department_id;
+            }
+            if ($request->filled('designation_id')) {
+                $staff->designation_id = $request->designation_id;
+            }
+            if ($request->filled('first_name')) {
+                $staff->first_name = $request->first_name;
+            }
+            if ($request->filled('last_name')) {
+                $staff->last_name = $request->last_name;
+            }
+            if ($request->filled('first_name') || $request->filled('last_name')) {
+                $staff->full_name = $request->first_name . ' ' . $request->last_name;
+            }
+            if ($request->filled('fathers_name')) {
+                $staff->fathers_name = $request->fathers_name;
+            }
+            if ($request->filled('mothers_name')) {
+                $staff->mothers_name = $request->mothers_name;
+            }
+            if ($request->filled('email')) {
+                $staff->email = $request->email;
+            }
+            if ($request->filled('staff_photo')) {
+                $staff->staff_photo = fileUpdate($staff->staff_photo, $request->staff_photo, $designation);
+            }
+            if ($request->filled('gender_id')) {
+                $staff->gender_id = $request->gender_id;
+            }
+            if ($request->filled('marital_status')) {
+                $staff->marital_status = $request->marital_status;
+            }
+            if ($request->filled('date_of_birth')) {
+                $staff->date_of_birth = date('Y-m-d', strtotime($request->date_of_birth));
+            }
+            if ($request->filled('date_of_joining')) {
+                $staff->date_of_joining = date('Y-m-d', strtotime($request->date_of_joining));
+            }
+            if ($request->filled('mobile')) {
+                $staff->mobile = $request->mobile;
+            }
+            if ($request->filled('emergency_mobile')) {
+                $staff->emergency_mobile = $request->emergency_mobile;
+            }
+            if ($request->filled('current_address')) {
+                $staff->current_address = $request->current_address;
+            }
+            if ($request->filled('permanent_address')) {
+                $staff->permanent_address = $request->permanent_address;
+            }
+            if ($request->filled('qualification')) {
+                $staff->qualification = $request->qualification;
+            }
+            if ($request->filled('experience')) {
+                $staff->experience = $request->experience;
+            }
+            if ($request->filled('epf_no')) {
+                $staff->epf_no = $request->epf_no;
+            }
+            if ($request->filled('basic_salary')) {
+                $staff->basic_salary = $basic_salary;
+            }
+            if ($request->filled('contract_type')) {
+                $staff->contract_type = $request->contract_type;
+            }
+            if ($request->filled('location')) {
+                $staff->location = $request->location;
+            }
+            if ($request->filled('bank_account_name')) {
+                $staff->bank_account_name = $request->bank_account_name;
+            }
+            if ($request->filled('bank_account_no')) {
+                $staff->bank_account_no = $request->bank_account_no;
+            }
+            if ($request->filled('bank_name')) {
+                $staff->bank_name = $request->bank_name;
+            }
+            if ($request->filled('bank_brach')) {
+                $staff->bank_brach = $request->bank_brach;
+            }
+            if ($request->filled('facebook_url')) {
+                $staff->facebook_url = $request->facebook_url;
+            }
+            if ($request->filled('twiteer_url')) {
+                $staff->twiteer_url = $request->twiteer_url;
+            }
+            if ($request->filled('linkedin_url')) {
+                $staff->linkedin_url = $request->linkedin_url;
+            }
+            if ($request->filled('instragram_url')) {
+                $staff->instragram_url = $request->instragram_url;
+            }
+            if ($request->filled('user_id')) {
+                $staff->user_id = $staff->user_id;
+            }
+            if ($request->filled('resume')) {
+                $staff->resume = fileUpdate($staff->resume, $request->resume, $designation);
+            }
+            if ($request->filled('joining_letter')) {
+                $staff->joining_letter = fileUpdate($staff->joining_letter, $request->joining_letter, $designation);
+            }
+            if ($request->filled('other_document')) {
+                $staff->other_document = fileUpdate($staff->other_document, $request->other_document, $designation);
+            }
+            if ($request->filled('driving_license')) {
+                $staff->driving_license = $request->driving_license;
+            }
+            if ($request->filled('staff_bio')) {
+                $staff->staff_bio = $request->staff_bio;
+            }
+       
 
             //Custom Field Start
             if ($request->customF) {
@@ -547,18 +655,32 @@ class SmStaffController extends Controller
 
             $result = $staff->update();
 
-            if ($result) {
-                $user = User::find($staff->user_id);
-                $user->username = $request->email;
-                $user->email = $request->email;
-                $user->role_id = $request->role_id;
-                $user->full_name = $request->first_name . ' ' . $request->last_name;
-                $user->update();
-
+            
+            $user = User::find($staff->user_id);
+           
+            if ($request->filled('mobile') || $request->filled('email')) {
+                $user->username = $request->mobile ? $request->mobile : $request->email;
             }
+            if ($request->filled('email')) {
+                $user->email = $request->email;
+            }
+            if ($request->filled('role_id')) {
+                $user->role_id = $request->role_id;
+            }
+            if ($request->filled('first_name') || $request->filled('last_name')) {
+                $user->full_name = $request->first_name . ' ' . $request->last_name;
+            }
+        
+            if (moduleStatusCheck('Lms') && $request->filled('staff_bio')) {
+                $user->staff_bio = $request->staff_bio;
+            }
+           
+            $user->update();
+
+         
             Toastr::success('Operation successful', 'Success');
             return redirect('staff-directory');
-        } catch (\Exception $e) {
+        } catch (\Exception $e) {          
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -953,5 +1075,53 @@ class SmStaffController extends Controller
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back()->with(['staffDocuments' => 'active']);
         }
+    }
+    public function settings()
+    {
+        try {
+            $staff_settings = SmStaffRegistrationField::where('school_id', auth()->user()->school_id)->get();
+            return view('backEnd.humanResource.staff_settings', compact('staff_settings'));
+        } catch (\Throwable $th) {
+            throw $th;
+            Toastr::error('Operation Failed', 'Failed');
+            return redirect()->back();
+        }
+    }
+    public function statusUpdate(Request $request)
+    {
+        $field = SmStaffRegistrationField::where('school_id', auth()->user()->school_id)
+                    ->where('id', $request->filed_id)->firstOrFail();
+
+        if ($request->filed_value =='phone_number') {
+            $emailField = SmStaffRegistrationField::where('school_id', auth()->user()->school_id)
+                        ->where('field_name', 'email_address')->firstOrFail();
+          
+            if ($emailField->is_required==0 && $request->field_status==0) {
+                $emailField->is_required = 1;
+            }
+            $emailField->save();
+        } elseif ($request->filed_value =='email_address') {
+            $phoneNumberField = SmStaffRegistrationField::where('school_id', auth()->user()->school_id)->where('field_name', 'phone_number')
+            ->firstOrFail();
+           
+            if ($phoneNumberField->is_required==0 && $request->field_status==0) {
+                $phoneNumberField->is_required = 1;
+            }
+            $phoneNumberField->save();
+        }
+        if ($field) {
+            if ($request->type =='required') {
+
+                $field->is_required = $request->field_status;
+            }
+            if ($request->type =='staff') {
+                $field->staff_edit = $request->field_status;
+            }
+          
+            $field->save();
+                return response()->json(['message'=>'Operation Success']);
+        }
+        return response()->json(['error'=>'Operation Failed']);
+        
     }
 }

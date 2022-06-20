@@ -21,7 +21,13 @@ use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Admin\Examination\SmExamSetupRequest;
-
+use App\Models\StudentRecord;
+use App\Notifications\StudentExamCreateNotification;
+use App\SmNotification;
+use App\SmStudent;
+use App\User;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class SmExamController extends Controller
 {
@@ -182,6 +188,35 @@ class SmExamController extends Controller
                             }
                         }
                     }
+
+                    $student_ids = StudentRecord::where('class_id', $request->class_ids)
+                        ->where('section_id', $section->section_id)
+                       ->where('academic_id', getAcademicId())
+                   ->where('school_id', auth()->user()->school_id)->pluck('student_id')->unique();
+                    
+                    $students = SmStudent::whereIn('id',$student_ids)
+                                ->get();
+        
+                    foreach ($students as $student) {
+        
+                        $notification = new SmNotification();
+                        $notification->user_id = $student->user_id;
+                        $notification->role_id = 2;
+                        $notification->date = date('Y-m-d');
+                        $notification->message = app('translator')->get('exam.a_new_exam_created');
+                        $notification->school_id = Auth::user()->school_id;
+                        $notification->academic_id = getAcademicId();
+                        $notification->save();
+                        
+                        try{
+                            $user=User::find($student->user_id);
+                            Notification::send($user, new StudentExamCreateNotification($notification));
+                        }catch (\Exception $e) {
+                            Log::info($e->getMessage());
+                        }
+        
+                    }
+        
                 }
             }
 

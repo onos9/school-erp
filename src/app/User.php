@@ -43,29 +43,29 @@ class User extends Authenticatable
 
     public function apiKey()
     {
-	if(moduleStatusCheck('Zoom') == TRUE)
-        $apiCheck= \Modules\Zoom\Entities\ZoomSetting::first();
+        if (moduleStatusCheck('Zoom') == true) {
+            $apiCheck= \Modules\Zoom\Entities\ZoomSetting::first();
 
-        if($apiCheck->api_use_for==1){
-            return $this->zoom_api_key_of_user;
-        }else{
-            return env('ZOOM_CLIENT_KEY');
+            if ($apiCheck->api_use_for==1) {
+                return $this->zoom_api_key_of_user;
+            } else {
+                return env('ZOOM_CLIENT_KEY');
 
-        }     
+            }
+        }
     }
 
     public function apiSecret()
     {
-	if(moduleStatusCheck('Zoom') == TRUE)
-        $apiCheck= \Modules\Zoom\Entities\ZoomSetting::first();
-        if($apiCheck->api_use_for==1){
-             return $this->zoom_api_serect_of_user;
-        }else{
-            return env('ZOOM_CLIENT_SECRET');
+        if (moduleStatusCheck('Zoom') == true) {
+            $apiCheck= \Modules\Zoom\Entities\ZoomSetting::first();
+            if ($apiCheck->api_use_for==1) {
+                return $this->zoom_api_serect_of_user;
+            } else {
+                return env('ZOOM_CLIENT_SECRET');
+            }
         }
-    
     }
-
     protected static function boot()
     {
         parent::boot();
@@ -206,9 +206,14 @@ class User extends Authenticatable
         return $this->hasMany('Modules\Lms\Entities\Course','instructor_id','id');
     }
 
+    public function enrolledCourses()
+    {
+        return $this->hasMany('Modules\Lms\Entities\CoursePurchaseLog', 'student_id', 'id')->where('active_status','=', 'approve');
+    }
+
     public function enrolls()
     {
-        return $this->hasMany('Modules\Lms\Entities\CoursePurchaseLog','instructor_id','id');
+        return $this->hasMany('Modules\Lms\Entities\CoursePurchaseLog','instructor_id','id')->where('active_status','=', 1);
     }
 
 }

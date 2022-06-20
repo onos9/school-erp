@@ -1,10 +1,14 @@
 @if(userPermission(900) && menuStatus(900))
     <li  data-position="{{menuPosition(900)}}" class="sortable_li">
-        <a href="#subMenuChat" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-            <span class="flaticon-test"></span>
-            @lang('chat::chat.chat')
+        <a href="javascript:void(0)" class="has-arrow" aria-expanded="false">
+            <div class="nav_icon_small">
+                <span class="flaticon-test"></span>
+            </div>
+            <div class="nav_title">
+                @lang('chat::chat.chat')
+            </div>
         </a>
-        <ul class="collapse list-unstyled" id="subMenuChat">
+        <ul class="list-unstyled" id="subMenuChat">
             @if(userPermission(901) && menuStatus(901))
                 <li  data-position="{{menuPosition(901)}}" >
                     <a href="{{ route('chat.index') }}">@lang('chat::chat.chat_box')</a>

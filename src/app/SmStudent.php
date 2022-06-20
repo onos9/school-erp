@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Models\StudentRecord;
+use App\Scopes\SchoolScope;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
@@ -24,9 +26,9 @@ class SmStudent extends Model
     {
         parent::boot();
 
-        if(auth()->check() and !in_array(auth()->user()->role_id, [2, 3])){
-            static::addGlobalScope(new StatusAcademicSchoolScope);
-        }
+
+        static::addGlobalScope(new SchoolScope);
+
     }
     public function parents()
     {
@@ -58,7 +60,7 @@ class SmStudent extends Model
 
     public function gender()
     {
-        return $this->belongsTo('App\SmBaseSetup', 'gender_id', 'id');
+        return $this->belongsTo('App\SmBaseSetup', 'gender_id', 'id')->withDefault();
     }
 
     public function school()
@@ -68,7 +70,7 @@ class SmStudent extends Model
 
     public function religion()
     {
-        return $this->belongsTo('App\SmBaseSetup', 'religion_id', 'id');
+        return $this->belongsTo('App\SmBaseSetup', 'religion_id', 'id')->withDefault();
     }
 
     public function bloodGroup()
@@ -78,7 +80,7 @@ class SmStudent extends Model
 
     public function category()
     {
-        return $this->belongsTo('App\SmStudentCategory', 'student_category_id', 'id');
+        return $this->belongsTo('App\SmStudentCategory', 'student_category_id', 'id')->withDefault();
     }
 
     public function group()
@@ -437,13 +439,13 @@ class SmStudent extends Model
         }
     }
 
-    public static function scheduleBySubject($exam_id, $sb_id, $student_detail)
+    public static function scheduleBySubject($exam_id, $sb_id, $record)
     {
         try {
             $schedule = SmExamSchedule::where('exam_term_id', $exam_id)
                 ->where('subject_id', $sb_id)
-                ->where('class_id', $student_detail->class_id)
-                ->where('section_id', $student_detail->section_id)
+                ->where('class_id', $record->class_id)
+                ->where('section_id', $record->section_id)
                 ->first();
             return $schedule;
         } catch (\Exception $e) {
@@ -514,18 +516,17 @@ class SmStudent extends Model
         }
     }
 
-    public static function getExamResult($exam_id, $student)
+    public static function getExamResult($exam_id, $record)
     {
-        $eligible_subjects = SmAssignSubject::where('class_id', $student->class_id)->where('section_id', $student->section_id)->groupby(['section_id', 'subject_id'])->where('academic_id', getAcademicId())
+        $eligible_subjects = SmAssignSubject::where('class_id', $record->class_id)->where('section_id', $record->section_id)->groupby(['section_id', 'subject_id'])->where('academic_id', getAcademicId())
             ->where('school_id', Auth::user()->school_id)->get();
 
         foreach ($eligible_subjects as $subject) {
 
             $getMark = SmResultStore::where([
-                ['exam_type_id', $exam_id],
-                ['class_id', $student->class_id],
-                ['section_id', $student->section_id],
-                ['student_id', $student->id],
+                ['exam_type_id', $exam_id],   
+                ['student_id', $record->student_id],
+                ['student_record_id', $record->id],
                 ['subject_id', $subject->subject_id],
             ])->first();
 
@@ -535,9 +536,8 @@ class SmStudent extends Model
 
             $result = SmResultStore::where([
                 ['exam_type_id', $exam_id],
-                ['class_id', $student->class_id],
-                ['section_id', $student->section_id],
-                ['student_id', $student->id],
+                ['student_id', $record->student_id],
+                ['student_record_id', $record->id],
             ])->get();
 
             return $result;
@@ -571,16 +571,62 @@ class SmStudent extends Model
 
     public function DateWiseAttendances()
     {
-        return $this->hasOne(SmStudentAttendance::class, 'student_id')->where('attendance_date', date('Y-m-d', strtotime(request()->attendance_date)));
+        return $this->hasOne(SmStudentAttendance::class, 'student_id')->where('class_id', request()->class)->where('section_id', request()->section)->where('attendance_date', date('Y-m-d', strtotime(request()->attendance_date)));
     }
     public function DateSubjectWiseAttendances()
     {
-        return $this->hasOne(SmSubjectAttendance::class, 'student_id')->where('subject_id', request()->subject_id)->where('attendance_date', date('Y-m-d', strtotime(request()->attendance_date)));
+        return $this->hasOne(SmSubjectAttendance::class, 'student_id')->where('class_id', request()->class)->where('section_id', request()->section)->where('subject_id', request()->subject)->where('attendance_date', date('Y-m-d', strtotime(request()->attendance_date)));
     }
     public function lead()
     {
-        if(moduleStatusCheck('Lead') == true) {        
+        if (moduleStatusCheck('Lead') == true) {
             return $this->belongsTo('Modules\Lead\Entities\Lead', 'lead_id', 'id')->withDefault();
-        }   
+        }
     }
+    public function leadCity()
+    {
+        if (moduleStatusCheck('Lead') == true) {
+            return $this->belongsTo('Modules\Lead\Entities\LeadCity', 'lead_city_id', 'id')->withDefault();
+        }  
+    }
+    public function source()
+    {
+        if (moduleStatusCheck('Lead') == true) {
+            return $this->belongsTo('Modules\Lead\Entities\Source', 'source_id', 'id')->withDefault();
+        }  
+    }
+    public function studentRecords()
+    {
+        return $this->hasMany(StudentRecord::class, 'student_id', 'id')->where('is_promote', 0);
+    }
+    public function getClassRecord()
+    {
+        return $this->hasMany(StudentRecord::class, 'student_id', 'id')->where('is_promote', 0)->groupBy('class_id');
+    }
+    public function studentRecord()
+    {
+        return $this->hasOne(StudentRecord::class, 'student_id')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->where('is_promote', 0);
+    }
+    public function defaultClass()
+    {
+        return $this->hasOne(StudentRecord::class, 'student_id')->latest()->where('is_default', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id);
+    }
+    public function recordClass()
+    {
+        return $this->hasOne(StudentRecord::class, 'student_id')->where('class_id', request()->class)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->where('is_promote', 0);
+    }
+    
+    public function recordSection()
+    {
+        return $this->hasOne(StudentRecord::class, 'student_id')->where('class_id', request()->class)->where('section_id', request()->section)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->where('is_promote', 0);
+    }
+    public function recordClasses()
+    {
+        return $this->hasMany(StudentRecord::class, 'student_id')->where('class_id', request()->class)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->where('is_promote', 0);
+    }
+    public function recordStudentRoll()
+    {
+        return $this->hasOne(StudentRecord::class, 'student_id')->where('class_id', request()->current_class)->where('section_id', request()->current_section)->where('academic_id', request()->current_session)->where('school_id', Auth::user()->school_id);
+    }
+
 }

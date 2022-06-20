@@ -462,7 +462,7 @@
                                                     </div>
                                                 </div>
                                         <div>
-                                            <img class="report-admit-img"  src="{{ file_exists(@$studentDetails->student_photo) ? asset($studentDetails->student_photo) : asset('public/uploads/staff/demo/staff.jpg') }}" width="100" height="100" alt="{{asset($studentDetails->student_photo)}}">
+                                            <img class="report-admit-img"  src="{{ file_exists(@$studentDetails->studentDetail->student_photo) ? asset($studentDetails->studentDetail->student_photo) : asset('public/uploads/staff/demo/staff.jpg') }}" width="100" height="100" alt="{{asset($studentDetails->studentDetail->student_photo)}}">
                                         </div>
                                     </div>
                                     <div class="student_marks_table">
@@ -509,7 +509,7 @@
                                                                                 @lang('student.admission_no') &nbsp;  &nbsp; 
                                                                             </p> &nbsp; 
                                                                             <p class="bold_text">
-                                                                            : {{$student_detail->admission_no}}
+                                                                            : {{$student_detail->studentDetail->admission_no}}
                                                                             </p>
                                                                         </li>
                                                                     </ul>
@@ -537,7 +537,7 @@
                                                                                     @lang('common.date_of_birth')
                                                                                 </p>&nbsp; 
                                                                                 <p class="bold_text"> 
-                                                                                        : {{$student_detail->date_of_birth != ""? dateConvert($student_detail->date_of_birth):''}}
+                                                                                        : {{$student_detail->studentDetail->date_of_birth != ""? dateConvert($student_detail->studentDetail->date_of_birth):''}}
                                                                                     
                                                                                 </p>
                                                                             </li>

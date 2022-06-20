@@ -16,7 +16,7 @@
         </div>
     </div>
 </section>
-@if(isset($students))
+@if(isset($studentRecords))
 
 <section class="mt-20">
     <div class="container-fluid p-0">
@@ -51,17 +51,17 @@
                     </thead>
                     <tbody>
                 
-                            @foreach($students as $student)
+                            @foreach($studentRecords as $student)
                             <tr>
-                                <td>{{ @$student->admission_no}}</td>
-                                <td>{{ @$student->full_name}}</td>
+                                <td>{{ @$student->studentDetail->admission_no}}</td>
+                                <td>{{ @$student->studentDetail->full_name}}</td>
                                 <td>{{ @$student->class !=""?@$student->class->class_name: ""}} ({{@$student->section !=""?@$student->section->section_name: ""}})</td>
                                 <td>{{ @$online_exam_question->title}}</td>
                                 <td>{{ @$online_exam_question->subject !=""?$online_exam_question->subject->subject_name:""}}</td>
 
                                 <td>
-                                    @if(in_array(@$student->id, @$present_students))
-                                        <a class="primary-btn small bg-success text-white border-0" href="{{route('online_exam_marking', [@$online_exam_question->id, @$student->id])}}">
+                                    @if(in_array(@$student->student_id, @$present_students))
+                                        <a class="primary-btn small bg-success text-white border-0" href="{{route('online_exam_marking', [@$online_exam_question->id, @$student->student_id])}}">
                                             @lang('exam.view_answer_marking')
                                      </a>
                                     @else

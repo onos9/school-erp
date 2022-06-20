@@ -2,9 +2,10 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Model;
 use App\Scopes\StatusAcademicSchoolScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Modules\OnlineExam\Entities\InfixStudentTakeOnlineExam;
 
 class SmOnlineExam extends Model
 {
@@ -40,11 +41,21 @@ class SmOnlineExam extends Model
         return $this->hasMany('App\SmOnlineExamQuestionAssign', 'online_exam_id', 'id');
     }
 
-    public static function obtainedMarks($exam_id, $student_id)
+    public static function obtainedMarks($exam_id, $student_id, $record_id = null)
     {
 
         try {
-            $marks = SmStudentTakeOnlineExam::select('status', 'total_marks')->where('online_exam_id', $exam_id)->where('student_id', $student_id)->first();
+            if (moduleStatusCheck('OnlineExam')==true) {
+                $marks = InfixStudentTakeOnlineExam::select('status', 'student_done', 'total_marks')
+                ->where('online_exam_id', $exam_id)->where('student_id', $student_id)
+                ->where('student_record_id', $record_id)
+                ->first();
+            } else {
+                $marks = SmStudentTakeOnlineExam::select('status', 'total_marks')
+                ->where('online_exam_id', $exam_id)
+                ->where('student_id', $student_id)
+                ->first();
+            }
             return $marks;
         } catch (\Exception $e) {
             $data = [];

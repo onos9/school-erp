@@ -161,4 +161,9 @@ return[
     'parents_phone_number'=>'Parents phone number',
     'student_wise'=>'Student wise',
     'view_bank_payment'=>'View bank payment',
+    'paid_fees'=>'Paid Fees',
+    'submit'=>'Submit',
+    'paid_fees'=>'Paid Fees',
+    'submit'=>'Submit',
+    'view_bank_payment'=>'View bank payment',
 ];

@@ -5,7 +5,26 @@
 @section('mainContent')
     @push('css')
         <link rel="stylesheet" href="{{url('Modules\Fees\Resources\assets\css\feesStyle.css')}}"/>
+        <style>
+        .margin_auto{
+            margin-left: auto;
+             margin-right: 0
+        }
+        html[dir="rtl"] .margin_auto{
+            margin-left: 0;
+             margin-right: auto;
+        }
+        html[dir="rtl"] .address_text p {
+            margin-right: auto;
+            margin-left: 0;
+        }
+        html[dir="rtl"] .total_count {
+            margin-right: auto;
+            margin-left: 0;
+        }
+    </style>
     @endpush
+    
     <section class="sms-breadcrumb mb-40 white-box">
         <div class="container-fluid">
             <div class="row justify-content-between">
@@ -54,24 +73,24 @@
                                     <!-- single table  -->
                                     <table class="mb_30">
                                         <tbody>
-                                        <tr>
-                                            <td>
-                                                <div class="addressleft_text">
-                                                    <p><span>@lang('fees.fees_invoice_issued_to')</p>
-                                                    <p><span><strong>@lang('student.student_name') </span> <span class="nowrap">: {{@$invoiceInfo->studentInfo->full_name}}</span> </strong></p>
-                                                    <p><span>@lang('common.class')</span> <span>: {{@$invoiceInfo->studentInfo->class->class_name}} ({{@$invoiceInfo->studentInfo->section->section_name}})</span> </p>
-                                                    <p><span>@lang('student.roll_no')</span> <span>: {{@$invoiceInfo->studentInfo->roll_no}}</span> </p>
-                                                    <p><span>@lang('student.admission_no')</span> <span>: {{@$invoiceInfo->studentInfo->admission_no}}</span> </p>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td>
+                                                    <div class="addressleft_text">
+                                                        <p><span>@lang('fees.fees_invoice_issued_to')</p>
+                                                        <p><span><strong>@lang('student.student_name') </span> <span class="nowrap">: {{@$invoiceInfo->studentInfo->full_name}}</span> </strong></p>
+                                                        <p><span>@lang('student.class_section')</span> <span>: {{@$invoiceInfo->recordDetail->class->class_name}} ({{@$invoiceInfo->recordDetail->section->section_name}})</span> </p>
+                                                        <p><span>@lang('student.roll_no')</span> <span>: {{@$invoiceInfo->recordDetail->roll_no}}</span> </p>
+                                                        <p><span>@lang('student.admission_no')</span> <span>: {{@$invoiceInfo->studentInfo->admission_no}}</span> </p>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                     <!--/ single table  -->
                                 </td>
                                 <td >
                                     <!-- single table  -->
-                                    <table class="mb_30" style="margin-left: auto; margin-right: 0;">
+                                    <table class="mb_30 margin_auto">
                                         <tbody>
                                         <tr>
                                             <td>
@@ -151,7 +170,12 @@
                     @endphp
                     <tr>
                         <td>{{$key+1}}</td>
-                        <td>{{$invoiceDetail->feesType->name}}</td>
+                        <td>
+                            {{@$invoiceDetail->feesType->name}} 
+                            @if($invoiceDetail->note)
+                                <i class="fa fa-info-circle" aria-hidden="true"data-tooltip="tooltip" title="{{$invoiceDetail->note}}" style="courser:help;"></i>
+                            @endif
+                        </td>
                         <td>{{($invoiceDetail)? $invoiceDetail->amount : 0.00}}</td>
                         <td>{{($invoiceDetail->weaver)? $invoiceDetail->weaver : 0}}</td>
                         <td>{{($invoiceDetail->fine)? $invoiceDetail->fine : 0}}</td>
@@ -202,7 +226,7 @@
                 </tfoot>
             </table>
 
-            <div class="col-lg-7">
+            <div class="col-lg-12">
                 <table class="table border_table mb_30 description_table" >
                     <thead>
                         <tr>
@@ -229,3 +253,8 @@
         </div>
     </section>
 @endsection
+@push('script')
+    <script>
+        $('[data-tooltip="tooltip"]').tooltip();
+    </script>
+@endpush

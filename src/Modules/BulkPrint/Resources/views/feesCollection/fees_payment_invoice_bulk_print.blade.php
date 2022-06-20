@@ -232,8 +232,8 @@
 @foreach ($students as $student)
     @php
         $invoice_no= $invoiceSettings->prefix !=null ? $invoiceSettings->prefix.$student->admission_no.$student->id.$in_no++ : (string) date('Ymd').$student->admission_no.$student->id.$in_no++;
-          $parent =$student->parents;
-          $fees_assigneds=$student->feesAssign;
+          $parent =$student->studentDetail->parents;
+          $fees_assigneds=$student->fees;
     @endphp
     <div class="page">
         <div class="subpage">
@@ -257,7 +257,7 @@
                                 <ul>
                                     <li>
                                         <p>
-                                            @lang('student.admission_no'): {{@$student->admission_no}}
+                                            @lang('student.admission_no'): {{@$student->studentDetail->admission_no}}
                                         </p>
                                         <p>
                                             @lang('common.date'): {{date('d/m/Y')}}
@@ -265,7 +265,7 @@
                                     </li>
                                     <li>
                                         <p>
-                                            @lang('student.student_name'): {{@$student->full_name}}
+                                            @lang('student.student_name'): {{@$student->studentDetail->full_name}}
                                         </p>
                                         <p>@lang('bulkprint::bulk.invoice_no') : {{$invoice_no}}</p>
                                     </li>
@@ -307,7 +307,7 @@
                                 <ul>
                                     <li>
                                         <p>
-                                            @lang('student.admission_no'): {{@$student->admission_no}}
+                                            @lang('student.admission_no'): {{@$student->studentDetail->admission_no}}
                                         </p>
                                         <p>
                                             @lang('common.date'): {{date('d/m/Y')}}
@@ -315,7 +315,7 @@
                                     </li>
                                     <li>
                                         <p>
-                                            @lang('student.student_name'): {{@$student->full_name}}
+                                            @lang('student.student_name'): {{@$student->studentDetail->full_name}}
                                         </p>
                                         <p>@lang('bulkprint::bulk.invoice_no') : {{$invoice_no}}</p>
                                     </li>
@@ -359,7 +359,7 @@
                                 <ul>
                                     <li>
                                         <p>
-                                            @lang('student.admission_no'): {{@$student->admission_no}}
+                                            @lang('student.admission_no'): {{@$student->studentDetail->admission_no}}
                                         </p>
                                         <p>
                                             @lang('common.date'): {{date('d/m/Y')}}
@@ -367,9 +367,9 @@
                                     </li>
                                     <li>
                                         <p>
-                                            @lang('student.student_name'): {{@$student->full_name}}
+                                            @lang('student.student_name'): {{@$student->studentDetail->full_name}}
                                         </p>
-                                        <p>@lang('bulkprint::bulk..invoice_no') : {{$invoice_no}}</p>
+                                        <p>@lang('bulkprint::bulk.invoice_no') : {{$invoice_no}}</p>
                                     </li>
                                     <li>
                                         <p>
@@ -432,10 +432,10 @@
                               $total_discount += $discount_amount;
                               $student_id = $fees_assigned->student_id;
                               //Sum of total paid amount of single fees type
-                              $paid = \App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id,$fees_assigned->student_id)->sum('amount');
+                              $paid = \App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id,$fees_assigned->student_id, $student->id)->sum('amount');
                               $total_grand_paid += $paid;
                               //Sum of total fine for single fees type
-                            $fine = \App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id,$fees_assigned->student_id)->sum('fine');
+                            $fine = \App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id,$fees_assigned->student_id, $student->id)->sum('fine');
                             $total_fine += $fine;
                             $total_paid = $discount_amount + $paid;
                         @endphp
@@ -713,7 +713,7 @@
                                 </p>
                             </td>
                         @endif
-                    <!-- 3nd td wrap  -->
+                        <!-- 3nd td wrap  -->
                         @if($invoiceSettings->per_th==3)
                             <td colspan="2">
                                 <p class="parents_num text_center">

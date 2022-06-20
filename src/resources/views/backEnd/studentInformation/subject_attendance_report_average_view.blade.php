@@ -113,20 +113,25 @@
                                 <select class="w-100 bb niceSelect form-control{{ $errors->has('section') ? ' is-invalid' : '' }} select_section" id="select_section" name="section">
                                     <option data-display="@lang('common.select_section') *" value="">@lang('common.select_section') *</option>
                                 </select>
+                                <div class="pull-right loader loader_style" id="select_section_loader">
+                                    <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
+                                </div>
                                 @if ($errors->has('section'))
                                 <span class="invalid-feedback invalid-select" role="alert">
                                     <strong>{{ $errors->first('section') }}</strong>
                                 </span>
                                 @endif
                             </div>
-                            {{-- <div class="col-lg-4 mt-30-md" id="select_subject_div">
+                            {{-- <div class="col-lg-3 mt-30-md" id="select_subject_div">
 
                                 <select class="w-100 bb niceSelect form-control{{ $errors->has('subject') ? ' is-invalid' : '' }} select_subject" id="select_subject" name="subject">
 
                                     <option data-display="Select subject *" value="">@lang('student.select_subject') *</option>
 
                                 </select>
-
+                                <div class="pull-right loader loader_style" id="select_subject_loader">
+                                    <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
+                                </div>
                                 @if ($errors->has('subject'))
 
                                 <span class="invalid-feedback invalid-select" role="alert">
@@ -271,10 +276,10 @@
                                 <tr>
                                     <td>
                                         @php $student = 0; @endphp
-                                        @foreach($values as $value)
+                                        @foreach($values as $value)                                       
                                             @php $student++; @endphp
                                             @if($student == 1)
-                                                {{@$value->full_name}}
+                                                {{@$value->student->full_name}}
                                             @endif
                                         @endforeach
                                     </td>
@@ -283,7 +288,7 @@
                                         @foreach($values as $value)
                                             @php $student++; @endphp
                                             @if($student == 1)
-                                                {{@$value->admission_no}}
+                                                {{@$value->student->admission_no}}
                                             @endif
                                         @endforeach
                                     </td>

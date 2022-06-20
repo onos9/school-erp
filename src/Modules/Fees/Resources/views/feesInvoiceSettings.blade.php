@@ -115,8 +115,8 @@
                                 <td>
                                     <div class="col-lg-12">
                                         <div class="input-effect">
-                                            <input class="primary-input form-control{{ $errors->has('prefix') ? ' is-invalid' : '' }}" type="text" name="prefix" id="prefix" autocomplete="off" value="{{isset($invoiceSettings)? $invoiceSettings->prefix: old('prefix')}}">
-                                            <label>@lang('fees::feesModule.prefix')</label>
+                                            <input class="primary-input form-control{{ $errors->has('prefix') ? ' is-invalid' : '' }}" type="text" name="prefix" id="prefix" autocomplete="off" value="{{isset($invoiceSettings)? $invoiceSettings->prefix: old('prefix')}}" maxlength="10">
+                                         <label>@lang('fees::feesModule.prefix') (@lang('fees::feesModule.max_10_characters'))</label>
                                             <span class="focus-border"></span>
                                         </div>
                                     </div>

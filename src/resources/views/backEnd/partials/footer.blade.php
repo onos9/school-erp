@@ -6,9 +6,31 @@
     $copyright_text = 'Copyright 2019 All rights reserved by Codethemes';
     }
 @endphp
-</div>
-</div>
 
+</div>
+</div>
+@if(moduleStatusCheck('Lead')==true)
+    @foreach ($reminders as $item)
+    <div id="fullCalReminderModal_{{ $item->id }}" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 id="modalTitle" class="modal-title"></h4>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">×</span> <span class="sr-only">@lang('common.close')</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                @include('lead::lead_calender', ['event' => $item])
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="primary-btn tr-bg" data-dismiss="modal">@lang('common.close')</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endforeach
+@endif
 @if(config('app.app_sync'))
     <a target="_blank" href="https://1.envato.market/9WVoZ3" class="float_button"> <i class="ti-shopping-cart-full"></i>
         <h3>Purchase InfixEdu</h3>
@@ -92,6 +114,7 @@
 <script src="{{asset('public/backEnd/')}}/vendors/js/popper.js"></script>
 {{--<script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap.min.js">--}}
 {{--</script>--}}
+<script src="{{asset('public/backEnd/js/metisMenu.js')}}"></script>
 <script src="{{asset('public/backEnd/')}}/css/rtl/bootstrap.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/vendors/js/nice-select.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/vendors/js/jquery.magnific-popup.min.js"></script>
@@ -100,7 +123,7 @@
 <script src="{{asset('public/backEnd/')}}/vendors/js/morris.min.js"></script>
 <script type="text/javascript" src="{{asset('public/backEnd/')}}/vendors/js/toastr.min.js"></script>
 <script type="text/javascript" src="{{asset('public/backEnd/')}}/vendors/js/moment.min.js"></script>
-<script src="{{ asset('public/backEnd/vendors/editor/ckeditor/ckeditor.js') }}"></script>
+{{-- <script src="{{ asset('public/backEnd/vendors/editor/ckeditor/ckeditor.js') }}"></script> --}}
 <script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap_datetimepicker.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap-datepicker.min.js"></script>
 <script type="text/javascript" src="{{asset('public/backEnd/')}}/vendors/js/fullcalendar.min.js"></script>
@@ -208,6 +231,28 @@
 @yield('script')
 @stack('script')
 @stack('scripts')
+@if(moduleStatusCheck('Lead')==true)
+
+    @foreach ($reminders as $item)
+        @php
+        $reminder_date_time=Carbon::parse($item->date_time)->format('Y-m-d').' '.$item->time;
+        @endphp
+    <script>
+        setInterval(() => {
+                        let id = {{ $item->id }};
+                        let reminder_date = '{{ $reminder_date_time }}';
+                        let current_time = moment().format('Y-M-D h:mm:ss a');
+                        let current_time_integer = Date.parse(current_time);
+                        let reminder_integer = Date.parse(reminder_date); 
+                        console.log(current_time_integer,reminder_integer,id);
+                        if(current_time_integer==reminder_integer) {
+                        $('#fullCalReminderModal_'+id).modal('show');
+                        }
+                    }, 1000);
+    </script>
+    @endforeach
+@endif  
+
 </body>
 
 </html>

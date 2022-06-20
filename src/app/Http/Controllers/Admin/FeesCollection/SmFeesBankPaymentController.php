@@ -167,7 +167,6 @@ class SmFeesBankPaymentController extends Controller
     
     public function approveFeesPayment(Request $request){
         try {
-           
           if (checkAdmin()) {
                 $bank_payment = SmBankPaymentSlip::find($request->id);
             }else{
@@ -177,10 +176,12 @@ class SmFeesBankPaymentController extends Controller
             ->where('sm_fees_masters.fees_type_id',$bank_payment->fees_type_id)
             ->where('sm_fees_assigns.student_id',$bank_payment->student_id)->first();
 
-            $fees_assign=SmFeesAssign::where('fees_master_id',$get_master_id->fees_master_id)->where('student_id',$bank_payment->student_id)->first();
-
-            // return $bank_payment;
-
+            $fees_assign=SmFeesAssign::where('fees_master_id',$get_master_id->fees_master_id)
+                        ->where('record_id',$bank_payment->record_id)
+                        ->where('student_id',$bank_payment->student_id)
+                        ->where('school_id',Auth::user()->school_id)
+                        ->first();
+                        
             if ($bank_payment->amount > $fees_assign->fees_amount) {
                 Toastr::warning('Due amount less than bank payment', 'Warning');
                 return redirect()->back();
@@ -193,12 +194,13 @@ class SmFeesBankPaymentController extends Controller
             $fees_payment->discount_amount = 0;
             $fees_payment->fine = 0;
             $fees_payment->amount = $bank_payment->amount;
-             $fees_payment->assign_id = $bank_payment->assign_id;
+            $fees_payment->assign_id = $bank_payment->assign_id;
             $fees_payment->payment_date = date('Y-m-d', strtotime($bank_payment->date));
             $fees_payment->payment_mode = $bank_payment->payment_mode;
             $fees_payment->bank_id= $bank_payment->payment_mode=='bank' ? $bank_payment->bank_id : null;
             $fees_payment->created_by = $user->id;
             $fees_payment->note = $bank_payment->note;
+            $fees_payment->record_id = $bank_payment->record_id;
             $fees_payment->academic_id = getAcademicId();
             $fees_payment->school_id = Auth::user()->school_id;
             $fees_payment->save();
@@ -269,7 +271,11 @@ class SmFeesBankPaymentController extends Controller
 
                 $bank_slips->where('date', $new_format);
             }
-            $bank_slips = $bank_slips->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->orderBy('id', 'desc')->get();
+            $bank_slips = $bank_slips->where('record_id',$bank_payment->record_id)
+                            ->where('academic_id', getAcademicId())
+                            ->where('school_id',Auth::user()->school_id)
+                            ->orderBy('id', 'desc')
+                            ->get();
             $date = $request->payment_date;
             $class_id = $request->class;
             $section_id = $request->section;

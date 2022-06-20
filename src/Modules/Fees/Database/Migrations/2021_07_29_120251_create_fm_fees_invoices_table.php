@@ -24,6 +24,7 @@ class CreateFmFeesInvoicesTable extends Migration
             $table->string('payment_status')->nullable();
             $table->string('payment_method')->nullable();
             $table->integer('bank_id')->nullable();
+            $table->string('type')->default('fees')->nullable()->comment('fees, lms');
             $table->integer('school_id')->nullable();
             $table->integer('academic_id')->nullable();
             $table->timestamps();

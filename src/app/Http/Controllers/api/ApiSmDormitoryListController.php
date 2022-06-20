@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers\api;
 
+use List;
 use Validator;
+use App\SmClass;
+use App\SmStudent;
 use App\ApiBaseMethod;
+use App\SmAcademicYear;
 use App\SmDormitoryList;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
+use App\Scopes\StatusAcademicSchoolScope;
 
 class ApiSmDormitoryListController extends Controller
 {
@@ -232,6 +237,42 @@ class ApiSmDormitoryListController extends Controller
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
+        }
+    }
+    public function saas_studentDormitoryReportSearch(Request $request, $school_id)
+    {
+
+        try {
+            $student_ids = studentRecords($request, null, $school_id)->pluck('student_id')->unique();
+            $students = SmStudent::query();
+            $students->where('active_status', 1)->where('school_id', $school_id);
+           
+            if ($request->dormitory != "") {
+                $students->where('dormitory_id', $request->dormitory)->where('school_id', $school_id);
+            } else {
+                $students->where('dormitory_id', '!=', '')->where('school_id', $school_id);
+            }
+            $students = $students->whereIn('id', $student_ids)->get();
+
+            $classes = SmClass::withOutGlobalScope(StatusAcademicSchoolScope::class)->where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
+            $dormitories = SmDormitoryList::where('active_status', 1)->where('school_id', $school_id)->get();
+
+            $class_id = $request->class;
+            $dormitory_id = $request->dormitory;
+
+            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
+                $data = [];
+                $data['classes'] = $classes->toArray();
+                $data['dormitories'] = $dormitories->toArray();
+                $data['students'] = $students->toArray();
+                $data['class_id'] = $class_id;
+                $data['dormitory_id'] = $dormitory_id;
+                return ApiBaseMethod::sendResponse($data, null);
+            }
+
+            return view('backEnd.dormitory.student_dormitory_report', compact('classes', 'dormitories', 'students', 'class_id', 'dormitory_id'));
+        } catch (\Exception $e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
 }

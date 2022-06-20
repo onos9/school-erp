@@ -19,7 +19,6 @@ class InfixEduV640VersionUpdate extends Migration
     public function up()
     {
         // AppSlider
-
         $check = InfixModuleManager::where('name', 'AppSlider')->firstOrFail();
         if(!$check){
             $XenditPayment = 'AppSlider';

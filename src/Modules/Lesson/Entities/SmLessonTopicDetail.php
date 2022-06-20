@@ -21,6 +21,6 @@ class SmLessonTopicDetail extends Model
     }
 
     public function lessonPlan(){
-        return $this->hasMany('Modules\Lesson\Entities\LessonPlanner','topic_detail_id','id');
+        return $this->hasMany('Modules\Lesson\Entities\LessonPlanTopic','topic_id','id');
     }
 }

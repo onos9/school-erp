@@ -23,7 +23,7 @@ class SmStudentCertificateRequest extends FormRequest
      */
     public function rules()
     {
-        $maxFileSize =generalSetting()->file_size*1024;  
+        $maxFileSize =generalSetting()->file_size*1024;
         return [
             'name' => "required|max:50",
             'file' => "mimes:pdf,txt,doc,docx,jpg,jpeg,png|dimensions:width=1100,height=850|max:".$maxFileSize

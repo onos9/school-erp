@@ -96,7 +96,8 @@
                 </div>
             </div>
         @if(isset($students))
-            {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'method' => 'POST', 'url' => 'fees-assign-store', 'enctype' => 'multipart/form-data'])}}
+            {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'method' => 'POST', 'url' => 'btn-assign-fees-group', 'enctype' => 'multipart/form-data'])}}
+            {{-- {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'method' => 'POST', 'url' => 'fees-assign-store', 'enctype' => 'multipart/form-data'])}} --}}
             <div class="row mt-40">
                 <div class="col-lg-12">
                     <div class="row mb-30">
@@ -138,8 +139,7 @@
                                         <td>
                                             {{@$fees_assign_group->feesTypes !=""?@$fees_assign_group->feesTypes->name:""}}
                                         </td>
-                                        <td>{{@$fees_assign_group->amount}}
-                                        </td>
+                                        <td>{{@$fees_assign_group->amount}}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -175,20 +175,25 @@
 
                                 <tbody>
                                     @foreach($students as $student)
+                                    
                                     <tr  @php if(in_array($student->id, $pre_assigned)){echo 'style="background-color:#efeaf7"'; } @endphp>
                                         <td>
-                                            <input type="checkbox" id="student.{{$student->id}}" class="common-checkbox" name="student_checked[]" value="{{$student->id}}" {{in_array($student->id, $pre_assigned)? 'checked':''}}>
+                                            <input type="checkbox" id="student.{{$student->id}}" class="common-checkbox" name="data[{{$loop->index}}][checked]" value="1" {{in_array($student->id, $pre_assigned)? 'checked':''}}>
                                             <label for="student.{{$student->id}}"></label>
 
-                                            <input type="hidden" name="unchecked_ids[]" value="{{$student->id}}">
+                                            <input type="hidden" name="data[{{$loop->index}}][class_id]" value="{{@$student->class->id}}">
+                                            <input type="hidden" name="data[{{$loop->index}}][section_id]" value="{{@$student->section->id}}">
+                                            <input type="hidden" name="data[{{$loop->index}}][record_id]" value="{{@$student->id}}">
                                         </td>
-                                        <td>{{$student->first_name.' '.$student->last_name}} <input type="hidden" name="id[]" value="{{isset($update)? $student->forwardBalance->id: $student->id}}"></td>
-                                        <td>{{$student->admission_no}}</td>
-                                        <td>{{ @$student->class->class_name.'('.@$student->section->section_name.')'}}</td>
+                                        <td>{{@$student->studentDetail->full_name}} 
+                                            <input type="hidden" name="data[{{$loop->index}}][student_id]" value="{{isset($update)? $student->forwardBalance->id: $student->student_id}}">
+                                        </td>
+                                        <td>{{@$student->studentDetail->admission_no}}</td>
+                                        <td>{{@$student->class->class_name.'('.@$student->section->section_name.')'}}</td>
 
-                                        <td>{{$student->parents != ""? $student->parents->fathers_name:""}}</td>
-                                        <td>{{@$student->category->category_name}}</td>
-                                        <td>{{@$student->gender->base_setup_name}}</td>
+                                        <td>{{$student->studentDetail->parents != ""? $student->studentDetail->parents->fathers_name:""}}</td>
+                                        <td>{{@$student->studentDetail->category->category_name}}</td>
+                                        <td>{{@$student->studentDetail->gender->base_setup_name}}</td>
                                     </tr>
                                     @endforeach
 
@@ -197,7 +202,7 @@
                                 <tr>
                                     <td colspan="7">
                                         <div class="text-center">
-                                            <button type="button" class="primary-btn fix-gr-bg mb-0 submit" id="btn-assign-fees-group" data-loading-text="<i class='fas fa-spinner'></i> Processing Data">
+                                            <button type="submit" class="primary-btn fix-gr-bg mb-0 submit" id="btn-assign-fees-group" data-loading-text="<i class='fas fa-spinner'></i> Processing Data">
                                                 <span class="ti-save pr"></span>
                                                 @lang('fees.save_fees')
                                             </button>

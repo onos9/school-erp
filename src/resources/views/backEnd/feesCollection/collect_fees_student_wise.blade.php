@@ -41,7 +41,7 @@
                                         </div>
                                         <div class="col-lg-6 col-md-6">
                                             <div class="name">
-                                                {{@$student->full_name}}
+                                                {{@$student->studentDetail->full_name}}
                                             </div>
                                         </div>
                                     </div>
@@ -55,7 +55,7 @@
                                         </div>
                                         <div class="col-lg-6 col-md-6">
                                             <div class="name">
-                                                {{@$student->parents != ""? @$student->parents->fathers_name:""}}
+                                                {{@$student->studentDetail->parents != ""? @$student->studentDetail->parents->fathers_name:""}}
                                             </div>
                                         </div>
                                     </div>
@@ -69,7 +69,7 @@
                                         </div>
                                         <div class="col-lg-6 col-md-6">
                                             <div class="name">
-                                                {{@$student->mobile}}
+                                                {{@$student->studentDetail->mobile}}
                                             </div>
                                         </div>
                                     </div>
@@ -83,7 +83,7 @@
                                         </div>
                                         <div class="col-lg-6 col-md-6">
                                             <div class="name">
-                                                {{@$student->category !=""?@$student->category->category_name:""}}
+                                                {{@$student->studentDetail->category !=""?@$student->studentDetail->category->category_name:""}}
                                             </div>
                                         </div>
                                     </div>
@@ -118,7 +118,7 @@
                                         </div>
                                         <div class="col-lg-6 col-md-6">
                                             <div class="name">
-                                                {{@$student->admission_no}}
+                                                {{@$student->studentDetail->admission_no}}
                                             </div>
                                         </div>
                                     </div>
@@ -132,7 +132,7 @@
                                         </div>
                                         <div class="col-lg-6 col-md-6">
                                             <div class="name">
-                                                {{@$student->roll_no}}
+                                                {{@$student->studentDetail->roll_no}}
                                             </div>
                                         </div>
                                     </div>
@@ -203,9 +203,9 @@
                             $discount_amount = $fees_assigned->applied_discount;
                             $total_discount += $discount_amount;
                             $student_id = $fees_assigned->student_id;
-                            $paid = App\SmFeesAssign::discountSum($fees_assigned->student_id, $fees_assigned->feesGroupMaster->feesTypes->id, 'amount');
+                            $paid = App\SmFeesAssign::discountSum($fees_assigned->student_id, $fees_assigned->feesGroupMaster->feesTypes->id, 'amount' ,$fees_assigned->record_id);
                             $total_grand_paid += $paid;
-                            $fine = App\SmFeesAssign::discountSum($fees_assigned->student_id, $fees_assigned->feesGroupMaster->feesTypes->id, 'fine');
+                            $fine = App\SmFeesAssign::discountSum($fees_assigned->student_id, $fees_assigned->feesGroupMaster->feesTypes->id, 'fine', $fees_assigned->record_id);
                             $total_fine += $fine;
                             $total_paid = $discount_amount + $paid;
                         @endphp
@@ -224,16 +224,11 @@
                                 @endif
                             </td>
                             <td>
-                                
                                 @php
                                     $rest_amount = $fees_assigned->feesGroupMaster->amount - $total_paid;
-                                    
                                     $total_balance +=  $rest_amount;
-                                    
                                     $balance_amount = number_format($rest_amount+$fine, 2, '.', '');
-                                   
                                 @endphp
-                                
                                 @if($balance_amount == 0)
                                     <button class="primary-btn small bg-success text-white border-0">@lang('fees.paid')</button>
                                 @elseif($paid != 0)
@@ -266,7 +261,7 @@
                                             @if($balance_amount != 0) 
                                                 <a class="dropdown-item modalLink" data-modal-size="modal-lg" 
                                                 title="{{@$fees_assigned->feesGroupMaster->feesGroups->name.': '. $fees_assigned->feesGroupMaster->feesTypes->name}}"  
-                                                href="{{route('fees-generate-modal', [$balance_amount, $fees_assigned->student_id, $fees_assigned->feesGroupMaster->fees_type_id,$fees_assigned->fees_master_id,$fees_assigned->id])}}" >@lang('fees.add_fees') </a>
+                                                href="{{route('fees-generate-modal', [$balance_amount, $fees_assigned->student_id, $fees_assigned->feesGroupMaster->fees_type_id,$fees_assigned->fees_master_id,$fees_assigned->id,$fees_assigned->record_id])}}" >@lang('fees.add_fees') </a>
                                             @else
                                                 <a class="dropdown-item"  target="_blank">Payment Done</a>
                                             @endif
@@ -276,7 +271,7 @@
                             </td>
                         </tr>
                             @php
-                                $payments = App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id, $fees_assigned->student_id);
+                                $payments = App\SmFeesAssign::feesPayment($fees_assigned->feesGroupMaster->feesTypes->id, $fees_assigned->student_id, $fees_assigned->record_id);
                                 $i = 0;
                             @endphp
                             @foreach($payments as $payment)
@@ -352,5 +347,4 @@
         </div>
     </div>
 </section>
-
 @endsection

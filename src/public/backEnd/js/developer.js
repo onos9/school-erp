@@ -1739,6 +1739,8 @@
             }
         });
     });
+
+
     // get all section by class_id selection in homework part
     $(document).ready(function() {
         $("#subjectSelecttHomeworkDiv").on("change", function() {
@@ -2331,6 +2333,39 @@ $("#dPages").on("select2:opening select2:closing", function(event) {
     $searchfield.prop("disabled", true);
 });
 
+$("#multipleClass").select2();
+
+$(document).ready(function() {
+    $("#multipleClassCheckbox").click(function() {
+        if ($("#multipleClassCheckbox").is(":checked")) {
+            //select all
+            $("#multipleClass").find("option").prop("selected", true);
+            $("#multipleClass").trigger("change");
+        } else {
+            //deselect all
+            $("#multipleClass").find("option").prop("selected", false);
+            $("#multipleClass").trigger("change");
+        }
+    });
+});
+
+$("#multipleSection").select2();
+
+$(document).ready(function() {
+    $("#multipleSectionCheckbox").click(function() {
+        if ($("#multipleSectionCheckbox").is(":checked")) {
+            //select all
+            $("#multipleSection").find("option").prop("selected", true);
+            $("#multipleSection").trigger("change");
+        } else {
+            //deselect all
+            $("#multipleSection").find("option").prop("selected", false);
+            $("#multipleSection").trigger("change");
+        }
+    });
+});
+
+
 $("#dPages").select2();
 
 $(document).ready(function() {
@@ -2710,9 +2745,12 @@ $(document).on("keyup", ".maxPercent", function(event) {
 });
 
     $(document).ready(function() {
-        $('.summer_note').summernote({
-            tabsize: 2,
-            height: 500,
-        });
+        if($().summernote && $('.summer_note').length){
+            $('.summer_note').summernote({
+                tabsize: 2,
+                height: 500,
+            });
+        }
+
     });
 // Setup Final Exam Rule End

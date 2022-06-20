@@ -40,6 +40,7 @@
                 <input type="hidden" name="fees_type_id" value="{{$fees_type_id}}">
                 <input type="hidden" name="fees_discount_id" value="{{@$discounts->fees_discount_id}}">
                 <input type="hidden" name="applied_amount" value="{{@$discounts->applied_amount}}">
+                <input type="hidden" name="record_id" value="{{@$record_id}}">
 
                 <div class="row mt-25">
                     <div class="col-lg-12" id="sibling_class_div">

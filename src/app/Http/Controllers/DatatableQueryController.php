@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Scopes\StatusAcademicSchoolScope;
 use DataTables;
 use App\SmClass;
 use App\SmStaff;
@@ -18,11 +17,13 @@ use App\SmAssignSubject;
 use App\SmBankPaymentSlip;
 use App\SmStudentAttendance;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use Illuminate\Support\Carbon;
 use App\SmTeacherUploadContent;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use App\Scopes\StatusAcademicSchoolScope;
 use Illuminate\Support\Facades\Validator;
 
 class DatatableQueryController extends Controller
@@ -39,7 +40,7 @@ class DatatableQueryController extends Controller
             ]);
 
 
-            $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+            $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->withoutGlobalScope(StatusAcademicSchoolScope::class)->get();
 
             $sessions = SmAcademicYear::where('school_id', Auth::user()->school_id)->get();
 
@@ -54,36 +55,46 @@ class DatatableQueryController extends Controller
         }
 
         if ($request->ajax()) {
+           
 
-            $students = SmStudent::with(['class', 'section', 'gender'])->select('sm_students.*');
+            $students = SmStudent::with(['gender', 'studentRecords' => function($q) use($request){
+                return $q->when($request->academic_year, function ($query) use ($request) {
+                    $query->where('academic_id', $request->academic_year);
+                })
+                    ->when($request->class, function ($query) use ($request) {
+                        $query->where('class_id', $request->class);
+                    })
+                    ->when($request->section, function ($query) use ($request) {
+                        $query->where('section_id', $request->section);
+                    })
+                    ->when(!$request->academic_year, function ($query) use ($request) {
+                        $query->where('academic_id', getAcademicId());
+                    });
+            }])->whereHas('studentRecords', function($q) use($request){
+                return $q->when($request->academic_year, function ($query) use ($request) {
+                    $query->where('academic_id', $request->academic_year);
+                })
+                    ->when($request->class, function ($query) use ($request) {
+                        $query->where('class_id', $request->class);
+                    })
+                    ->when($request->section, function ($query) use ($request) {
+                        $query->where('section_id', $request->section);
+                    })
+                    ->when(!$request->academic_year, function ($query) use ($request) {
+                        $query->where('academic_id', getAcademicId());
+                    });
+            })->select('sm_students.*');
             $students->where('sm_students.active_status', 1);
-            if ($request->class != "") {
-                $students->where('sm_students.class_id', $request->class);
-            }
-            if ($request->section != "") {
-                $students->where('sm_students.section_id', $request->section);
-            }
-            if ($request->academic_year != "") {
-                $students->where('sm_students.academic_id', $request->academic_year);
-            } else{
-                $students->where('sm_students.academic_id', getAcademicId());
-            }
+
             if ($request->name != "") {
                 $students->where('sm_students.full_name', 'like', '%' . $request->name . '%');
             }
-            if ($request->roll_no != "") {
-                $students->where('sm_students.roll_no', 'like', '%' . $request->roll_no . '%');
-            }
+            // if ($request->roll_no != "") {
+            //     $students->where('sm_students.roll_no', 'like', '%' . $request->roll_no . '%');
+            // }
 
-// return $request;
+            // return $request;
             $students = $students->where('sm_students.school_id', Auth::user()->school_id)
-
-                ->with(array('class' => function ($query) {
-                    $query->select('id', 'class_name');
-                }))
-                ->with(array('section' => function ($query) {
-                    $query->select('id', 'section_name');
-                }))
                 ->with(array('parents' => function ($query) {
                     $query->select('id', 'fathers_name');
                 }))
@@ -93,7 +104,7 @@ class DatatableQueryController extends Controller
                 ->with(array('category' => function ($query) {
                     $query->select('id', 'category_name');
                 }));
-
+            
             return Datatables::of($students)
                 ->addIndexColumn()
                 ->addColumn('dob', function ($row) {
@@ -102,13 +113,33 @@ class DatatableQueryController extends Controller
 
                     return $dob;
                 })
-                ->rawColumns(['dob'])
+               
+
+                ->addColumn('full_name', function ($row) {
+                    $full_name_link = '<a target="_blank" href="'. route('student_view', [$row->id]) . '">' . $row->first_name .' '. $row->last_name . '</a>';
+                    return $full_name_link;
+                })
+                
+                ->addColumn('mobile', function ($row) {
+                    $mobile = '<a href="tel:'.$row->mobile.'">' .$row->mobile. '</a>';
+                    return $mobile;
+                })
+                ->addColumn('class_sec', function ($row) use ($request) {
+                    $class_sec=[];
+                    foreach ($row->studentRecords as $classSec) {
+                        $class_sec[]=$classSec->class->class_name.'('. $classSec->section->section_name .'), ' ;
+                    }
+
+                    return implode('', $class_sec);
+                })
+              
                 ->addColumn('action', function ($row) {
                     $btn = '<div class="dropdown">
                                     <button type="button" class="btn dropdown-toggle" data-toggle="dropdown">' . app('translator')->get('common.select') . '</button>
 
                                     <div class="dropdown-menu dropdown-menu-right">
-                                            <a class="dropdown-item" target="_blank" href="' . route('student_view', [$row->id]) . '">' . app('translator')->get('common.view') . '</a>' .
+                                            <a class="dropdown-item" target="_blank" href="' . route('student.assign-class', [$row->id]) . '">' . app('translator')->get('student.assign_class') . '</a>' .
+                                            '<a class="dropdown-item" target="_blank" href="' . route('student_view', [$row->id]) . '">' . app('translator')->get('common.view') . '</a>' .
                         (userPermission(66) === true ? '<a class="dropdown-item" href="' . route('student_edit', [$row->id]) . '">' . app('translator')->get('common.edit') . '</a>' : '') .
 
                         (userPermission(67) === true ? (Config::get('app.app_sync') ? '<span  data-toggle="tooltip" title="Disabled For Demo "><a  class="dropdown-item" href="#"  >' . app('translator')->get('common.disable') . '</a></span>' :
@@ -119,9 +150,8 @@ class DatatableQueryController extends Controller
 
                     return $btn;
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action','full_name', 'mobile', 'dob','class_sec'])
                 ->make(true);
-
         }
         return view('backEnd.studentInformation.students');
 
@@ -129,19 +159,24 @@ class DatatableQueryController extends Controller
 
     public function searchStudentList(Request $request)
     {
-
+        $student_ids = StudentRecord::when($request->academic_year, function ($query) use ($request) {
+            $query->where('academic_id', $request->academic_year);
+        })
+        ->when($request->class, function ($query) use ($request) {
+            $query->where('class_id', $request->class);
+        })
+        ->when($request->section, function ($query) use ($request) {
+            $query->where('section_id', $request->section);
+        })
+        ->when(!$request->academic_year, function ($query) use ($request) {
+            $query->where('academic_id', getAcademicId());
+        })
+        ->groupBy('student_id')->pluck('student_id')->toArray();
 
         $students = SmStudent::query();
         $students->where('active_status', 1);
-        if ($request->class != "") {
-            $students->where('class_id', $request->class);
-        }
-        if ($request->section != "") {
-            $students->where('section_id', $request->section);
-        }
-        if ($request->academic_year != "") {
-            $students->where('academic_id', $request->academic_year);
-        }
+
+       
         if ($request->name != "") {
             $students->where('full_name', 'like', '%' . $request->name . '%');
         }
@@ -150,13 +185,8 @@ class DatatableQueryController extends Controller
         }
 
 
-        $students = $students->where('school_id', Auth::user()->school_id)
-            ->with(array('class' => function ($query) {
-                $query->select('id', 'class_name');
-            }))
-            ->with(array('section' => function ($query) {
-                $query->select('id', 'section_name');
-            }))
+        $students = $students->whereIn('id', $student_ids)->where('school_id', Auth::user()->school_id)
+           
             ->with(array('parents' => function ($query) {
                 $query->select('id', 'fathers_name');
             }))
@@ -177,6 +207,34 @@ class DatatableQueryController extends Controller
                 return $dob;
             })
             ->rawColumns(['dob'])
+            ->editColumn('full_name', function ($row) {
+                $full_name_link = '<a target="_blank" href="'. route('student_view', [$row->id]) . '">' . $row->first_name .' '. $row->last_name . '</a>';
+                return $full_name_link;
+            })
+            
+            ->editColumn('mobile', function ($row) {
+                $mobile = '<a href="tel:'.$row->mobile.'">' .$row->mobile. '</a>';
+                return $mobile;
+            })
+            ->addColumn('class_sec', function ($row) use ($request) {
+                $class_sec=[];
+                foreach ($row->studentRecords as $classSec) {
+                    $class_sec[]=$classSec->class->class_name.'('. $classSec->section->section_name .'), ' ;
+                }
+                if ($request->class) {
+                    $sections = [];
+                    $class =  $row->recordClass ? $row->recordClass->class->class_name : '';
+                    if ($request->section) {
+                        $sections [] = $row->recordSection != "" ? $row->recordSection->section->section_name:"";
+                    } else {
+                        foreach ($row->recordClasses as $section) {
+                            $sections [] = $section->section->section_name;
+                        }
+                    }
+                    return  $class .'('.$sections.'), ';
+                }
+                return $class_sec;
+            })
             ->addColumn('action', function ($row) {
                 $btn = '<div class="dropdown">
                                 <button type="button" class="btn dropdown-toggle" data-toggle="dropdown">' . app('translator')->get('common.select') . '</button>
@@ -193,7 +251,7 @@ class DatatableQueryController extends Controller
 
                 return $btn;
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['action','full_name', 'mobile', 'dob','class_sec'])
             ->make(true);
 
         return view('backEnd.studentInformation.students');
@@ -216,7 +274,7 @@ class DatatableQueryController extends Controller
                     ->groupBy('sm_classes.id')
                     ->get();
             }
-            $students = SmStudent::where('class_id', $class)->where('section_id', $section)->where('active_status', 1)->where('academic_id', getAcademicId())
+            $students = SmStudent::where('class_id', $class)->where('section_id', $section)->where('active_status', 1)
                 ->where('school_id', Auth::user()->school_id)->get();
 
             if ($students->isEmpty()) {

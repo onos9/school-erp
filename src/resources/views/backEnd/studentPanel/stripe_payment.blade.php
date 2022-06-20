@@ -15,6 +15,7 @@
                 <input type="hidden" name="student_id" value="{{$student_id}}">
                 <input type="hidden" name="fees_type" value="{{$fees_type}}">
                 <input type="hidden" name="amount" value="{{$amount}}">
+                <input type="hidden" name="record_id" value="{{$record_id}}">
                 <input type="hidden" name="payment_method" value="5">
                 <div class="row mt-25">
                     <div class="col-lg-12">

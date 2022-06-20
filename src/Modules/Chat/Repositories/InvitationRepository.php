@@ -78,7 +78,7 @@ class InvitationRepository
 
         $blocks = $this->blocksResult();
 
-        $users =  User::with('ownConversations','oppositeConversations','activeStatus','roles')
+        $users =  User::with('ownConversations','oppositeConversations','activeStatus','roles','staff')
             ->whereIn('id', array_merge($to, $from))
             ->get();
 

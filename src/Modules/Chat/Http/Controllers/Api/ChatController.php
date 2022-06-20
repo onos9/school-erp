@@ -319,7 +319,7 @@ class ChatController extends Controller
                 $type = 0;
             }
         }
-        return response()->json(array($img_name, $original_name, $type));
+        return array($img_name, $original_name, $type);
     }
 
     public function replyValidation(Request $request): void

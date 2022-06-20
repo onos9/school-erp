@@ -39,7 +39,18 @@
                         {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'fees.search-bank-payment', 'method' => 'post']) }}
                         <div class="row">
                             <input type="hidden" name="url" id="url" value="{{URL::to('/')}}">
-                            <div class="col-lg-3 col-md-3 sm_mb_20 sm2_mb_20">
+                            <div class="col-lg-3 col-md-3 mt-30-md">
+                                <div class="input-effect">
+                                    <input class="primary-input" type="text" name="payment_date" value="{{old('payment_date')}}">
+                                    <span class="focus-border"></span>
+                                    @if ($errors->has('payment_date'))
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $errors->first('payment_date') }}</strong>
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-3">
                                 <select class="niceSelect w-100 bb form-control{{ $errors->has('class') ? ' is-invalid' : '' }}" id="select_class" name="class">
                                     <option data-display="@lang('common.select_class')" value="">@lang('common.select_class')</option>
                                     @foreach($classes as $class)
@@ -55,9 +66,9 @@
                             <div class="col-lg-3 col-md-3" id="select_section_div">
                                 <select class="niceSelect w-100 bb form-control{{ $errors->has('section') ? ' is-invalid' : '' }}" id="select_section" name="section">
                                     <option data-display="@lang('common.select_section')" value="">@lang('common.select_section')</option>
-                                    @if (isset($section_id))
-                                        @foreach($sections as $section)
-                                            <option value="{{$section->id}}" {{isset($section_id)? ($section_id == $section->id? 'selected': ''):'' }}>{{$section->section_name}}</option>
+                                    @if (isset($class_id))
+                                        @foreach($class->classSections as $section)
+                                            <option value="{{$section->id}}" {{isset($section_id)? ($section_id == $section->id? 'selected': ''):'' }}>{{$section->sectionName->section_name}}</option>
                                         @endforeach
                                     @endif
                                 </select>
@@ -69,28 +80,6 @@
                                         <strong>{{ $errors->first('section') }}</strong>
                                     </span>
                                 @endif
-                            </div>
-                            <div class="col-lg-3 col-md-3 mt-30-md">
-                                <div class="row no-gutters input-right-icon">
-                                    <div class="col">
-                                        <div class="input-effect">
-                                            <input class="primary-input date form-control{{ $errors->has('payment_date') ? ' is-invalid' : '' }} {{isset($date)? 'read-only-input': ''}}" id="startDate" type="text"
-                                                   name="payment_date" autocomplete="off" value="{{isset($date)? $date: ''}}">
-                                            <label for="startDate">@lang('fees.payment_date')</label>
-                                            <span class="focus-border"></span>
-                                            @if ($errors->has('payment_date'))
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $errors->first('payment_date') }}</strong>
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <button class="" type="button">
-                                            <i class="ti-calendar" id="start-date-icon"></i>
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
                             <div class="col-lg-3 col-md-3 sm_mb_20 sm2_mb_20">
                                 <select class="niceSelect w-100 bb form-control{{ $errors->has('approve_status') ? ' is-invalid' : '' }}" name="approve_status">
@@ -240,7 +229,6 @@
                                             </td>
                                         </tr>
 
-
                                         <div class="modal fade admin-query" id="showNote{{$bank_payment->id}}">
                                             <div class="modal-dialog modal-dialog-centered large-modal">
                                                 <div class="modal-content">
@@ -265,14 +253,13 @@
                                             <div class="modal-dialog modal-dialog-centered large-modal">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h4 class="modal-title">@lang('fees.file')</h4>
+                                                        <h4 class="modal-title">@lang('common.file')</h4>
                                                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                                                     </div>
                                                     <div class="modal-body p-0 mt-30">
                                                         <div class="container student-certificate">
                                                             <div class="row justify-content-center">
                                                                 <div class="col-lg-12 text-center">
-
                                                                     @php
                                                                         $pdf = $bank_payment->file ? explode('.', $bank_payment->file) : [];
                                                                         $for_pdf =  $pdf[1]?? null;
@@ -288,7 +275,6 @@
                                                                             <a href="{{asset($bank_payment->file)}}" download>@lang('common.download') <span class="pl ti-download"></span></a>
                                                                         </div>
                                                                     @endif
-
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -296,9 +282,7 @@
                                                 </div>
                                             </div>
                                         </div>
-
                                     @endforeach
-
                                 @endif
                                 </tbody>
                             </table>
@@ -308,6 +292,7 @@
             </div>
         </div>
     </section>
+
     <div class="modal fade admin-query" id="approvePayment" >
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -387,125 +372,24 @@
     </div>
 
 @endsection
-@if(! isset($feesPayments))
-@section('script')
-    @include('backEnd.partials.server_side_datatable')
-    <script>
-        //
-        // DataTables initialisation
-        //
-        $(document).ready(function() {
-            $('.data-table').DataTable({
-                processing: true,
-                serverSide: true,
-                "ajax": $.fn.dataTable.pipeline( {
-                    url: "{{url('bank-payment-slip-ajax')}}",
-                    data: {
-                        academic_year: $('#academic_id').val(),
-                        class: $('#class').val(),
-                        section: $('#section').val(),
-                        roll_no: $('#roll').val(),
-                        name: $('#name').val()
-                    },
-                    pages: "{{generalSetting()->ss_page_load}}" // number of pages to cache
-
-                } ),
-                columns: [
-                    {data: 'student_info.full_name', name: 'student_name'},
-                    {data: 'fees_type.name', name: 'fees_type'},
-                    {data: 'date', name: 'date'},
-                    {data: 'amount', name: 'amount'},
-                    {data: 'note', name: 'note'},
-                    {data: 'slip', name: 'slip'},
-                    {data: 'status', name: 'status'},
-                    {data: 'action', name: 'action',orderable: false, searchable: true},
-
-                ],
-                bLengthChange: false,
-                bDestroy: true,
-                language: {
-                    search: "<i class='ti-search'></i>",
-                    searchPlaceholder: window.jsLang('quick_search'),
-                    paginate: {
-                        next: "<i class='ti-arrow-right'></i>",
-                        previous: "<i class='ti-arrow-left'></i>",
-                    },
-                },
-                dom: "Bfrtip",
-                buttons: [{
-                    extend: "copyHtml5",
-                    text: '<i class="fa fa-files-o"></i>',
-                    title: $("#logo_title").val(),
-                    titleAttr: window.jsLang('copy_table'),
-                    exportOptions: {
-                        columns: ':visible:not(.not-export-col)'
-                    },
-                },
-                    {
-                        extend: "excelHtml5",
-                        text: '<i class="fa fa-file-excel-o"></i>',
-                        titleAttr: window.jsLang('export_to_excel'),
-                        title: $("#logo_title").val(),
-                        margin: [10, 10, 10, 0],
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                    },
-                    {
-                        extend: "csvHtml5",
-                        text: '<i class="fa fa-file-text-o"></i>',
-                        titleAttr: window.jsLang('export_to_csv'),
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                    },
-                    {
-                        extend: "pdfHtml5",
-                        text: '<i class="fa fa-file-pdf-o"></i>',
-                        title: $("#logo_title").val(),
-                        titleAttr: window.jsLang('export_to_pdf'),
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                        orientation: "landscape",
-                        pageSize: "A4",
-                        margin: [0, 0, 0, 12],
-                        alignment: "center",
-                        header: true,
-                        customize: function(doc) {
-                            doc.content[1].margin = [100, 0, 100, 0]; //left, top, right, bottom
-                            doc.content.splice(1, 0, {
-                                margin: [0, 0, 0, 12],
-                                alignment: "center",
-                                image: "data:image/png;base64," + $("#logo_img").val(),
-                            });
-                        },
-                    },
-                    {
-                        extend: "print",
-                        text: '<i class="fa fa-print"></i>',
-                        titleAttr: window.jsLang('print'),
-                        title: $("#logo_title").val(),
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                    },
-                    {
-                        extend: "colvis",
-                        text: '<i class="fa fa-columns"></i>',
-                        postfixButtons: ["colvisRestore"],
-                    },
-                ],
-                columnDefs: [{
-                    visible: false,
-                }, ],
-                responsive: true,
-            });
-        } );
-    </script>
-@endsection
-@endif
 @push('script')
+    <script>
+        $('input[name="payment_date"]').daterangepicker({
+            ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            "startDate": moment().subtract(7, 'days'),
+            "endDate": moment()
+            }, function(start, end, label) {
+            console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
+        });
+    </script>
+
     <script>
         function rejectPayment(id){
             var modal = $('#rejectPaymentModal');

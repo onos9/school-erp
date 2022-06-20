@@ -8,10 +8,10 @@
 <section class="sms-breadcrumb mb-40 white-box">
     <div class="container-fluid">
         <div class="row justify-content-between">
-            <h1>@lang('onlineexam::onlineExam.online_exam') </h1>
+            <h1>@lang('exam.online_exam') </h1>
             <div class="bc-pages">
                 <a href="{{route('dashboard')}}">@lang('common.dashboard')</a>
-             <a href="#">@lang('onlineexam::onlineExam.online_exam')</a>
+             <a href="#">@lang('exam.online_exam')</a>
                 <a href="{{route('student_view_result')}}">@lang('common.view_result')</a>
             </div>
         </div>
@@ -25,7 +25,7 @@
                 <div class="row">
                     <div class="col-lg-4 no-gutters">
                         <div class="main-title">
-                            <h3 class="mb-30">@lang('onlineexam::onlineExam.online_exam')</h3>
+                            <h3 class="mb-30">@lang('exam.online_exam')</h3>
                         </div>
                     </div>
                 </div>
@@ -38,7 +38,7 @@
                                 <div class="">
                                     <div class="row  pl-10">
                                         <div class="col-lg-7 mt-20">
-                                            <h3>@lang('onlineexam::onlineExam.exam_name') : {{@$online_exam->title}}</h3>
+                                            <h3>@lang('exam.exam_name') : {{@$online_exam->title}}</h3>
                                                         <h4><strong>@lang('common.subject') : </strong>{{@$online_exam->subject !=""?@$online_exam->subject->subject_name:""}}</h4>
                                                         <h4><strong>@lang('common.class_Sec') : </strong>{{@$online_exam->class !=""?@$online_exam->class->class_name:""}} ({{@$online_exam->section !=""?@$online_exam->section->section_name:""}})</h4>
                                                         <h4 class="mb-20"><strong>@lang('exam.total_marks') : </strong>
@@ -49,7 +49,7 @@
                                                             }
                                                             echo @$total_marks;
                                                         @endphp</h4>
-                                        <p><strong>@lang('onlineexam::onlineExam.instruction') : </strong>{{@$online_exam->instruction}}</p>
+                                        <p><strong>@lang('exam.instruction') : </strong>{{@$online_exam->instruction}}</p>
                                         </div>
                                         <div class="col-lg-5 mt-20">
                                             <p class="mb-2"><strong>@lang('common.date') & @lang('common.time'): </strong>{{dateConvert(@$online_exam->date)}} {{dateConvert(@$online_exam->end_time)}}</p>
@@ -121,11 +121,11 @@
                                             <div class="d-flex align-items-center justify-content-center radio-btn-flex mt-20">
                                                 <div class="mr-30">
                                                     <input data-question = "{{@$question->question_bank_id}}" type="radio" name="trueOrFalse_{{@$question->question_bank_id}}" id="true_{{@$question->question_bank_id}}" value="T"  class="common-radio relationButton answer_question_mu">
-                                                    <label for="true_{{$question->question_bank_id}}">@lang('onlineexam::onlineExam.true')</label>
+                                                    <label for="true_{{$question->question_bank_id}}">@lang('exam.true')</label>
                                                 </div>
                                                 <div class="mr-30">
                                                     <input  data-question ="{{@$question->question_bank_id}}" type="radio" name="trueOrFalse_{{@$question->question_bank_id}}" id="false_{{@$question->question_bank_id}}" value="F"  class="common-radio relationButton answer_question_mu">
-                                                    <label for="false_{{@$question->question_bank_id}}">@lang('onlineexam::onlineExam.false')</label>
+                                                    <label for="false_{{@$question->question_bank_id}}">@lang('exam.false')</label>
                                                 </div>
                                             </div>
                                             @else
@@ -151,7 +151,7 @@
                                                     }
     
                                                 @endphp
-                                                <h4>[@lang('onlineexam::onlineExam.currect_answer'): {{$currect_multiple}}]</h4>
+                                                <h4>[@lang('exam.currect_answer'): {{$currect_multiple}}]</h4>
 
                                                 @elseif(@$question->questionBank->type == "MI")
                                 @php
@@ -159,7 +159,7 @@
                                     $currect_multiple = '';
                                     $k = 0;
                                 @endphp
-                                    <h4>[@lang('onlineexam::onlineExam.currect_answer')]</h4>
+                                    <h4>[@lang('exam.currect_answer')]</h4>
                                 <div class="quiestion_group">
                                     @php
 
@@ -186,9 +186,9 @@
                                 </div>
                        
                                                 @elseif(@$question->questionBank->type == "T")
-                                                    <h4>[@lang('onlineexam::onlineExam.currect_answer'): {{@$question->questionBank->trueFalse == "T"? 'True': 'False'}}]</h4>
+                                                    <h4>[@lang('exam.currect_answer'): {{@$question->questionBank->trueFalse == "T"? 'True': 'False'}}]</h4>
                                                 @else 
-                                                    <h4>[@lang('onlineexam::onlineExam.currect_answer'): {{@$question->questionBank->suitable_words}}]</h4>
+                                                    <h4>[@lang('exam.currect_answer'): {{@$question->questionBank->suitable_words}}]</h4>
                                                 @endif
                                             </div>
                                         </td>

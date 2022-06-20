@@ -19,6 +19,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\Admin\StudentInfo\StudentAttendanceReportSearchRequest;
+use App\Models\StudentRecord;
 
 class SmStudentAttendanceReportController extends Controller
 {
@@ -26,7 +27,7 @@ class SmStudentAttendanceReportController extends Controller
     public function __construct()
     {
         $this->middleware('PM');
-   
+
 
     }
     public function index(Request $request)
@@ -50,16 +51,6 @@ class SmStudentAttendanceReportController extends Controller
     public function search(StudentAttendanceReportSearchRequest $request)
     {
 
-    
-
-        // if ($validator->fails()) {
-        //     if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-        //         return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-        //     }
-        //     return redirect()->back()
-        //         ->withErrors($validator)
-        //         ->withInput();
-        // }
         try {
             $year = $request->year;
             $month = $request->month;
@@ -75,18 +66,20 @@ class SmStudentAttendanceReportController extends Controller
             } else {
                 $classes = SmClass::get();
             }
-            $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->get();
+            $students = StudentRecord::where('class_id', $request->class)->where('section_id', $request->section)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
 
             $attendances = [];
-            foreach ($students as $student) {
-                $attendance = SmStudentAttendance::where('student_id', $student->id)
+            foreach ($students as $record) {
+                $attendance = SmStudentAttendance::where('student_id', $record->student_id)
                 ->where('attendance_date', 'like', $request->year . '-' . $request->month . '%')
-                ->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+                ->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)
+                ->where('student_record_id', $record->id)
+                ->get();
                 if (count($attendance) != 0) {
                     $attendances[] = $attendance;
                 }
             }
-
+            // return $attendance;
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 $data = [];
                 $data['classes'] = $classes->toArray();
@@ -115,19 +108,22 @@ class SmStudentAttendanceReportController extends Controller
         try {
             $current_day = date('d');
             $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-
-            $students = DB::table('sm_students')
+            $active_students = SmStudent::where('active_status', 1)->where('school_id', Auth::user()->school_id)->where('academic_id', getAcademicId())->pluck('id')->toArray();
+            $students = DB::table('student_records')
             ->where('class_id', $class_id)
             ->where('section_id', $section_id)
-            ->where('active_status', 1)
+            ->where('academic_id', getAcademicId())
+            ->whereIn('student_id', $active_students)
             ->where('school_id', Auth::user()->school_id)
             ->get();
 
             $attendances = [];
-            foreach ($students as $student) {
-                $attendance = SmStudentAttendance::where('student_id', $student->id)
+            foreach ($students as $record) {
+                $attendance = SmStudentAttendance::where('student_id', $record->student_id)
                 ->where('attendance_date', 'like', $year . '-' . $month . '%')
                 ->where('school_id', Auth::user()->school_id)
+                ->where('academic_id', getAcademicId())
+                ->where('student_record_id', $record->id)
                 ->get();
 
                 if ($attendance) {
@@ -154,6 +150,7 @@ class SmStudentAttendanceReportController extends Controller
             $section = SmSection::find($section_id);
             return view('backEnd.studentInformation.student_attendance_print', compact('class', 'section', 'attendances', 'days', 'year', 'month', 'current_day', 'class_id', 'section_id'));
         } catch (\Exception $e) {
+
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

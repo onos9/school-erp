@@ -2,11 +2,14 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 
 class SmEmailSmsLog extends Model
 {
+    use HasFactory;
+
     public  static function saveEmailSmsLogData($request){
 
     	$selectTabb = '';

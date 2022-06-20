@@ -1,8 +1,7 @@
 @extends('backEnd.master')
-@section('title') 
-@lang('reports.guardian_report')
-@endsection
-
+    @section('title') 
+        @lang('reports.guardian_report')
+    @endsection
 @section('mainContent')
 <input type="text" hidden value="{{ @$clas->class_name }}" id="cls">
 <input type="text" hidden value="{{ @$clas->section_name->sectionName->section_name }}" id="sec">
@@ -49,6 +48,12 @@
                                 <div class="col-lg-6 mt-30-md" id="select_section_div">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('section') ? ' is-invalid' : '' }}" id="select_section" name="section">
                                         <option data-display="@lang('common.select_section')" value="">@lang('common.select_section')</option>
+                                        @if(isset($class_id))
+                                            @foreach ($class->classSection as $section)
+                                            <option value="{{ $section->sectionName->id }}" {{ old('section')==$section->sectionName->id ? 'selected' : '' }} >
+                                                {{ $section->sectionName->section_name }}</option>
+                                            @endforeach
+                                         @endif
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_section_loader">
                                         <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
@@ -104,11 +109,24 @@
                                     @foreach($students as $student)
                                     <tr>
                                         <td>
-                                            @php if(!empty($student->class)){ echo $student->class->class_name; }else { echo ''; } @endphp 
-                                            @php if(!empty($student->section)){ echo $student->section->section_name; }else { echo ''; } @endphp
+                                          
+
+
+                                            @php if(!empty($student->recordClass)){ echo $student->recordClass->class->class_name; }else { echo ''; } @endphp
+                                        
+                                            @if($section_id==null)                                            
+                                                
+                                                (@foreach ($student->recordClasses as $section)
+                                                        {{$section->section->section_name}},
+                                                @endforeach)                                     
+                                            @else
+                                            ({{$student->recordSection != ""? $student->recordSection->section->section_name:""}})
+                                            @endif
+                                        
+                                       
                                         </td>
                                         <td>{{$student->admission_no}}</td>
-                                        <td>{{$student->first_name.' '.$student->last_name}}</td>
+                                        <td>{{$student->full_name}}</td>
                                         <td>{{$student->mobile}}</td>
                                         <td>{{$student->parents!=""?$student->parents->guardians_name:""}}</td>
                                         <td>{{$student->parents!=""?$student->parents->guardians_relation:""}}</td>

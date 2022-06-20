@@ -191,6 +191,64 @@
                                 </div>
                             </div>
                         </div>
+                        @if(moduleStatusCheck('Lms')==true)
+                             @if(in_array($staffDetails->role_id,[4]))
+                                <div class="single-meta">
+                                    <div class="row">
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="name">
+                                                @lang('lms::lms.total_course')
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="value text-left">@lang('lms::lms.total_sell') </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="name">
+                                                @lang('lms::lms.this_month_sell')
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="value text-left">
+                                                @lang('lms::lms.this_month_revenue')
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="value text-left">
+                                                @lang('lms::lms.payable_amount')
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="single-meta">
+                                    <div class="row">
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="name">
+                                            {{$totalCourse}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="value text-left"> {{$totalSellCourseCount}} </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="name">
+                                                {{generalSetting()->currency_symbol}} {{ $thisMonthSell }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="value text-left">
+                                                {{generalSetting()->currency_symbol}} {{ $thisMonthRevenue }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-6">
+                                            <div class="value text-left">
+                                                {{generalSetting()->currency_symbol}} {{ $staffDetails->lms_balance }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif    
+                        @endif
                     </div>
                 </div>
             </div>
@@ -217,23 +275,42 @@
                 <div class="white-box">
                     <table class="w-100 table-responsive" id="tableID">
                         <tbody id="addEarningsTableBody">
-                            <tr id="row0">
-                                <td width="80%" class="pr-30">
-                                    <div class="input-effect mt-10">
-                                        <input class="primary-input form-control infi_input" type="text" id="earningsType0" name="earningsType[]">
-                                        <label for="earningsType0">@lang('common.type')</label>
-                                        <span class="focus-border"></span>
-                                    </div>
-                                </td>
-                                <td width="20%">
-                                    <div class="input-effect mt-10">
-                                        <input oninput="numberCheckWithDot(this)" class="primary-input form-control" type="text" oninput="this.value = Math.abs(this.value)" id="earningsValue0"  name="earningsValue[]">
-                                        <label for="earningsValue0">@lang('hr.value')</label>
-                                        <span class="focus-border"></span>
-                                    </div>
-                                </td>
-                                
-                            </tr>
+                            @if($staffDetails->lms_balance && moduleStatusCheck('Lms')==true)
+                                <tr id="rowLms">
+                                    <td width="80%" class="pr-30">
+                                        <div class="input-effect mt-10">
+                                            <input class="primary-input form-control infi_input" type="hidden" id="earningsType0" name="earningsType[]" value="lms_balance">
+                                            <label for="earningsType0">@lang('lms::lms.lms_balance')</label>
+                                            <span class="focus-border"></span>
+                                        </div>
+                                    </td>
+                                    <td width="20%">
+                                        <div class="input-effect mt-10">
+                                            <input oninput="numberCheckWithDot(this)" class="primary-input form-control" type="text" oninput="this.value = Math.abs(this.value)" id="earningsValue0"  name="earningsValue[]" value="{{ $staffDetails->lms_balance }}">
+                                            <label for="earningsValue0">@lang('hr.value')</label>
+                                            <span class="focus-border"></span>
+                                        </div>
+                                    </td>
+                                    
+                                </tr>
+                                <tr id="row0">
+                                    <td width="80%" class="pr-30">
+                                        <div class="input-effect mt-10">
+                                            <input class="primary-input form-control infi_input" type="text" id="earningsType0" name="earningsType[]">
+                                            <label for="earningsType0">@lang('common.type')</label>
+                                            <span class="focus-border"></span>
+                                        </div>
+                                    </td>
+                                    <td width="20%">
+                                        <div class="input-effect mt-10">
+                                            <input oninput="numberCheckWithDot(this)" class="primary-input form-control" type="text" oninput="this.value = Math.abs(this.value)" id="earningsValue0"  name="earningsValue[]">
+                                            <label for="earningsValue0">@lang('hr.value')</label>
+                                            <span class="focus-border"></span>
+                                        </div>
+                                    </td>
+                                    
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>

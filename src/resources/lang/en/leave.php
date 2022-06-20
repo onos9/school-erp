@@ -59,4 +59,7 @@ return[
     'user_no' => 'User no',
     'leave_notification' => 'Leave notification',
     'leave_status_updated' => 'Leave status updated',
+    'leave_request_approved' => 'A leave request has been approved',
+    'leave_request_canceled' => 'A leave request has been canceled',
+    'leave_request_pending' => 'A leave request status is rollback to pending'
 ];

@@ -146,7 +146,13 @@
                             <tr>
                             <th>@lang('lesson::lesson.lesson')</th>
                             <th>@lang('lesson::lesson.topic')</th>
-                            <th>@lang('lesson::lesson.sup_topic')</th>
+                                <th>
+                                    @if(generalSetting()->sub_topic_enable)
+                                        @lang('lesson::lesson.sup_topic')
+                                    @else
+                                        @lang('common.note')
+                                    @endif
+                                </th>
                             <th>@lang('lesson::lesson.completed_date') </th>
                             <th>@lang('lesson::lesson.upcoming_date') </th>
                             <th>@lang('common.status')</th>
@@ -162,82 +168,73 @@
                             <td>{{@$data->lessonName !=""?@$data->lessonName->lesson_title:""}}</td>
 
                             <td> 
-                                @php 
-                                $alllessonPlannerTopic=DB::table('lesson_planners') 
-                                                     ->join('sm_lessons','sm_lessons.id','=','lesson_planners.lesson_detail_id')
-                                                    ->join('sm_lesson_topic_details','sm_lesson_topic_details.id','=','lesson_planners.topic_detail_id')                                                
-                                                    ->where('lesson_detail_id',$data->lesson_detail_id) 
-                                                    ->where('lesson_planners.active_status', 1)
-                                                    ->select('lesson_planners.*','sm_lessons.lesson_title','sm_lesson_topic_details.topic_title')
-                                                    ->get();                               
-                                @endphp
-                                @foreach($alllessonPlannerTopic as $allData)                             
-                                {{@$allData->topic_title}}<br>
+                             
+                                @if(count($data->topics) > 0) 
+                                @foreach ($data->topics as $topic)
+                                {{$topic->topicName->topic_title}} </br>
                                 @endforeach
+                                @else  
+                                {{$data->topicName->topic_title}}
+                                @endif
 
                             </td>
                             <td>
-                                @foreach($alllessonPlannerTopic as $allData)
-                                @php
-                                    $topicdate=DB::table('lesson_planners')->where('id',$allData->id)->first();                                  
-                                @endphp 
-                                {{@$topicdate->sub_topic !=""?@$topicdate->sub_topic:""}}<br> 
+                                @if(generalSetting()->sub_topic_enable)
+                                @if (count($data->topics) > 0)
+                                @foreach ($data->topics as $topic)
+                                {{$topic->sub_topic_title}} </br>
                                 @endforeach
-                        
+                                @else
+                                    {{$data->sub_topic}}
+                                @endif
+                                @else
+                                    {{$data->note}}
+                                @endif
                             </td>
 
                                 <td>
-                                    @foreach($alllessonPlannerTopic as $allData)
-                                    @php
-                                        $topicdate=DB::table('lesson_planners')->where('id',$allData->id)->first();                                  
-                                    @endphp 
-                                    {{@$topicdate->competed_date !=""?@$topicdate->competed_date:""}}<br> 
-                                    @endforeach
+                                   
+                                    {{@$data->competed_date !=""?@$data->competed_date:""}}<br> 
+                                   
                             
                                 </td>
                                 <td>
-                                    @foreach($alllessonPlannerTopic as $allData)
-                                    @php
-                                    $topicdate=DB::table('lesson_planners')->where('id',$allData->id)->first();                                  
-                                    @endphp 
+                                    
                                 
                                       
-                                           @if(date('Y-m-d')< $topicdate->lesson_date && $topicdate->competed_date=="")
-                                            @lang('lesson::lesson.upcoming') ({{$topicdate->lesson_date}})<br>                                          
-                                           @elseif($topicdate->competed_date=="")
-                                           @lang('lesson::lesson.assigned_date') ({{$topicdate->lesson_date}})  
+                                           @if(date('Y-m-d')< $data->lesson_date && $data->competed_date=="")
+                                            @lang('lesson::lesson.upcoming') ({{$data->lesson_date}})<br>                                          
+                                           @elseif($data->competed_date=="")
+                                           @lang('lesson::lesson.assigned_date') ({{$data->lesson_date}})  
                                            <br>
                                            @endif
                                        
                                  
-                                     @endforeach
+                                   
                            
                                 </td>
                             <td>
-                                @foreach($alllessonPlannerTopic as $allData)
-                                @php
-                                $topicdate=DB::table('lesson_planners')->where('id',$allData->id)->first();                                  
-                                @endphp 
+                                
                                                                                 
-                                           @if($topicdate->competed_date=="")
+                                           @if($data->competed_date=="")
                                             Incomplete
                                            <br>
                                            @else
                                            Completed <br>
                                            @endif
-                                 @endforeach
+                                
                             </td>
                             
                             <td> 
-                                @foreach($alllessonPlannerTopic as $allData)
+                                
                             
                                 <label class="switch">
-                                <input type="checkbox" data-id="{{$allData->id}}"  {{@$allData->completed_status == 'completed'? 'checked':''}}
+                                <input type="checkbox" data-id="{{$data->id}}"  {{@$data->completed_status == 'completed'? 'checked':''}}
                                         class="weekend_switch_topic" ">
                                     <span class="slider round"></span>
                                 </label> <br>
  
-                                @endforeach
+                                
                             </td>
                         </tr>
                         @endforeach

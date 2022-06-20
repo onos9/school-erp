@@ -411,7 +411,20 @@ class CreateInfixModuleManagersTable extends Migration
             $s->installed_domain = url('/');
             $s->activated_date = date('Y-m-d');
             $s->save();
-                    
+           
+            //Lms
+            $name = 'Lms';
+            $s = new InfixModuleManager();
+            $s->name = 'Lms';
+            $s->email = 'support@spondonit.com';
+            $s->notes = "This is Lms module for learning management. Teacher & Admin Can create course and student & parent can enroll using online & offline payment gateway . Thanks for using.";
+            $s->version = "1.0";
+            $s->update_url = "https://spondonit.com/contact";
+            $s->is_default = 0;
+            $s->addon_url = "mailto:support@spondonit.com";
+            $s->installed_domain = url('/');
+            $s->activated_date = date('Y-m-d');
+            $s->save();
         } catch (Exception $e) {
             Log::info($e->getMessage());
         }

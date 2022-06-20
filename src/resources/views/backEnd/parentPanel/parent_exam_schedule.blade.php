@@ -36,9 +36,13 @@
                                 <div class="col-lg-6 mt-30-md">
                                     <select class="w-100 bb niceSelect form-control{{ $errors->has('exam') ? ' is-invalid' : '' }}" name="exam">
                                         <option data-display="Select Exam *" value="">@lang('exam.select_exam') *</option>
-                                        @foreach($exam_types as $exam)
-                                            <option value="{{$exam->id}}" {{isset($exam_id)? ($exam->id == $exam_id? 'selected':''):''}}>{{$exam->title}}</option>
-                                        @endforeach
+                                            @foreach($records as $record)
+                                            @if($record->Exam)
+                                                @foreach($record->Exam->unique(['exam_type_id', 'class_id','section_id']) as $exam)
+                                                <option value="{{$exam->id}}" {{isset($exam_id)? (@$exam->id == @$exam_id? 'selected':''):''}}>{{$exam->examType->title}} - {{$record->class->class_name}} ({{$record->section->section_name}})</option>
+                                                @endforeach
+                                            @endif
+                                            @endforeach
                                     </select>
                                     @if ($errors->has('exam'))
                                     <span class="invalid-feedback invalid-select" role="alert">

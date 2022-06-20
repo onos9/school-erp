@@ -777,9 +777,9 @@
                                     background-repeat: no-repeat;">
                                         {{-- <img class="" src=""  alt="" style="line-height:1.02; width: 100%;"> --}}
                                     </div>
-                                    <div class="qr__img" style="line-height:1.02; width: 30px;">
+<!--                                    <div class="qr__img" style="line-height:1.02; width: 30px;">
                                         <img src="{{asset('public/backEnd/id_card/img/qr.png')}}" alt="" style="line-height:1.02; width: 100%;">
-                                    </div>
+                                    </div>-->
                                 </div>
                                 <div class="vertical_card_body" style="line-height:1.02; display:flex; padding-top: 2.5mm; padding-bottom: 2.5mm; padding-right: 3mm ; padding-left: 3mm;">
                                     <div class="thumb vSize vSizeX photo vImg vRoundImg" style="background-image: url('{{asset('public/backEnd/id_card/img/thumb.png')}}'); line-height:1.02; width: 13.229166667mm; height: 13.229166667mm; flex-basis: 13.229166667mm; flex-grow: 0; flex-shrink: 0; margin-right: 30px; background-size: cover;

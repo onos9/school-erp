@@ -68,6 +68,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function register()
     {
+
         $this->app->singleton('dashboard_bg', function () {
             $dashboard_background = DB::table('sm_background_settings')->where('school_id', app('school')->id)->where([['is_default', 1], ['title', 'Dashboard Background']])->first();
             return $dashboard_background;
@@ -108,7 +109,7 @@ class AppServiceProvider extends ServiceProvider
 
 
         $this->app->singleton('general_settings', function() {
-            return Valuestore::make((base_path().'/general_settings.json'));;
+            return Valuestore::make((base_path().'/general_settings.json'));
         });
 
         $this->app->singleton('sidebar_news', function () {

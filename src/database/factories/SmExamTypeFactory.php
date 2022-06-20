@@ -14,6 +14,8 @@ class SmExamTypeFactory extends Factory
      */
     protected $model = SmExamType::class;
 
+    public $exam_type=['First Term','Second Term','Third Term'];
+
     /**
      * Define the model's default state.
      *
@@ -21,8 +23,10 @@ class SmExamTypeFactory extends Factory
      */
     public function definition()
     {
+        static $i;
+        $i = $i ?? 0;
         return [
-            'title' =>$this->faker->word,
+            'title' => $this->exam_type[$i++] ?? $this->faker->word,
         ];
     }
 }

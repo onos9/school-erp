@@ -11,6 +11,7 @@ use App\YearCheck;
 use App\SmFeesAssign;
 use App\SmFeesMaster;
 use App\ApiBaseMethod;
+use App\Http\Controllers\Admin\StudentInfo\SmStudentReportController;
 use App\SmFeesPayment;
 use App\SmClassRoutine;
 use App\SmAssignSubject;
@@ -404,16 +405,14 @@ class SmAcademicsController extends Controller
             $search_class = SmClass::where('academic_id', getAcademicId())->where('id', $request->class)->where('school_id', Auth::user()->school_id)->first();
 
             if ($request->section != "") {
-                $section = SmSection::where('academic_id', getAcademicId())->where('id', $request->section)->where('school_id', Auth::user()->school_id)->first();
+                $sectionInfo = SmSection::where('academic_id', getAcademicId())->where('id', $request->section)->where('school_id', Auth::user()->school_id)->first();
             } else {
-                $section = '';
+                $sectionInfo = '';
             }
-
-            $students = SmStudent::query()->where('school_id', auth()->user()->school_id);
-            $students->where('class_id', $request->class);
-            if ($request->section != "") {
-                $students->where('section_id', $request->section);
-            }
+            
+            $student_ids_from_record = SmStudentReportController::classSectionStudent($request);
+            $students = SmStudent::query()->whereIn('id', $student_ids_from_record)->where('school_id', auth()->user()->school_id);
+           
             $students = $students->get();
             $student_ids= $students->pluck('id')->toArray();
 
@@ -473,9 +472,10 @@ class SmAcademicsController extends Controller
                 }
             }
             $classes = SmClass::where('academic_id', getAcademicId())->where('active_status', 1)->where('school_id', Auth::user()->school_id)->get();
+            $section_id = $request->section;
+            $class_id = $request->class;
 
-
-            return view('backEnd.reports.class_report', compact('total_due','classes', 'students','applied_discount', 'assign_subjects', 'assign_class_teachers', 'total_collection', 'total_assign', 'search_class', 'section'));
+            return view('backEnd.reports.class_report', compact('total_due','classes', 'students','applied_discount', 'assign_subjects', 'assign_class_teachers', 'total_collection', 'total_assign', 'search_class', 'sectionInfo', 'section_id','class_id'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();

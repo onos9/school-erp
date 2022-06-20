@@ -13,10 +13,8 @@ class AllStudentExport implements FromCollection,WithHeadings
     public function headings():array{
         return[
             'Admission Number',
-            'Roll Number',
             'Full Name',
-            'Class Name',
-            'Section Name',
+            'Class (Section)',
         ];
     }
 
@@ -28,17 +26,22 @@ class AllStudentExport implements FromCollection,WithHeadings
     {
         $all_student_data = [];
         $student_infos = SmStudent::where('school_id',Auth::user()->school_id)
-                    ->where('academic_id',getAcademicId())
-                    ->select('admission_no', 'roll_no', 'full_name', 'class_id', 'section_id')
-                    ->orderBy('class_id','asc')
+                  
+                    ->select('admission_no', 'full_name','id')
+                    ->with('studentRecords')
                     ->get();
+        
         foreach($student_infos as $student_info){
+            $data= [];
+            foreach($student_info->studentRecords as $record){
+                $data[]= $record->class->class_name." (". $record->section->section_name . ")";
+            }
+            $classSection = implode(', ', $data);
             $all_student_data[] = [
                 $student_info->admission_no,
-                $student_info->roll_no,
                 $student_info->full_name,
-                $student_info->class->class_name,
-                $student_info->section->section_name,
+                $classSection,
+                
             ];
         }
         return collect($all_student_data);

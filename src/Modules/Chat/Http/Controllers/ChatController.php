@@ -75,6 +75,7 @@ class ChatController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
         $limit = ((int) app('general_settings')->get('chat_file_limit')*1024) ?? 204800;
         $validation = \Validator::make($request->all(), [
 //            'message' => 'required',

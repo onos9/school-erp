@@ -177,7 +177,8 @@ return [
         Yajra\DataTables\DataTablesServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,
         App\Providers\TranslationServiceProvider::class,
-        Benwilkins\FCM\FcmNotificationServiceProvider::class
+        Benwilkins\FCM\FcmNotificationServiceProvider::class,
+        // Vimeo\Laravel\VimeoServiceProvider::class
 
 
     ],
@@ -240,6 +241,7 @@ return [
         'Msg91' => Craftsys\Msg91\Facade\Msg91::class,
         'DataTables' => Yajra\DataTables\Facades\DataTables::class,
         'Str' => Illuminate\Support\Str::class,
+        // 'Vimeo' => Vimeo\Laravel\Facades\Vimeo::class,
 
     ],
 

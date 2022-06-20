@@ -17,6 +17,7 @@ use App\SmStudentCategory;
 use App\InfixModuleManager;
 use App\SmStudentAttendance;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
@@ -49,22 +50,15 @@ class SmStudentReportController extends Controller
         //student report search modified by jmrashed
         public function studentReportSearch(Request $request)
         {
+            //  return $request->all();
             $request->validate([
                 'class' => 'required'
             ]);
             try {
+                $student_ids = $this->classSectionStudent($request);
                 $students = SmStudent::query();
     
-                $students->where('academic_id', getAcademicId())->where('active_status', 1);
-    
-                //if no class is selected
-                if ($request->class != "") {
-                    $students->where('class_id', $request->class);
-                }
-                //if no section is selected
-                if ($request->section != "") {
-                    $students->where('section_id', $request->section);
-                }
+                $students->where('academic_id', getAcademicId())->where('active_status', 1);    
                 //if no student is category selected
                 if ($request->type != "") {
                     $students->where('student_category_id', $request->type);
@@ -74,19 +68,21 @@ class SmStudentReportController extends Controller
                 if ($request->gender != "") {
                     $students->where('gender_id', $request->gender);
                 }
-                $students = $students->with('parents','gender','category','section','class')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+                $students = $students->whereIn('id', $student_ids)->with('parents','gender','category','section','class','recordClass', 'studentRecords', 'recordClasses')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
     
                 $classes = SmClass::get();
                 $types = SmStudentCategory::get();
                 $genders = SmBaseSetup::where('base_group_id', '=', '1')->get();
     
                 $class_id = $request->class;
+                $section_id = $request->section;
                 $type_id = $request->type;
                 $gender_id = $request->gender;
-
+                //   return $students;
                 $clas = SmClass::find($request->class);
-                return view('backEnd.studentInformation.student_report', compact('students', 'classes', 'types', 'genders', 'class_id', 'type_id', 'gender_id', 'clas'));
+                return view('backEnd.studentInformation.student_report', compact('students', 'classes', 'types', 'genders', 'class_id', 'type_id', 'gender_id', 'section_id'));
             } catch (\Exception $e) {
+                dd($e);
                 Toastr::error('Operation Failed', 'Failed');
                 return redirect()->back();
             }
@@ -241,20 +237,18 @@ class SmStudentReportController extends Controller
                     ->withInput();
             }
             try {
+                $student_ids = $this->classSectionStudent($request);
+
                 $students = SmStudent::query();
                 $students->where('academic_id', getAcademicId())->where('active_status', 1);
-                $students->where('class_id', $request->class);
-                if ($request->section != "") {
-                    $students->where('section_id', $request->section);
-                }
-                $students = $students->with('parents','section','class')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+                $students = $students->whereIn('id', $student_ids)->with('parents', 'section', 'class')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
     
-                $classes = SmClass::get();    
+                $classes = SmClass::get();
     
                 $class_id = $request->class;
-
+                $section_id = $request->section;
                 $clas = SmClass::find($request->class);
-                return view('backEnd.studentInformation.guardian_report', compact('students', 'classes', 'class_id', 'clas'));
+                return view('backEnd.studentInformation.guardian_report', compact('students', 'classes', 'class_id', 'clas', 'section_id'));
             } catch (\Exception $e) {
                 Toastr::error('Operation Failed', 'Failed');
                 return redirect()->back();
@@ -291,19 +285,19 @@ class SmStudentReportController extends Controller
                     ->withInput();
             }
             try {
+                $student_ids = $this->classSectionStudent($request);
                 $students = SmStudent::query();
                 $students->where('academic_id', getAcademicId())->where('active_status', 1);
-                $students->where('class_id', $request->class);
-                if ($request->section != "") {
-                    $students->where('section_id', $request->section);
-                }
-                $students = $students->with('user','parents')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+               
+                $students = $students->whereIn('id', $student_ids)->with('user','parents')
+              ->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
     
                 $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
                 $class_id = $request->class;
+                $section_id = $request->section;
  
                 $clas = SmClass::find($request->class);
-                return view('backEnd.studentInformation.login_info', compact('students', 'classes', 'class_id', 'clas'));
+                return view('backEnd.studentInformation.login_info', compact('students', 'classes', 'class_id', 'clas','section_id'));
             } catch (\Exception $e) {
                 Toastr::error('Operation Failed', 'Failed');
                 return redirect()->back();
@@ -348,16 +342,15 @@ class SmStudentReportController extends Controller
                     ->withInput();
             }
             try {
+                $student_ids = $this->classSectionStudent($request);
                 $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
                 $students = SmStudent::query();
                 $students->where('academic_id', getAcademicId())->where('active_status', 1);
-                $students->where('class_id', $request->class);
-                $students->where('active_status', 1);
                 if ($request->admission_year != "") {
                     $students->where('admission_date', 'like',  $request->admission_year . '%');
                 }
     
-                $students = $students->with('parents','section','class','promotion','session')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+                $students = $students->whereIn('id', $student_ids)->with('parents','section','class','promotion','session')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
                
                 $years = SmStudent::select('admission_date')->where('active_status', 1)
                     ->where('academic_id', getAcademicId())
@@ -367,16 +360,32 @@ class SmStudentReportController extends Controller
                     });
                 $class_id = $request->class;
                 $year = $request->admission_year;
-    
+                $student_id=null;   
 
                 $clas = SmClass::find($request->class);
-                return view('backEnd.studentInformation.student_history', compact('students', 'classes', 'years', 'class_id', 'year', 'clas'));
+                return view('backEnd.studentInformation.student_history', compact('students', 'classes', 'years', 'class_id', 'year', 'clas', 'student_id'));
             } catch (\Exception $e) {
                 Toastr::error('Operation Failed', 'Failed');
                 return redirect()->back();
             }
         }
-    
-    
-    
+    // this function call others 
+    public static function classSectionStudent($request)
+    {
+        $student_ids = StudentRecord::when($request->academic_year, function ($query) use ($request) {
+            $query->where('academic_id', $request->academic_year);
+        })
+        ->when($request->class, function ($query) use ($request) {
+            $query->where('class_id', $request->class);
+        })
+        ->when($request->section, function ($query) use ($request) {
+            $query->where('section_id', $request->section);
+        })
+        ->when(!$request->academic_year, function ($query) use ($request) {
+            $query->where('academic_id', getAcademicId());
+        })->where('school_id', auth()->user()->school_id)->where('is_promote', 0)->pluck('student_id')->unique();
+
+        return $student_ids;
     }
+    
+}

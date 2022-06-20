@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 class SmFeesDiscount extends Model
 {
     use HasFactory;
-    public static function CheckAppliedDiscount($discount_id, $student_id)
+    public static function CheckAppliedDiscount($discount_id, $student_id, $record_id)
     {
-        $check = SmFeesAssign::where('fees_discount_id', $discount_id)->where('student_id', $student_id)->first();
+        $check = SmFeesAssign::where('fees_discount_id', $discount_id)->where('record_id',$record_id)->where('student_id', $student_id)->first();
         if ($check) {
             # code...
             $assigned_fees_amount = $check->fees_amount + $check->applied_discount;

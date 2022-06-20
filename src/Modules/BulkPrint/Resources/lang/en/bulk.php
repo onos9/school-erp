@@ -24,4 +24,9 @@ return [
     'is_showing_signature'=>'Is Showing Signature',
     'copy_for'=>'Copy For',
     'invoice_no'=>'Invoice No',
+    'lms_certificate'=>'Lms Certificate',
+    'slip'=>'Slip',
+    'invoice'=>'invoice',
+    'invoice_type'=>'Invoice Type',
+    'fees_invoice_bulk_print_settings'=>'Fees Invoice Bulk Print Settings',
 ];

@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class SmFrontendPersmission extends Model
 {
     use HasFactory;
+    protected $fillable = ['name','school_id'];
 }

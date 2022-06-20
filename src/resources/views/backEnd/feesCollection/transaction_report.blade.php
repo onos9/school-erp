@@ -1,10 +1,16 @@
 @extends('backEnd.master')
-@section('title') 
-@lang('fees.fees_collection_transaction_report')
-@endsection
+    @section('title') 
+        @lang('fees.fees_collection_transaction_report')
+    @endsection
 @section('mainContent')
-@php  $setting = generalSetting();  if(!empty($setting->currency_symbol)){ $currency = $setting->currency_symbol; }else{ $currency = '$'; }   @endphp 
-
+@php  
+    $setting = generalSetting();  
+    if(!empty($setting->currency_symbol)){ 
+        $currency = $setting->currency_symbol; 
+    }else{ 
+        $currency = '$'; 
+    }   
+@endphp 
 <section class="sms-breadcrumb mb-40 white-box">
     <div class="container-fluid">
         <div class="row justify-content-between">
@@ -28,7 +34,6 @@
         </div>
         <div class="row">
             <div class="col-lg-12">
-               
                 <div class="white-box">
                     {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'transaction_report_search', 'method' => 'POST', 'enctype' => 'multipart/form-data', 'id' => 'search_student']) }}
                         <div class="row">
@@ -40,14 +45,14 @@
                                 <select class="niceSelect w-100 bb form-control{{ $errors->has('class') ? ' is-invalid' : '' }}" id="select_class" name="class">
                                     <option data-display="@lang('common.select_class')" value="">@lang('common.select_class')</option>
                                     @foreach($classes as $class)
-                                    <option value="{{$class->id}}" {{isset($class_id)? ($class_id == $class->id? 'selected':''):''}}>{{@$class->class_name}}</option>
+                                        <option value="{{$class->id}}" {{isset($class_id)? ($class_id == $class->id? 'selected':''):''}}>{{@$class->class_name}}</option>
                                     @endforeach
                                 </select>
-                                    @if ($errors->has('class'))
-                                <span class="invalid-feedback invalid-select" role="alert">
-                                    <strong>{{ $errors->first('class') }}</strong>
-                                </span>
-                                    @endif
+                                @if ($errors->has('class'))
+                                    <span class="invalid-feedback invalid-select" role="alert">
+                                        <strong>{{ $errors->first('class') }}</strong>
+                                    </span>
+                                @endif
                             </div>
                             <div class="col-lg-3 mt-30-md" id="select_section_div">
                                 <select class="niceSelect w-100 bb form-control{{ $errors->has('section') ? ' is-invalid' : '' }}" id="select_section" name="section">
@@ -116,10 +121,10 @@
                                             {{$fees_payment->payment_date != ""? dateConvert($fees_payment->payment_date):''}}
 
                                         </td>
-                                        <td>{{$fees_payment->studentInfo !=""?$fees_payment->studentInfo->full_name:""}}</td>
+                                        <td>{{$fees_payment->recordDetail->studentDetail !=""?$fees_payment->recordDetail->studentDetail->full_name:""}}</td>
                                         <td>
-                                            @if($fees_payment->studentInfo!="" && $fees_payment->studentInfo->class!="")
-                                            {{$fees_payment->studentInfo->class->class_name}}
+                                            @if($fees_payment->recordDetail->studentDetail!="" && $fees_payment->recordDetail->class!="")
+                                            {{$fees_payment->recordDetail->class->class_name}}
                                             @endif
                                         </td>
                                         <td>{{$fees_payment->feesType!=""?$fees_payment->feesType->name:""}}</td>
@@ -133,7 +138,6 @@
                                                 echo generalSetting()->currency_symbol.$fees_payment->amount;
                                             @endphp
                                         </td>
-                                        
                                         <td>
                                             @php
                                                 $total =  $total + $fees_payment->fine;
@@ -172,7 +176,7 @@
 </section>
 @endsection
 @push('script')
-<script>
+    <script>
         $('input[name="date_range"]').daterangepicker({
             ranges: {
                 {!! json_encode(__('calender.Today')) !!}: [moment(), moment()],

@@ -47,13 +47,17 @@ use App\SmStudentCategory;
 use App\SmStudentDocument;
 use App\SmStudentTimeline;
 use App\SmStudentAttendance;
+use App\Traits\CustomFields;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use App\SmFeesAssignDiscount;
 use App\SmClassOptionalSubject;
 use App\SmOptionalSubjectAssign;
 use App\SmStudentTakeOnlineExam;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Modules\Lead\Entities\LeadCity;
 use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
@@ -61,14 +65,17 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use App\Models\SmStudentRegistrationField;
 use Modules\RolePermission\Entities\InfixRole;
 use Modules\Wallet\Entities\WalletTransaction;
 use Modules\OnlineExam\Entities\InfixOnlineExam;
 use Modules\OnlineExam\Entities\InfixStudentTakeOnlineExam;
+use App\Http\Requests\Admin\StudentInfo\SmStudentAdmissionRequest;
+use App\Scopes\StatusAcademicSchoolScope;
 
 class SmParentPanelController extends Controller
 {
-
+    use CustomFields;
     public function __construct()
     {
         $this->middleware('PM');
@@ -130,330 +137,351 @@ class SmParentPanelController extends Controller
         }
     }
 
-    public function studentUpdate(Request $request)
-    {
-        $request->validate([
-            'document_file_1' => "sometimes|nullable|mimes:pdf,doc,docx,jpg,jpeg,png,txt",
-            'document_file_2' => "sometimes|nullable|mimes:pdf,doc,docx,jpg,jpeg,png,txt",
-            'document_file_3' => "sometimes|nullable|mimes:pdf,doc,docx,jpg,jpeg,png,txt",
-            'document_file_4' => "sometimes|nullable|mimes:pdf,doc,docx,jpg,jpeg,png,txt",
-        ]);
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-        $student_detail = SmStudent::find($request->id);
-
-        if (!empty($request->guardians_email)) {
-            $is_duplicate = SmParent::where('school_id', Auth::user()->school_id)->where('guardians_email', $request->guardians_email)->where('id', '!=', $student_detail->parent_id)->first();
-            if ($is_duplicate) {
-                Toastr::error('Duplicate Guardian Email Found!', 'Failed');
-                return redirect()->back()->withInput();
-            }
-        }
-
-        if (!empty($request->guardians_mobile)) {
-            $is_duplicate = SmParent::where('school_id', Auth::user()->school_id)->where('guardians_mobile', $request->guardians_mobile)->where('id', '!=', $student_detail->parent_id)->first();
-            if ($is_duplicate) {
-                Toastr::error('Duplicate Guardian Mobile Number Found!', 'Failed');
-                return redirect()->back()->withInput();
-            }
-        }
-
-        // always happen start
-
-        $document_file_1 = "";
-        if ($request->file('document_file_1') != "") {
-            $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
-            $file = $request->file('document_file_1');
-            $fileSize = filesize($file);
-            $fileSizeKb = ($fileSize / 1000000);
-            if ($fileSizeKb >= $maxFileSize) {
-                Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
-                return redirect()->back();
-            }
-            if ($student_detail->document_file_1 != "") {
-                if (file_exists($student_detail->document_file_1)) {
-                    unlink($student_detail->document_file_1);
-                }
-            }
-            $file = $request->file('document_file_1');
-            $document_file_1 = 'doc1-' . md5($file->getClientOriginalName() . time()) . "." . $file->getClientOriginalExtension();
-            $file->move('public/uploads/student/document/', $document_file_1);
-            $document_file_1 = 'public/uploads/student/document/' . $document_file_1;
-        }
-
-        $document_file_2 = "";
-        if ($request->file('document_file_2') != "") {
-            $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
-            $file = $request->file('document_file_2');
-            $fileSize = filesize($file);
-            $fileSizeKb = ($fileSize / 1000000);
-            if ($fileSizeKb >= $maxFileSize) {
-                Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
-                return redirect()->back();
-            }
-            if ($student_detail->document_file_2 != "") {
-                if (file_exists($student_detail->document_file_2)) {
-                    unlink($student_detail->document_file_2);
-                }
-            }
-            $file = $request->file('document_file_2');
-            $document_file_2 = 'doc2-' . md5($file->getClientOriginalName() . time()) . "." . $file->getClientOriginalExtension();
-            $file->move('public/uploads/student/document/', $document_file_2);
-            $document_file_2 = 'public/uploads/student/document/' . $document_file_2;
-        }
-
-        $document_file_3 = "";
-        if ($request->file('document_file_3') != "") {
-            $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
-            $file = $request->file('document_file_3');
-            $fileSize = filesize($file);
-            $fileSizeKb = ($fileSize / 1000000);
-            if ($fileSizeKb >= $maxFileSize) {
-                Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
-                return redirect()->back();
-            }
-            if ($student_detail->document_file_3 != "") {
-                if (file_exists($student_detail->document_file_3)) {
-                    unlink($student_detail->document_file_3);
-                }
-            }
-            $file = $request->file('document_file_3');
-            $document_file_3 = 'doc3-' . md5($file->getClientOriginalName() . time()) . "." . $file->getClientOriginalExtension();
-            $file->move('public/uploads/student/document/', $document_file_3);
-            $document_file_3 = 'public/uploads/student/document/' . $document_file_3;
-        }
-
-        $document_file_4 = "";
-        if ($request->file('document_file_4') != "") {
-            $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
-            $file = $request->file('document_file_4');
-            $fileSize = filesize($file);
-            $fileSizeKb = ($fileSize / 1000000);
-            if ($fileSizeKb >= $maxFileSize) {
-                Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
-                return redirect()->back();
-            }
-            if ($student_detail->document_file_4 != "") {
-                if (file_exists($student_detail->document_file_4)) {
-                    unlink($student_detail->document_file_4);
-                }
-            }
-            $file = $request->file('document_file_4');
-            $document_file_4 = 'doc4-' . md5($file->getClientOriginalName() . time()) . "." . $file->getClientOriginalExtension();
-            $file->move('public/uploads/student/document/', $document_file_4);
-            $document_file_4 = 'public/uploads/student/document/' . $document_file_4;
-        }
-
-        if ($request->relation == 'Father') {
-            $guardians_photo = "";
-
-            if ($request->file('fathers_photo') != "") {
-                $student = SmStudent::find($request->id);
-
-                if (@$student->parents->guardians_photo != "") {
-                    if (file_exists(@$student->parents->guardians_photo)) {
-                        unlink(@$student->parents->guardians_photo);
-                    }
-                }
-
-                $guardians_photo = Session::get('fathers_photo');
-            }
-        } elseif ($request->relation == 'Mother') {
-            $guardians_photo = "";
-            if ($request->file('mothers_photo') != "") {
-                $student = SmStudent::find($request->id);
-
-                if (@$student->parents->guardians_photo != "") {
-                    if (file_exists(@$student->parents->guardians_photo)) {
-                        unlink(@$student->parents->guardians_photo);
-                    }
-                }
-
-                $guardians_photo = Session::get('mothers_photo');
-            }
-        } elseif ($request->relation == 'Other') {
-            $guardians_photo = "";
-            if ($request->file('guardians_photo') != "") {
-                $student = SmStudent::find($request->id);
-
-                if (@$student->parents->guardians_photo != "") {
-                    if (file_exists(@$student->parents->guardians_photo)) {
-                        unlink(@$student->parents->guardians_photo);
-                    }
-                }
-
-                $guardians_photo = Session::get('guardians_photo');
-            }
-        }
-
-        $shcool_details = SmGeneralSettings::where('school_id', Auth::user()->school_id)->first();
-        $school_name = explode(' ', $shcool_details->school_name);
-        $short_form = '';
-
-        foreach ($school_name as $value) {
-            $ch = str_split($value);
-            $short_form = $short_form . '' . $ch[0];
-        }
-
-        DB::beginTransaction();
-
+    public function studentUpdate(SmStudentAdmissionRequest $request)
+    { 
         try {
+             $student_detail = SmStudent::find($request->id);
+             $validator = Validator::make($request->all(), $this->generateValidateRules("student_registration", $student_detail));
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+                foreach ($errors->all() as $error) {
+                Toastr::error(str_replace('custom f.', '', $error), 'Failed');
+                }
+                return redirect()->back()->withInput();
+            }
+            // custom field validation End
+        
+        
+            $destination = 'public/uploads/student/document/';
+            $student_file_destination = 'public/uploads/student/';
+            $student = SmStudent::find($request->id);
+           
+            $academic_year = $request->session ? SmAcademicYear::find($request->session) : '';
+            DB::beginTransaction();
+           
+            if ($student) {
+                $username = $request->phone_number ? $request->phone_number : $request->admission_number;
+                $phone_number = $request->phone_number ? $request->phone_number : null;
+                $user_stu =$this->addUser($student_detail->user_id, 2, $username, $request->email_address, $phone_number);
+                //sibling || parent info user update
+                if (($request->sibling_id == 0 || $request->sibling_id == 1) && $request->parent_id == "") {
+                    $username = $request->guardians_phone ? $request->guardians_phone : $request->guardians_email;
+                    $phone_number = $request->guardians_phone;
+                    $user_parent =  $this->addUser($student_detail->parents->user_id, 3, $username, $request->guardians_email, $phone_number);
 
-            $user_stu = User::find($student_detail->user_id);
-            $user_stu->email = $request->email_address;
-            $user_stu->save();
-            $user_stu->toArray();
+                    $user_parent->toArray();
 
-            try {
-                $user_parent = User::find($student_detail->parents->user_id);
-                $user_parent->role_id = 3;
-                $user_parent->username = $request->guardians_email;
-                $user_parent->email = $request->guardians_email;
-                $user_parent->password = Hash::make(123456);
-                $user_parent->save();
-                try {
+                } elseif ($request->sibling_id == 0 && $request->parent_id != "") {
+                    User::destroy($student_detail->parents->user_id);
+                } elseif (($request->sibling_id == 2 || $request->sibling_id == 1) && $request->parent_id != "") {
+                } elseif ($request->sibling_id == 2 && $request->parent_id == "") {
 
-                    $parent = SmParent::find($student_detail->parent_id);
+                    $username = $request->guardians_phone ? $request->guardians_phone : $request->guardians_email;
+                    $phone_number = $request->guardians_phone;
+                    $user_parent = $this->addUser(null, 3, $username, $request->guardians_email, $phone_number);
+                    $user_parent->toArray();
+                }
+                // end
+                //sibling & parent info update
+                if ($request->sibling_id == 0 && $request->parent_id != "") {
+                    SmParent::destroy($student_detail->parent_id);
+                } elseif (($request->sibling_id == 2 || $request->sibling_id == 1) && $request->parent_id != "") {
+                } else {
+
+                    if (($request->sibling_id == 0 || $request->sibling_id == 1) && $request->parent_id == "") {
+                        $parent = SmParent::find($student_detail->parent_id);
+                    } elseif ($request->sibling_id == 2 && $request->parent_id == "") {
+                        $parent = new SmParent();
+                    }
+
                     $parent->user_id = $user_parent->id;
-                    $parent->fathers_name = $request->fathers_name;
-                    $parent->fathers_mobile = $request->fathers_phone;
-                    $parent->fathers_occupation = $request->fathers_occupation;
-                    if (Session::get('fathers_photo') != "") {
-                        $parent->fathers_photo = Session::get('fathers_photo');
+                    if ($request->filled('fathers_name')) {
+                        $parent->fathers_name = $request->fathers_name;
                     }
-
-                    $parent->mothers_name = $request->mothers_name;
-                    $parent->mothers_mobile = $request->mothers_phone;
-                    $parent->mothers_occupation = $request->mothers_occupation;
-                    if (Session::get('mothers_photo') != "") {
-                        $parent->mothers_photo = Session::get('mothers_photo');
+                    if ($request->filled('fathers_phone')) {
+                        $parent->fathers_mobile = $request->fathers_phone;
                     }
-                    $parent->guardians_name = $request->guardians_name;
-                    $parent->guardians_mobile = $request->guardians_phone;
-                    $parent->guardians_email = $request->guardians_email;
-                    $parent->guardians_occupation = $request->guardians_occupation;
-                    $parent->guardians_relation = $request->relation;
-                    $parent->relation = $request->relationButton;
-
-                    // if guardian pic updated then add it
-                    if ($guardians_photo != "") {
-                        $parent->guardians_photo = $guardians_photo;
+                    if ($request->filled('fathers_occupation')) {
+                        $parent->fathers_occupation = $request->fathers_occupation;
                     }
-
-                    $parent->guardians_address = $request->guardians_address;
-                    $parent->is_guardian = $request->is_guardian;
+                    if ($request->filled('fathers_photo')) {
+                        $parent->fathers_photo = fileUpdate($parent->fathers_photo, $request->fathers_photo, $student_file_destination);
+                    }
+                    if ($request->filled('mothers_name')) {
+                        $parent->mothers_name = $request->mothers_name;
+                    }
+                    if ($request->filled('mothers_phone')) {
+                        $parent->mothers_mobile = $request->mothers_phone;
+                    }
+                    if ($request->filled('mothers_occupation')) {
+                        $parent->mothers_occupation = $request->mothers_occupation;
+                    }
+                    if ($request->filled('mothers_photo')) {
+                        $parent->mothers_photo = fileUpdate($parent->mothers_photo, $request->mothers_photo, $student_file_destination);
+                    }
+                    if ($request->filled('guardians_name')) {
+                        $parent->guardians_name = $request->guardians_name;
+                    }
+                    if ($request->filled('guardians_phone')) {
+                        $parent->guardians_mobile = $request->guardians_phone;
+                    }
+                    if ($request->filled('guardians_email')) {
+                        $parent->guardians_email = $request->guardians_email;
+                    }
+                    if ($request->filled('guardians_occupation')) {
+                        $parent->guardians_occupation = $request->guardians_occupation;
+                    }
+                    
+                    if ($request->filled('relation')) {
+                        $parent->guardians_relation = $request->relation;
+                    }
+                    if ($request->filled('relationButton')) {
+                        $parent->relation = $request->relationButton;
+                    }
+                    if ($request->filled('guardians_photo')) {
+                        $parent->guardians_photo = fileUpdate($student->parents->guardians_photo, $request->guardians_photo, $student_file_destination);
+                    }
+                    if ($request->filled('guardians_address')) {
+                        $parent->guardians_address = $request->guardians_address;
+                    }
+                    if ($request->filled('is_guardian')) {
+                        $parent->is_guardian = $request->is_guardian;
+                    }
+                   
+                    if ($request->filled('session')) {
+                        $parent->created_at = $academic_year->year . '-01-01 12:00:00';
+                    }
                     $parent->save();
                     $parent->toArray();
-
-                    try {
-
-                        $student = SmStudent::find($request->id);
-
-                        if (($request->sibling_id == 0 || $request->sibling_id == 1) && $request->parent_id == "") {
-                            $student->parent_id = $parent->id;
-                        } elseif ($request->sibling_id == 0 && $request->parent_id != "") {
-                            $student->parent_id = $request->parent_id;
-                        } elseif (($request->sibling_id == 2 || $request->sibling_id == 1) && $request->parent_id != "") {
-                            $student->parent_id = $request->parent_id;
-                        } elseif ($request->sibling_id == 2 && $request->parent_id == "") {
-                            $student->parent_id = $parent->id;
-                        }
-                        $student->first_name = $request->first_name;
-                        $student->last_name = $request->last_name;
-                        $student->full_name = $request->first_name . ' ' . $request->last_name;
-                        $student->gender_id = $request->gender;
-                        $student->date_of_birth = date('Y-m-d', strtotime($request->date_of_birth));
-
-                        $student->age = $request->age;
-
-                        $student->caste = $request->caste;
-                        $student->email = $request->email_address;
-                        $student->mobile = $request->phone_number;
-                        $student->admission_date = date('Y-m-d', strtotime($request->admission_date));
-
-                        if (Session::get('student_photo') != "") {
-                            $student->student_photo = Session::get('student_photo');
-                        }
-
-                        /* if ($student_photo != "") {
-                        } */
-                        if (@$request->blood_group != "") {
-                            $student->bloodgroup_id = $request->blood_group;
-                        }
-                        if (@$request->religion != "") {
-                            $student->religion_id = $request->religion;
-                        }
-
-                        $student->height = $request->height;
-                        $student->weight = $request->weight;
-                        $student->current_address = $request->current_address;
-                        $student->permanent_address = $request->permanent_address;
-                        $student->student_category_id = $request->student_category_id;
-                        $student->student_group_id = $request->student_group_id;
-
-                        // $student->driver_phone_no = $request->driver_phone;
-                        $student->national_id_no = $request->national_id_number;
-                        $student->local_id_no = $request->local_id_number;
-                        $student->bank_account_no = $request->bank_account_number;
-                        $student->bank_name = $request->bank_name;
-                        $student->previous_school_details = $request->previous_school_details;
-                        $student->aditional_notes = $request->additional_notes;
-                        $student->ifsc_code = $request->ifsc_code;
-                        $student->document_title_1 = $request->document_title_1;
-                        if ($document_file_1 != "") {
-                            $student->document_file_1 = $document_file_1;
-                        }
-
-                        $student->document_title_2 = $request->document_title_2;
-                        if ($document_file_2 != "") {
-                            $student->document_file_2 = $document_file_2;
-                        }
-
-                        $student->document_title_3 = $request->document_title_3;
-                        if ($document_file_3 != "") {
-                            $student->document_file_3 = $document_file_3;
-                        }
-
-                        $student->document_title_4 = $request->document_title_4;
-
-                        if ($document_file_4 != "") {
-                            $student->document_file_4 = $document_file_4;
-                        }
-
-                        $student->save();
-                        DB::commit();
-
-                        // session null
-
-                        $update_parent = SmParent::where('user_id', Auth::user()->id)->first('guardians_photo');
-                        Session::put('profile', $update_parent->guardians_photo);
-
-                        Toastr::success('Operation successful', 'Success');
-                        return redirect('parent-dashboard');
-                    } catch (\Exception $e) {
-                        return $e->getMessage();
-                        DB::rollback();
-                        Toastr::error('Operation Failed', 'Failed');
-                        return redirect()->back();
-                    }
-                } catch (\Exception $e) {
-                    return $e->getMessage();
-                    DB::rollback();
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
                 }
-            } catch (\Exception $e) {
-                return $e->getMessage();
-                // return $e;
-                DB::rollback();
-                Toastr::error('Operation Failed', 'Failed');
-                return redirect()->back();
+                // end sibling & parent info update
+                // student info update
+                $student = SmStudent::find($request->id);
+                if (($request->sibling_id == 0 || $request->sibling_id == 1) && $request->parent_id == "") {
+                        $student->parent_id = $parent->id;
+                } elseif ($request->sibling_id == 0 && $request->parent_id != "") {
+                        $student->parent_id = $request->parent_id;
+                } elseif (($request->sibling_id == 2 || $request->sibling_id == 1) && $request->parent_id != "") {
+                        $student->parent_id = $request->parent_id;
+                } elseif ($request->sibling_id == 2 && $request->parent_id == "") {
+                        $student->parent_id = $parent->id;
+                }
+                if ($request->filled('class')) {
+                    $student->class_id = $request->class;
+                }
+                if ($request->filled('section')) {
+                    $student->section_id = $request->section;
+                }
+                if ($request->filled('session')) {
+                    $student->session_id = $request->session;
+                }
+                if ($request->filled('admission_number')) {
+                    $student->admission_no = $request->admission_number;
+                }
+                $student->user_id = $user_stu->id;
+                if ($request->filled('roll_number')) {
+                    $student->roll_no = $request->roll_number;
+                }
+                if ($request->filled('first_name')) {
+                    $student->first_name = $request->first_name;
+                }
+                if ($request->filled('last_name')) {
+                    $student->last_name = $request->last_name;
+                }
+                if ($request->filled('first_name') && $request->filled('last_name')) {
+                    $student->full_name = $request->first_name . ' ' . $request->last_name;
+                }
+                if ($request->filled('gender')) {
+                    $student->gender_id = $request->gender;
+                }
+                if ($request->filled('date_of_birth')) {
+                    $student->date_of_birth = date('Y-m-d', strtotime($request->date_of_birth));
+                }
+                if ($request->filled('age')) {
+                    $student->age = $request->age;
+                }
+                if ($request->filled('caste')) {
+                    $student->caste = $request->caste;
+                }
+                if ($request->filled('email_address')) {
+                    $student->email = $request->email_address;
+                }
+                if ($request->filled('phone_number')) {
+                    $student->mobile = $request->phone_number;
+                }
+                if ($request->filled('admission_date')) {
+                    $student->admission_date = date('Y-m-d', strtotime($request->admission_date));
+                }
+                if ($request->filled('photo')) {
+                    $student->student_photo = fileUpdate($parent->student_photo, $request->photo, $student_file_destination);
+                }
+                if ($request->filled('blood_group')) {
+                    $student->bloodgroup_id = $request->blood_group;
+                }
+                if ($request->filled('religion')) {
+                    $student->religion_id = $request->religion;
+                }
+                if ($request->filled('height')) {
+                    $student->height = $request->height;
+                }
+                if ($request->filled('weight')) {
+                    $student->weight = $request->weight;
+                }
+                if ($request->filled('current_address')) {
+                    $student->current_address = $request->current_address;
+                }
+                if ($request->filled('permanent_address')) {
+                    $student->permanent_address = $request->permanent_address;
+                }
+                if ($request->filled('student_category_id')) {
+                    $student->student_category_id = $request->student_category_id;
+                }
+                if ($request->filled('student_group_id')) {
+                    $student->student_group_id = $request->student_group_id;
+                }
+                if ($request->filled('route')) {
+                    $student->route_list_id = $request->route;
+                }
+                if ($request->filled('dormitory_name')) {
+                    $student->dormitory_id = $request->dormitory_name;
+                }
+                if ($request->filled('room_number')) {
+                    $student->room_id = $request->room_number;
+                }
+                
+                if (!empty($request->vehicle)) {
+                    $driver = SmVehicle::where('id', '=', $request->vehicle)
+                            ->select('driver_id')
+                            ->first();
+                    $student->vechile_id = $request->vehicle;
+                    $student->driver_id = $driver->driver_id;
+                }
+                if ($request->filled('national_id_number')) {
+                    $student->national_id_no = $request->national_id_number;
+                }
+                if ($request->filled('local_id_number')) {
+                    $student->local_id_no = $request->local_id_number;
+                }
+                if ($request->filled('bank_account_number')) {
+                    $student->bank_account_no = $request->bank_account_number;
+                }
+                if ($request->filled('bank_name')) {
+                    $student->bank_name = $request->bank_name;
+                }
+                if ($request->filled('previous_school_details')) {
+                    $student->previous_school_details = $request->previous_school_details;
+                }
+                if ($request->filled('additional_notes')) {
+                    $student->aditional_notes = $request->additional_notes;
+                }
+                if ($request->filled('ifsc_code')) {
+                    $student->ifsc_code = $request->ifsc_code;
+                }
+                if ($request->filled('document_title_1')) {
+                    $student->document_title_1 = $request->document_title_1;
+                }
+                if ($request->filled('document_file_1')) {
+                    $student->document_file_1 = fileUpdate($student->document_file_1, $request->file('document_file_1'), $destination);
+                }
+                if ($request->filled('document_title_2')) {
+                    $student->document_title_2 = $request->document_title_2;
+                }
+                if ($request->filled('document_file_2')) {
+                    $student->document_file_2 = fileUpdate($student->document_file_2, $request->file('document_file_2'), $destination);
+                }
+                if ($request->filled('document_title_3')) {
+                    $student->document_title_3 = $request->document_title_3;
+                }
+                if ($request->filled('document_file_3')) {
+                    $student->document_file_3 = fileUpdate($student->document_file_3, $request->file('document_file_3'), $destination);
+                }
+                if ($request->filled('document_title_4')) {
+                    $student->document_title_4 = $request->document_title_4;
+                }
+                if ($request->filled('document_title_4')) {
+                    $student->document_file_4 = fileUpdate($student->document_file_4, $request->file('document_file_3'), $destination);
+                }
+
+                if ($request->filled('session')) {
+                    $student->created_at = $academic_year->year . '-01-01 12:00:00';
+                    $student->academic_id = $academic_year->id;
+                }
+
+
+                if ($request->customF) {
+                    $dataImage = $request->customF;
+                    foreach ($dataImage as $label => $field) {
+                    if (is_object($field) && $field != "") {
+                        $key = "";
+
+                    $maxFileSize = generalSetting()->file_size;
+                                $file = $field;
+                                $fileSize = filesize($file);
+                                $fileSizeKb = ($fileSize / 1000000);
+                                if ($fileSizeKb >= $maxFileSize) {
+                                    Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
+                                    return redirect()->back();
+                                }
+                                $file = $field;
+                                $key = $file->getClientOriginalName();
+                                $file->move('public/uploads/customFields/', $key);
+                                $dataImage[$label] = 'public/uploads/customFields/' . $key;
+
+                            }
+                        }
+
+                        //Custom Field Start
+                        $student->custom_field_form_name = "student_registration";
+                        $student->custom_field = json_encode($dataImage, true);
+                        //Custom Field End
+
+                }
+                if (moduleStatusCheck('Lead')==true) { 
+                    if ($request->filled('lead_city')) {
+                        $student->lead_city_id = $request->lead_city;
+                    }
+                    if ($request->filled('source_id')) {
+                        $student->source_id = $request->source_id;
+                    }
+                }
+                $student->save();
+                DB::commit();
             }
+               
+            // session null
+            $update_stud = SmStudent::where('user_id', $student->user_id)->first('student_photo');
+            Session::put('profile', $update_stud->student_photo);
+            Toastr::success('Operation successful', 'Success');
+            return redirect()->route('my_children', [$student->id]);
+
         } catch (\Exception $e) {
+          
             return $e->getMessage();
             DB::rollback();
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
+        }
+    }
+    private function addUser($user_id, $role_id, $username, $email, $phone_number)
+    {
+        try {
+
+            $user = $user_id == null ? new User() : User::find($user_id);
+            $user->role_id = $role_id;
+            if ($username !=null) {
+                $user->username = $username;
+            }
+            if ($email !=null) {
+                $user->email = $email;
+            }
+            if ($phone_number !=null) {
+                $user->phone_number = $phone_number;
+            }
+            $user->save();
+            return $user;
+
+        } catch (\Exception $e) {
+            Log::info($e->getMessage());
         }
     }
 
@@ -509,8 +537,22 @@ class SmParentPanelController extends Controller
             $siblings = SmStudent::where('parent_id', $student->parent_id)
                 ->where('school_id', Auth::user()->school_id)
                 ->get();
-
-            return view('backEnd.parentPanel.update_my_children', compact('student', 'classes', 'religions', 'blood_groups', 'genders', 'route_lists', 'vehicles', 'dormitory_lists', 'categories', 'groups', 'sessions', 'siblings', 'driver_lists'));
+            $lead_city= [];
+            $sources = [];
+            
+            if (moduleStatusCheck('Lead')==true) {
+                    $lead_city = \Modules\Lead\Entities\LeadCity::where('school_id', auth()->user()->school_id)->get(['id', 'city_name']);
+                    $sources = \Modules\Lead\Entities\Source::where('school_id', auth()->user()->school_id)->get(['id', 'source_name']);
+            }
+            $fields = SmStudentRegistrationField::where('school_id', auth()->user()->school_id)
+            ->when(auth()->user()->role_id == 2, function ($query) {
+                $query->where('student_edit', 1);
+            })
+            ->when(auth()->user()->role_id == 3, function ($query) {
+                $query->where('parent_edit', 1);
+            })
+            ->pluck('field_name')->toArray();
+            return view('backEnd.parentPanel.update_my_children', compact('student', 'classes', 'religions', 'blood_groups', 'genders', 'route_lists', 'vehicles', 'dormitory_lists', 'categories', 'groups', 'sessions', 'siblings', 'driver_lists', 'lead_city', 'fields', 'sources'));
         } catch (\Exception $e) {
 
             Toastr::error('Operation Failed', 'Failed');
@@ -523,6 +565,7 @@ class SmParentPanelController extends Controller
         $parent_info = SmParent::where('user_id', Auth::user()->id)->first();
         try {
             $student_detail = SmStudent::where('id', $id)->where('parent_id', $parent_info->id)->first();
+            $records = studentRecords(null, $student_detail->id)->get();
             if ($student_detail) {
                 $driver = SmVehicle::where('sm_vehicles.id', $student_detail->vechile_id)
                     ->join('sm_staffs', 'sm_vehicles.driver_id', '=', 'sm_staffs.id')
@@ -535,12 +578,10 @@ class SmParentPanelController extends Controller
                     ->first();
 
                 $fees_assigneds = SmFeesAssign::where('student_id', $student_detail->id)
-                    ->where('academic_id', getAcademicId())
                     ->where('school_id', Auth::user()->school_id)
                     ->get();
 
                 $fees_discounts = SmFeesAssignDiscount::where('student_id', $student_detail->id)
-                    ->where('academic_id', getAcademicId())
                     ->where('school_id', Auth::user()->school_id)
                     ->get();
 
@@ -622,7 +663,7 @@ class SmParentPanelController extends Controller
                     $custom_field_values = null;
                 }
                 $leave_details = SmLeaveRequest::where('staff_id', $student_detail->user_id)->where('role_id', 2)->where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
-                return view('backEnd.parentPanel.my_children', compact('student_detail', 'fees_assigneds', 'driver', 'fees_discounts', 'exams', 'documents', 'timelines', 'grades', 'exam_terms','academic_year','leave_details','optional_subject_setup','student_optional_subject','maxgpa','failgpaname','custom_field_values', 'walletAmounts', 'bankAccounts', 'paymentMethods'));
+                return view('backEnd.parentPanel.my_children', compact('student_detail', 'fees_assigneds', 'driver', 'fees_discounts', 'exams', 'documents', 'timelines', 'grades', 'exam_terms','academic_year','leave_details','optional_subject_setup','student_optional_subject','maxgpa','failgpaname','custom_field_values', 'walletAmounts', 'bankAccounts', 'paymentMethods','records'));
             } else {
                 Toastr::warning('Invalid Student ID', 'Invalid');
                 return redirect()->back();
@@ -639,6 +680,7 @@ class SmParentPanelController extends Controller
         try {
             // $student = Auth::user()->student;
             $student = SmStudent::findOrfail($id);
+            $records = studentRecords(null, $student->id)->get();
 
             $time_zone_setup = SmGeneralSettings::join('sm_time_zones', 'sm_time_zones.id', '=', 'sm_general_settings.time_zone_id')
                 ->where('school_id', Auth::user()->school_id)->first();
@@ -660,7 +702,7 @@ class SmParentPanelController extends Controller
                     ->where('school_id', Auth::user()->school_id)->pluck('online_exam_id')->toArray();
             }
 
-            return view('backEnd.parentPanel.parent_online_exam', compact('online_exams', 'marks_assigned', 'student'));
+            return view('backEnd.parentPanel.parent_online_exam', compact('online_exams', 'marks_assigned', 'student','records'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -685,10 +727,10 @@ class SmParentPanelController extends Controller
                     ->where('school_id', Auth::user()->school_id)
                     ->get();
             }
-
+            $records = studentRecords(null, $id)->get();
             // return $result_views;
 
-            return view('backEnd.parentPanel.parent_online_exam_result', compact('result_views'));
+            return view('backEnd.parentPanel.parent_online_exam_result', compact('result_views','records','id'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -1060,8 +1102,8 @@ class SmParentPanelController extends Controller
             $section_id = $student_detail->section_id;
             $sm_weekends = SmWeekend::orderBy('order', 'ASC')->where('active_status', 1)->where('school_id', Auth::user()->school_id)->get();
             $class_times = SmClassTime::where('type', 'class')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
-            // return $class_times;
-            return view('backEnd.parentPanel.class_routine', compact('class_times', 'class_id', 'section_id', 'sm_weekends', 'student_detail'));
+            $records = studentRecords(null, $student_detail->id)->get();
+            return view('backEnd.parentPanel.class_routine', compact('class_times', 'class_id', 'section_id', 'sm_weekends', 'student_detail', 'records'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -1093,27 +1135,24 @@ class SmParentPanelController extends Controller
             $month = $request->month;
             $current_day = date('d');
             $days = cal_days_in_month(CAL_GREGORIAN, $request->month, $request->year);
-            //$students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->where('school_id',Auth::user()->school_id)->get();
-            // $academic_years = SmAcademicYear::where('active_status', 1)->where('school_id', Auth::user()->school_id)->get();
-            // $attendances = SmStudentAttendance::/* where('student_id', $student_detail->id)->where('attendance_date', 'LIKE', '%'.$request->year . '-' . $request->month . '%')-> */get();
-
+            $records = studentRecords(null, $student_detail->id)->with('studentAttendance')->get();
             $attendances = SmStudentAttendance::where('student_id', $student_detail->id)->where('academic_id', getAcademicId())->where('attendance_date', 'like', $request->year . '-' . $request->month . '%')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
             $academic_years = SmAcademicYear::where('active_status', '=', 1)->where('school_id', Auth::user()->school_id)->get();
-            return view('backEnd.parentPanel.attendance', compact('attendances', 'days', 'year', 'month', 'current_day', 'student_detail', 'academic_years'));
+            return view('backEnd.parentPanel.attendance', compact('records', 'days', 'year', 'month', 'current_day', 'student_detail', 'academic_years'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
     }
 
-    public function attendancePrint($student_id, $month, $year)
+    public function attendancePrint($student_id, $id, $month, $year)
     {
         try {
             $student_detail = SmStudent::where('id', $student_id)->first();
             $current_day = date('d');
             $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
             //$students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->where('school_id',Auth::user()->school_id)->get();
-            $attendances = SmStudentAttendance::where('student_id', $student_detail->id)->where('attendance_date', 'like', $year . '-' . $month . '%')->where('school_id', Auth::user()->school_id)->get();
+            $attendances = SmStudentAttendance::where('student_record_id',$id)->where('student_id', $student_detail->id)->where('attendance_date', 'like', $year . '-' . $month . '%')->where('school_id', Auth::user()->school_id)->get();
             $customPaper = array(0, 0, 700.00, 1000.80);
             $pdf = PDF::loadView(
                 'backEnd.parentPanel.attendance_print',
@@ -1141,11 +1180,8 @@ class SmParentPanelController extends Controller
             $parent = SmParent::where('user_id', $user->id)->first();
             $student_detail = SmStudent::where('id', $id)->first();
             $student_id = $student_detail->id;
-
-            // return $student_detail;
-            $exam_types = SmExamType::where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
-
-            return view('backEnd.parentPanel.parent_exam_schedule', compact('exam_types', 'student_id'));
+            $records = studentRecords(null, $student_detail->id)->get();
+            return view('backEnd.parentPanel.parent_exam_schedule', compact('student_id','records'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -1221,16 +1257,18 @@ class SmParentPanelController extends Controller
     }
     public function examinationScheduleSearch(Request $request)
     {
-
+       
         $request->validate([
             'exam' => 'required',
         ]);
         try {
             $user = Auth::user();
             $parent = SmParent::where('user_id', $user->id)->first();
-            $student_detail = SmStudent::where('id', $request->student_id)->first();
+            $student_detail = SmStudent::find($request->student_id);
+            $records = studentRecords(null, $student_detail->id)->get();
+            $smExam = SmExam::findOrFail($request->exam);
             $student_id = $student_detail->id;
-            $assign_subjects = SmAssignSubject::where('class_id', $student_detail->class_id)->where('section_id', $student_detail->section_id)
+            $assign_subjects = SmAssignSubject::where('class_id', $smExam->class_id)->where('section_id', $smExam->section_id)
                 ->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
 
             if ($assign_subjects->count() == 0) {
@@ -1239,21 +1277,19 @@ class SmParentPanelController extends Controller
             }
 
             $exams = SmExam::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
-            $class_id = $student_detail->class_id;
-            $section_id = $student_detail->section_id;
-            $exam_id = $request->exam;
-            $exam_type_id = $request->exam;
-
-            $exam_types = SmExamType::where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+            $class_id = $smExam->class_id;
+            $section_id = $smExam->section_id;
+            $exam_id = $smExam->id;
+            $exam_type_id = $smExam->exam_type_id;
             $exam_periods = SmClassTime::where('type', 'exam')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
             $exam_schedule_subjects = "";
             $assign_subject_check = "";
 
             $exam_routines = SmExamSchedule::where('class_id', $class_id)
                 ->where('section_id', $section_id)
-                ->where('exam_term_id', $request->exam)->orderBy('date', 'ASC')->get();
+                ->where('exam_term_id', $exam_type_id)->orderBy('date', 'ASC')->get();
 
-            return view('backEnd.parentPanel.parent_exam_schedule', compact('exams', 'assign_subjects', 'class_id', 'section_id', 'exam_id', 'exam_schedule_subjects', 'assign_subject_check', 'exam_types', 'exam_type_id', 'exam_routines', 'exam_periods', 'student_id'));
+            return view('backEnd.parentPanel.parent_exam_schedule', compact('exams', 'assign_subjects', 'class_id', 'section_id', 'exam_id', 'exam_schedule_subjects', 'assign_subject_check', 'records', 'exam_type_id', 'exam_routines', 'exam_periods', 'student_id'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -1262,7 +1298,8 @@ class SmParentPanelController extends Controller
     public function examination($id)
     {
         try {
-            $student_detail = SmStudent::where('id', $id)->first();
+            $student_detail = SmStudent::withoutGlobalScope(StatusAcademicSchoolScope::class)->find($id);
+            $records = studentRecords(null, $student_detail->id)->get();
             $optional_subject_setup = SmClassOptionalSubject::where('class_id', '=', $student_detail->class_id)->first();
 
             $student_optional_subject = SmOptionalSubjectAssign::where('student_id', $student_detail->id)
@@ -1297,7 +1334,7 @@ class SmParentPanelController extends Controller
                 ->where('academic_id', getAcademicId())
                 ->get();
 
-            return view('backEnd.parentPanel.student_result', compact('student_detail', 'exams', 'grades', 'exam_terms', 'failgpaname', 'optional_subject_setup', 'student_optional_subject', 'maxgpa'));
+            return view('backEnd.parentPanel.student_result', compact('student_detail', 'exams', 'grades', 'exam_terms', 'failgpaname', 'optional_subject_setup', 'student_optional_subject', 'maxgpa', 'records'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -1308,8 +1345,8 @@ class SmParentPanelController extends Controller
     {
         try {
             $student_detail = SmStudent::where('id', $id)->first();
-            $assignSubjects = SmAssignSubject::where('class_id', $student_detail->class_id)->where('section_id', $student_detail->section_id)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
-            return view('backEnd.parentPanel.subject', compact('assignSubjects', 'student_detail'));
+            $records = studentRecords(null, $student_detail->id)->get();
+            return view('backEnd.parentPanel.subject', compact('records', 'student_detail'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -1320,8 +1357,8 @@ class SmParentPanelController extends Controller
     {
         try {
             $student_detail = SmStudent::where('id', $id)->first();
-            $teachers = SmAssignSubject::where('class_id', $student_detail->class_id)->where('section_id', $student_detail->section_id)->get()->unique('teacher_id');
-            return view('backEnd.parentPanel.teacher_list', compact('teachers', 'student_detail'));
+            $records = studentRecords(null, $student_detail->id)->get();
+            return view('backEnd.parentPanel.teacher_list', compact('records', 'student_detail'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -1370,9 +1407,8 @@ class SmParentPanelController extends Controller
     {
         try {
             $student_detail = SmStudent::where('id', $id)->first();
-            $homeworkLists = SmHomework::with('classes', 'sections', 'subjects')->where('class_id', $student_detail->class_id)->where('section_id', $student_detail->section_id)->where('academic_id', getAcademicId())
-                ->where('school_id', Auth::user()->school_id)->get();
-            return view('backEnd.parentPanel.homework', compact('homeworkLists', 'student_detail'));
+            $records = studentRecords(null, $student_detail->id)->with('homework')->get();
+            return view('backEnd.parentPanel.homework', compact('records','student_detail'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();

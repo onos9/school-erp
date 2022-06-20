@@ -506,10 +506,8 @@
                         <div class="col-lg-12">
                             <div class="white-box school-table">
                                 <div class="row to-do-list mb-20">
-                                    <div class="col-md-6 col-6">
+                                    <div class="col-md-12 d-flex align-items-center justify-content-between ">
                                         <button class="primary-btn small fix-gr-bg" id="toDoList">@lang('dashboard.incomplete')</button>
-                                    </div>
-                                    <div class="col-md-6 col-6">
                                         <button class="primary-btn small tr-bg" id="toDoListsCompleted">@lang('dashboard.completed')</button>
                                     </div>
                                 </div>
@@ -595,6 +593,8 @@
             </div>
         </div>
     </div>
+
+
 
     {{-- Dashboard Secound Graph Start  --}}
 
@@ -689,8 +689,7 @@
                     right: 'month,agendaWeek,agendaDay'
                 },
                 eventClick:  function(event, jsEvent, view) {
-                    $('#modalTitle').html(event.title);
-                    $('#modalBody').html(event.description);
+                    $('#modalTitle').html(event.title);                    
                     let url = event.url;
                     let description = event.description;
                     if(url.includes('lead')){
@@ -707,5 +706,6 @@
             });
         }
     </script>
+
 @endsection
 

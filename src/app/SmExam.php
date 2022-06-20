@@ -11,6 +11,7 @@ use App\Scopes\StatusAcademicSchoolScope;
 class SmExam extends Model
 { 
     use HasFactory;
+    protected $guarded = ['id'];
     protected static function boot(){
         parent::boot();
         static::addGlobalScope(new StatusAcademicSchoolScope);

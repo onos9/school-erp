@@ -14,6 +14,11 @@ class SmSchool extends Model
         return $this->hasOne(SmSubscriptionPayment::class, 'school_id');
     }
 
+    public function academicYears()
+    {
+        return $this->hasMany(SmAcademicYear::class, 'school_id', 'id');
+    }
+
     public function sections()
     {
         return $this->hasMany(SmSection::class, 'school_id');

@@ -48,15 +48,16 @@
             
                             <div class="col-lg-12 text-center">
                                 @if($errors->any())
+                                        <div class="error text-danger ">{{ 'Something went wrong, please try again' }}</div>
                                     @foreach ($errors->all() as $error)
                                     @if($error == "The email address has already been taken.")
                                         <div class="error text-danger ">{{ 'The email address has already been taken, You can find out in student list or disabled student list' }}</div>
+                                        @else
+                                            <div class="error text-danger ">{{ $error }}</div>
                                     @endif 
                                     @endforeach
                                 @endif
-                                @if ($errors->any())
-                                     <div class="error text-danger ">{{ 'Something went wrong, please try again' }}</div>
-                                @endif
+
                             </div>
                             <div class="col-lg-12">
                                 <div class="main-title">
@@ -66,11 +67,12 @@
                         </div>
  
                         <input type="hidden" name="url" id="url" value="{{URL::to('/')}}">
+                     
                         <div class="row mb-40 mt-30">
                             <div class="col-lg-2">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('session') ? ' is-invalid' : '' }}" name="session" id="academic_year">
-                                        <option data-display="@lang('common.academic_year') *" value="">@lang('common.academic_year') *</option>
+                                        <option data-display="@lang('common.academic_year') @if(is_required('session')==true) * @endif" value="">@lang('common.academic_year') @if(is_required('session')==true) * @endif</option>
                                         @foreach($sessions as $session)
                                         <option value="{{$session->id}}" {{old('session') == $session->id? 'selected': ''}}>{{$session->year}}[{{$session->title}}]</option>
                                         @endforeach
@@ -87,7 +89,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20" id="class-div">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('class') ? ' is-invalid' : '' }}" name="class" id="classSelectStudent">
-                                        <option data-display="@lang('common.class') *" value="">@lang('common.class') *</option>
+                                        <option data-display="@lang('common.class') @if(is_required('class')==true) * @endif" value="">@lang('common.class') @if(is_required('class')==true) * @endif</option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_class_loader">
                                         <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
@@ -112,7 +114,7 @@
                                 <div class="input-effect sm2_mb_20 md_mb_20" id="sectionStudentDiv">
                                     <select class="niceSelect w-100 bb form-control {{ $errors->has('section') ? ' is-invalid' : '' }}" name="section"
                                         id="sectionSelectStudent" >
-                                       <option data-display="@lang('common.section') *" value="">@lang('common.section') *</option>
+                                       <option data-display="@lang('common.section') @if(is_required('section')==true) * @endif" value="">@lang('common.section') @if(is_required('section')==true) * @endif</option>
                                         @foreach ($old_sections as $old_section)
                                            <option value="{{ $old_section->id }}" {{ old('section')==$old_section->id ? 'selected' : '' }} >
                                             {{ $old_section->section_name }}</option>
@@ -134,7 +136,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20" id="sectionStudentDiv">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('section') ? ' is-invalid' : '' }}" name="section" id="sectionSelectStudent">
-                                       <option data-display="@lang('common.section') *" value="">@lang('common.section') *</option>
+                                       <option data-display="@lang('common.section') @if(is_required('section')==true) * @endif" value="">@lang('common.section') @if(is_required('section')==true) * @endif</option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_section_loader">
                                         <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
@@ -154,7 +156,7 @@
                                     <input class="primary-input  form-control{{ $errors->has('admission_number') ? ' is-invalid' : '' }}" type="text" onkeyup="GetAdmin(this.value)" name="admission_number"
                                      value="{{$max_admission_id != ''? $max_admission_id + 1 : 1}}" >
 
-                                   <label>@lang('student.admission_number')</label>
+                                   <label>@lang('student.admission_number') @if(is_required('admission_number')==true) * @endif</label>
                                     <span class="focus-border"></span>
                                     <span class="invalid-feedback" id="Admission_Number" role="alert">
                                     </span>
@@ -174,11 +176,17 @@
                             <div class="col-lg-2">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input oninput="numberCheck(this)" class="primary-input" type="text" id="roll_number" name="roll_number"  value="{{old('roll_number')}}">
-                                    <label>@lang('student.roll')</label>
+                                    <label> {{ moduleStatusCheck('Lead')==true ? __('lead::lead.id_number') : __('student.roll') }}
+                                         @if(is_required('roll_number')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
                                     <span class="text-danger" id="roll-error" role="alert">
                                         <strong></strong>
                                     </span>
+                                    @if ($errors->has('roll_number'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('roll_number') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -186,7 +194,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input form-control{{ $errors->has('first_name') ? ' is-invalid' : '' }}" type="text" name="first_name" value="{{old('first_name')}}">
-                                    <label>@lang('student.first_name') <span>*</span> </label>
+                                    <label>@lang('student.first_name')  @if(is_required('first_name')==true) <span> *</span> @endif </label>
                                     <span class="focus-border"></span>
                                     @if ($errors->has('first_name'))
                                     <span class="invalid-feedback" role="alert">
@@ -198,7 +206,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input form-control{{ $errors->has('last_name') ? ' is-invalid' : '' }}" type="text" name="last_name" value="{{old('last_name')}}">
-                                    <label>@lang('student.last_name')</label>
+                                    <label>@lang('student.last_name')  @if(is_required('last_name')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
                                     @if ($errors->has('last_name'))
                                     <span class="invalid-feedback" role="alert">
@@ -210,7 +218,9 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('gender') ? ' is-invalid' : '' }}" name="gender">
-                                        <option data-display="@lang('common.gender') *" value="">@lang('common.gender') *</option>
+                                                                           
+                                        <option data-display="@lang('common.gender') @if(is_required('gender')==true) * @endif" value="">@lang('common.gender') @if(is_required('gender')==true) <span>*</span> @endif </option>
+
                                         @foreach($genders as $gender)
                                         <option value="{{$gender->id}}" {{old('gender') == $gender->id? 'selected': ''}}>{{$gender->base_setup_name}}</option>
                                         @endforeach
@@ -230,7 +240,9 @@
                                         <div class="input-effect sm2_mb_20 md_mb_20">
                                             <input class="primary-input date form-control{{ $errors->has('date_of_birth') ? ' is-invalid' : '' }}" id="startDate" type="text"
                                                  name="date_of_birth" value="{{old('date_of_birth')}}" autocomplete="off">
-                                                <label>@lang('common.date_of_birth') *</label>
+                                            
+                                                <label>@lang('common.date_of_birth')  @if(is_required('date_of_birth')==true) <span> *</span> @endif</label>
+                                               
                                                 <span class="focus-border"></span>
                                             @if ($errors->has('date_of_birth'))
                                             <span class="invalid-feedback" role="alert">
@@ -251,7 +263,7 @@
                              <div class="col-lg-2">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('blood_group') ? ' is-invalid' : '' }}" name="blood_group">
-                                        <option data-display="@lang('common.blood_group')" value="">@lang('common.blood_group')</option>
+                                        <option data-display="@lang('common.blood_group') @if(is_required('blood_group')==true)  * @endif" value="">@lang('common.blood_group')  @if(is_required('blood_group')==true) <span> *</span> @endif</option>
                                         @foreach($blood_groups as $blood_group)
                                         <option value="{{$blood_group->id}}" {{old('blood_group') == $blood_group->id? 'selected': '' }}>{{$blood_group->base_setup_name}}</option>
                                         @endforeach
@@ -267,7 +279,7 @@
                             <div class="col-lg-2">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('religion') ? ' is-invalid' : '' }}" name="religion">
-                                        <option data-display="@lang('student.religion')" value="">@lang('student.religion')</option>
+                                        <option data-display="@lang('student.religion') @if(is_required('religion')==true) @endif" value="">@lang('student.religion') @if(is_required('religion')==true) <span> *</span> @endif</option>
                                         @foreach($religions as $religion)
                                         <option value="{{$religion->id}}" {{old('religion') == $religion->id? 'selected': '' }}>{{$religion->base_setup_name}}</option>
                                         @endforeach
@@ -285,14 +297,19 @@
                             <div class="col-lg-2">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="caste" value="{{old('caste')}}">
-                                    <label>@lang('student.caste')</label>
+                                    <label>@lang('student.caste') @if(is_required('caste')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('caste'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('caste') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
-                                    <input oninput="emailCheck(this)" class="primary-input form-control{{ $errors->has('email_address') ? ' is-invalid' : '' }}" type="text" name="email_address" value="{{old('email_address')}}">
-                                    <label>@lang('common.email_address')</label>
+                                    <input oninput="emailCheck(this)" class="primary-input email_address form-control{{ $errors->has('email_address') ? ' is-invalid' : '' }}" id="email_address" type="text" name="email_address" value="{{old('email_address')}}">
+                                    <label>@lang('common.email_address')  @if(is_required('email_address')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
                                     @if ($errors->has('email_address'))
                                     <span class="invalid-feedback" role="alert">
@@ -303,15 +320,23 @@
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
-                                    <input oninput="phoneCheck(this)" class="primary-input form-control{{ $errors->has('phone_number') ? ' is-invalid' : '' }}" type="tel" name="phone_number" value="{{old('phone_number')}}">
-                                    <label>@lang('student.phone_number')</label>
+                                    <input oninput="phoneCheck(this)" class="primary-input phone_number form-control{{ $errors->has('phone_number') ? ' is-invalid' : '' }}" type="tel" name="phone_number" id="phone_number" value="{{old('phone_number')}}">
+                                    
+                                    <label>@lang('student.phone_number')  @if(is_required('phone_number')==true) <span> *</span> @endif</label>
+                                  
                                     <span class="focus-border"></span>
                                     @if ($errors->has('phone_number'))
-                                    <span class="invalid-feedback invalid-select" role="alert">
+                                    <span class="invalid-feedback" role="alert">
                                         <strong>{{ $errors->first('phone_number') }}</strong>
                                     </span>
                                     @endif
                                 </div>
+                            </div>
+                        </div>
+                        <div class="ro mb-40 d-none" id="exitStudent">
+                            <div class="col-lg-12">
+                                <input type="checkbox" id="edit_info" value="yes" class="common-checkbox" name="edit_info">
+                                <label for="edit_info" class="text-danger">@lang('student.student_already_exit_this_phone_number_are_you_to_edit_student_parent_info')</label>
                             </div>
                         </div>
                         <div class="row mb-40">
@@ -322,7 +347,12 @@
                                             <input class="primary-input date" id="" type="text"
                                                 name="admission_date" value="{{old('admission_date') != ""? old('admission_date'):date('m/d/Y')}}" autocomplete="off">
                                             <label>@lang('student.admission_date')</label>
-                                            <span class="focus-border"></span>
+                                            <span class="focus-border">  @if(is_required('admission_date')==true) <span> *</span> @endif</span>
+                                            @if ($errors->has('admission_date'))
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $errors->first('admission_date') }}</strong>
+                                            </span>
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="col-auto">
@@ -332,13 +362,11 @@
                                     </div>
                                 </div>
                             </div>
-
-
                             <div class="col-lg-4">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('student_category_id') ? ' is-invalid' : '' }}" name="student_category_id">
-                                        <option data-display="@lang('student.category')" value="">@lang('student.category')</option>
+                                        <option data-display="@lang('student.category')  @if(is_required('student_category_id')==true) * @endif" value="">@lang('student.student_category_id')  @if(is_required('category')==true) <span> *</span> @endif</option>
                                         @foreach($categories as $category)
                                         <option value="{{$category->id}}" {{old('student_category_id') == $category->id? 'selected': ''}}>{{$category->category_name}}</option>
                                         @endforeach
@@ -357,7 +385,7 @@
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('student_group_id') ? ' is-invalid' : '' }}" name="student_group_id">
-                                        <option data-display="@lang('student.group')" value="">@lang('student.group')</option>
+                                        <option data-display="@lang('student.group')  @if(is_required('student_group_id')==true) * @endif" value="">@lang('student.group')  @if(is_required('student_group_id')==true) <span> *</span> @endif</option>
                                         @foreach($groups as $group)
                                         <option value="{{$group->id}}" {{old('student_group_id') == $group->id? 'selected': ''}}>{{$group->group}}</option>
                                         @endforeach
@@ -375,32 +403,60 @@
                             <div class="col-lg-2">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="height" value="{{old('height')}}">
-                                    <label>@lang('student.height_in')) <span></span> </label>
+                                    <label>@lang('student.height_in'))  @if(is_required('height')==true) <span> *</span> @endif </label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('height'))
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $errors->first('height') }}</strong>
+                                            </span>
+                                            @endif
                                 </div>
                             </div>
                             <div class="col-lg-2">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="weight" value="{{old('weight')}}">
-                                    <label>@lang('student.weight_kg') <span></span> </label>
+                                    <label>@lang('student.weight_kg')  @if(is_required('weight')==true) <span> *</span> @endif </label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('weight'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('weight') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
-
                         </div>
-
+                        @if(moduleStatusCheck('Lead')==true)
+                            <div class="row mb-40">                           
+                                <div class="col-lg-4 ">
+                                    <div class="input-effect">
+                                            <select class="niceSelect w-100 bb form-control{{ $errors->has('route') ? ' is-invalid' : '' }}" name="source_id" id="source_id">
+                                                <option data-display="@lang('lead::lead.source') @if(is_required('source_id')==true) * @endif" value="">@lang('lead::lead.source') @if(is_required('source_id')==true) <span> *</span> @endif</option>
+                                                @foreach($sources as $source)
+                                                <option value="{{$source->id}}" {{old('source_id') == $source->id? 'selected': ''}}>{{$source->source_name}}</option>
+                                                @endforeach
+                                            </select>
+                                            <span class="focus-border"></span>
+                                            @if ($errors->has('source_id'))
+                                            <span class="invalid-feedback invalid-select" role="alert">
+                                                <strong>{{ $errors->first('source_id') }}</strong>
+                                            </span>
+                                            @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                         <div class="row mb-40">
                             <div class="col-lg-3">
                                 <div class="row no-gutters input-right-icon">
                                     <div class="col">
                                         <div class="input-effect sm2_mb_20 md_mb_20">
-                                            <input class="primary-input" type="text" id="placeholderPhoto" placeholder="@lang('common.student_photo')"
+                                            <input class="primary-input" type="text" id="placeholderPhoto" placeholder="@lang('common.student_photo')  @if(is_required('photo')==true) * @endif"
                                                 readonly="">
                                             <span class="focus-border"></span>
 
-                                            @if ($errors->has('file'))
+                                            @if ($errors->has('photo'))
                                                 <span class="invalid-feedback d-block" role="alert">
-                                                    <strong>{{ @$errors->first('file') }}</strong>
+                                                    <strong>{{ @$errors->first('photo') }}</strong>
                                                 </span>
                                             @endif
 
@@ -508,7 +564,7 @@
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input class="primary-input form-control{{ $errors->has('fathers_name') ? ' is-invalid' : '' }}" type="text" name="fathers_name" id="fathers_name" value="{{old('fathers_name')}}">
-                                        <label>@lang('student.father_name') <span></span> </label>
+                                        <label>@lang('student.father_name')  @if(is_required('father_name')==true) <span> *</span> @endif </label>
                                         <span class="focus-border"></span>
                                         @if ($errors->has('fathers_name'))
                                         <span class="invalid-feedback" role="alert">
@@ -520,14 +576,19 @@
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input class="primary-input" type="text" name="fathers_occupation" id="fathers_occupation" value="{{old('fathers_occupation')}}">
-                                        <label>@lang('student.occupation')</label>
+                                        <label>@lang('student.occupation') @if(is_required('fathers_occupation')==true) <span> *</span> @endif</label>
                                         <span class="focus-border"></span>
+                                        @if ($errors->has('fathers_occupation'))
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $errors->first('fathers_occupation') }}</strong>
+                                        </span>
+                                        @endif
                                     </div>
                                 </div>
                                  <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input oninput="phoneCheck(this)" class="primary-input form-control{{ $errors->has('fathers_phone') ? ' is-invalid' : '' }}" type="text" name="fathers_phone" id="fathers_phone" value="{{old('fathers_phone')}}">
-                                        <label>@lang('student.father_phone')</label>
+                                        <label>@lang('student.father_phone')  @if(is_required('father_phone')==true) <span> *</span> @endif</label>
                                         <span class="focus-border"></span>
                                         @if ($errors->has('fathers_phone'))
                                         <span class="invalid-feedback" role="alert">
@@ -540,12 +601,12 @@
                                     <div class="row no-gutters input-right-icon">
                                         <div class="col">
                                             <div class="input-effect sm2_mb_20 md_mb_20">
-                                                <input class="primary-input" type="text" id="placeholderFathersName" placeholder="@lang('common.photo')"
+                                                <input class="primary-input" type="text" id="placeholderFathersName" placeholder="@lang('common.photo') @if(is_required('fathers_photo')==true) * @endif"
                                                     readonly="">
                                                 <span class="focus-border"></span>
-                                                @if ($errors->has('file'))
+                                                @if ($errors->has('fathers_photo'))
                                                         <span class="invalid-feedback d-block" role="alert">
-                                                            <strong>{{ @$errors->first('file') }}</strong>
+                                                            <strong>{{ @$errors->first('fathers_photo') }}</strong>
                                                         </span>
                                                 @endif
                                             </div>
@@ -563,7 +624,7 @@
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input class="primary-input form-control{{ $errors->has('mothers_name') ? ' is-invalid' : '' }}" type="text" name="mothers_name" id="mothers_name" value="{{old('mothers_name')}}">
-                                        <label>@lang('student.mother_name') <span></span> </label>
+                                        <label>@lang('student.mother_name')  @if(is_required('mothers_name')==true) <span> *</span> @endif </label>
                                         <span class="focus-border"></span>
                                         @if ($errors->has('mothers_name'))
                                         <span class="invalid-feedback" role="alert">
@@ -575,14 +636,19 @@
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input class="primary-input" type="text" name="mothers_occupation" id="mothers_occupation" value="{{old('mothers_occupation')}}">
-                                        <label>@lang('student.occupation')</label>
+                                        <label>@lang('student.occupation') @if(is_required('mothers_occupation')==true) <span> *</span> @endif</label>
                                         <span class="focus-border"></span>
+                                        @if ($errors->has('mothers_occupation'))
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $errors->first('mothers_occupation') }}</strong>
+                                        </span>
+                                        @endif
                                     </div>
                                 </div>
                                  <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input oninput="phoneCheck(this)" class="primary-input form-control{{ $errors->has('mothers_phone') ? ' is-invalid' : '' }}" type="text" name="mothers_phone" id="mothers_phone" value="{{old('mothers_phone')}}">
-                                        <label>@lang('student.mother_phone')</label>
+                                        <label>@lang('student.mother_phone')  @if(is_required('mothers_phone')==true) <span> *</span> @endif</label>
                                         <span class="focus-border"></span>
                                         @if ($errors->has('mothers_phone'))
                                         <span class="invalid-feedback" role="alert">
@@ -595,12 +661,12 @@
                                     <div class="row no-gutters input-right-icon">
                                         <div class="col">
                                             <div class="input-effect sm2_mb_20 md_mb_20">
-                                                <input class="primary-input" type="text" id="placeholderMothersName" placeholder="@lang('student.photo')"
+                                                <input class="primary-input" type="text" id="placeholderMothersName" placeholder="@lang('student.photo')  @if(is_required('mothers_photo')==true) * @endif"
                                                     readonly="">
                                                 <span class="focus-border"></span>
-                                                @if ($errors->has('file'))
+                                                @if ($errors->has('mothers_photo'))
                                                         <span class="invalid-feedback d-block" role="alert">
-                                                            <strong>{{ @$errors->first('file') }}</strong>
+                                                            <strong>{{ @$errors->first('mothers_photo') }}</strong>
                                                         </span>
                                                 @endif
                                             </div>
@@ -638,7 +704,7 @@
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input class="primary-input form-control{{ $errors->has('guardians_name') ? ' is-invalid' : '' }}" type="text" name="guardians_name" id="guardians_name" value="{{old('guardians_name')}}">
-                                        <label>@lang('student.guardian_name') <span></span> </label>
+                                        <label>@lang('student.guardian_name')  @if(is_required('guardians_name')==true) <span> *</span> @endif </label>
                                         <span class="focus-border"></span>
                                         @if ($errors->has('guardians_name'))
                                         <span class="invalid-feedback" role="alert">
@@ -650,14 +716,19 @@
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input class="primary-input read-only-input" type="text" placeholder="Relation" name="relation" id="relation" value="Other" readonly>
-                                        <label>@lang('student.relation_with_guardian') </label>
+                                        <label>@lang('student.relation_with_guardian') @if(is_required('relation')==true) <span> *</span> @endif </label>
                                         <span class="focus-border"></span>
+                                        @if ($errors->has('relation'))
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $errors->first('relation') }}</strong>
+                                        </span>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input oninput="emailCheck(this)" class="primary-input form-control{{ $errors->has('guardians_email') ? ' is-invalid' : '' }}" type="text" name="guardians_email" id="guardians_email" value="{{old('guardians_email')}}">
-                                        <label>@lang('student.guardian_email')</span>* </label>
+                                        <label>@lang('student.guardian_email') @if(is_required('guardians_email')==true) <span> *</span> @endif</label>
                                         <span class="focus-border"></span>
                                         @if ($errors->has('guardians_email'))
                                         <span class="invalid-feedback" role="alert">
@@ -670,12 +741,12 @@
                                     <div class="row no-gutters input-right-icon">
                                         <div class="col">
                                             <div class="input-effect sm2_mb_20 md_mb_20">
-                                                <input class="primary-input" type="text" id="placeholderGuardiansName" placeholder="@lang('student.photo')"
+                                                <input class="primary-input" type="text" id="placeholderGuardiansName" placeholder="@lang('student.photo') @if(is_required('guardians_photo')==true) * @endif"
                                                     readonly="">
                                                 <span class="focus-border"></span>
-                                                @if ($errors->has('file'))
+                                                @if ($errors->has('guardians_photo'))
                                                         <span class="invalid-feedback d-block" role="alert">
-                                                            <strong>{{ @$errors->first('file') }}</strong>
+                                                            <strong>{{ @$errors->first('guardians_photo') }}</strong>
                                                         </span>
                                                 @endif
                                             </div>
@@ -693,15 +764,25 @@
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input class="primary-input form-control{{ $errors->has('guardians_phone') ? ' is-invalid' : '' }}" type="text" name="guardians_phone" id="guardians_phone" value="{{old('guardians_phone')}}">
-                                        <label>@lang('student.guardian_phone')</label>
+                                        <label>@lang('student.guardian_phone')@if(is_required('guardians_phone')==true) <span> *</span> @endif</label>
                                         <span class="focus-border"></span>
+                                        @if ($errors->has('guardians_phone'))
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ @$errors->first('guardians_phone') }}</strong>
+                                        </span>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="col-lg-3">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <input class="primary-input" type="text" name="guardians_occupation" id="guardians_occupation" value="{{old('guardians_occupation')}}">
-                                        <label>@lang('student.guardian_occupation')</label>
+                                        <label>@lang('student.guardian_occupation') @if(is_required('guardians_occupation')==true) <span> *</span> @endif</label>
                                         <span class="focus-border"></span>
+                                        @if ($errors->has('guardians_occupation'))
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ @$errors->first('guardians_occupation') }}</strong>
+                                        </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -709,7 +790,7 @@
                                 <div class="col-lg-6">
                                     <div class="input-effect sm2_mb_20 md_mb_20">
                                         <textarea class="primary-input form-control" cols="0" rows="3" name="guardians_address" id="guardians_address">{{old('guardians_address')}}</textarea>
-                                        <label>@lang('student.guardian_address') <span></span> </label>
+                                        <label>@lang('student.guardian_address') @if(is_required('guardians_address')==true) <span> *</span> @endif </label>
                                         <span class="focus-border textarea"></span>
                                        @if ($errors->has('guardians_address'))
                                         <span class="invalid-feedback">
@@ -731,11 +812,29 @@
                         </div>
 
                         <div class="row mb-30 mt-30">
-                            <div class="col-lg-6">
+                            @if(moduleStatusCheck('Lead')==true)
+                            <div class="col-lg-4 ">
+                                <div class="input-effect" style="margin-top:53px !important">
+                                    <select class="niceSelect w-100 bb form-control{{ $errors->has('route') ? ' is-invalid' : '' }}" name="lead_city" id="lead_city">
+                                        <option data-display="@lang('lead::lead.city') @if(is_required('lead_city')==true) * @endif" value="">@lang('lead::lead.city') @if(is_required('lead_city')==true) <span> *</span> @endif</option>
+                                        @foreach($lead_city as $city)
+                                        <option value="{{$city->id}}" {{old('lead_city') == $city->id? 'selected': ''}}>{{$city->city_name}}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="focus-border"></span>
+                                    @if ($errors->has('lead_city'))
+                                    <span class="invalid-feedback invalid-select" role="alert">
+                                        <strong>{{ $errors->first('lead_city') }}</strong>
+                                    </span>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
+                            <div class="col-lg-4">
 
                                 <div class="input-effect sm2_mb_20 md_mb_20 mt-20">
                                     <textarea class="primary-input form-control{{ $errors->has('current_address') ? ' is-invalid' : '' }}" cols="0" rows="3" name="current_address" id="current_address">{{old('current_address')}}</textarea>
-                                    <label>@lang('student.current_address') <span></span> </label>
+                                    <label>@lang('student.current_address') @if(is_required('current_address')==true) <span> *</span> @endif </label>
                                     <span class="focus-border textarea"></span>
                                    @if ($errors->has('current_address'))
                                     <span class="invalid-feedback">
@@ -744,11 +843,11 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="col-lg-6">
+                            <div class="col-lg-4">
 
                                 <div class="input-effect sm2_mb_20 md_mb_20 mt-20">
                                     <textarea class="primary-input form-control{{ $errors->has('current_address') ? ' is-invalid' : '' }}" cols="0" rows="3" name="permanent_address" id="permanent_address">{{old('permanent_address')}}</textarea>
-                                    <label>@lang('student.permanent_address')  <span></span> </label>
+                                    <label>@lang('student.permanent_address')  @if(is_required('permanent_address')==true) <span> *</span> @endif </label>
                                     <span class="focus-border textarea"></span>
                                    @if ($errors->has('permanent_address'))
                                     <span class="invalid-feedback">
@@ -770,7 +869,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('route') ? ' is-invalid' : '' }}" name="route" id="route">
-                                        <option data-display="@lang('student.route_list')" value="">@lang('student.route_list')</option>
+                                        <option data-display="@lang('student.route_list') @if(is_required('route')==true) * @endif" value="">@lang('student.route_list') @if(is_required('route')==true) <span> *</span> @endif</option>
                                         @foreach($route_lists as $route_list)
                                         <option value="{{$route_list->id}}" {{old('route') == $route_list->id? 'selected': ''}}>{{$route_list->title}}</option>
                                         @endforeach
@@ -786,7 +885,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20" id="select_vehicle_div">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('vehicle') ? ' is-invalid' : '' }}" name="vehicle" id="selectVehicle">
-                                        <option data-display="@lang('student.vehicle_number')" value="">@lang('student.vehicle_number')</option>
+                                        <option data-display="@lang('student.vehicle_number') @if(is_required('vehicle')==true) * @endif" value="">@lang('student.vehicle_number') @if(is_required('vehicle')==true) <span> *</span> @endif</option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_transport_loader">
                                         <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
@@ -812,7 +911,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('dormitory_name') ? ' is-invalid' : '' }}" name="dormitory_name" id="SelectDormitory">
-                                        <option data-display="@lang('dormitory.dormitory_name')" value="">@lang('dormitory.dormitory_name')</option >
+                                        <option data-display="@lang('dormitory.dormitory_name') @if(is_required('dormitory_name')==true) * @endif" value="">@lang('dormitory.dormitory_name') @if(is_required('dormitory_name')==true) <span> *</span> @endif</option >
                                         @foreach($dormitory_lists as $dormitory_list)
                                         <option value="{{$dormitory_list->id}}" {{old('dormitory_name') == $dormitory_list->id? 'selected': ''}}>{{$dormitory_list->dormitory_name}}</option>
                                         @endforeach
@@ -828,7 +927,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20" id="roomNumberDiv">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('room_number') ? ' is-invalid' : '' }}" name="room_number" id="selectRoomNumber">
-                                        <option data-display="@lang('academics.room_number')" value="">@lang('academics.room_number')</option>
+                                        <option data-display="@lang('academics.room_number') @if(is_required('room_number')==true) <span> *</span> @endif" value="">@lang('academics.room_number') @if(is_required('room_number')==true) <span> *</span> @endif</option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_dormitory_loader">
                                         <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
@@ -855,7 +954,7 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input form-control{{ $errors->has('national_id_number') ? ' is-invalid' : '' }}" type="text" name="national_id_number" value="{{old('national_id_number')}}">
-                                    <label>@lang('common.national_id_number') <span></span> </label>
+                                    <label>@lang('common.national_id_number') @if(is_required('national_id_number')==true) <span> *</span> @endif </label>
                                     <span class="focus-border"></span>
                                     @if ($errors->has('national_id_number'))
                                     <span class="invalid-feedback" role="alert">
@@ -867,22 +966,37 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="local_id_number" value="{{old('local_id_number')}}">
-                                    <label> @lang('common.birth_certificate_number')<span></span> </label>
+                                    <label> @lang('common.birth_certificate_number')@if(is_required('local_id_number')==true) <span> *</span> @endif </label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('local_id_number'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('local_id_number') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="bank_account_number" value="{{old('bank_account_number')}}">
-                                    <label>@lang('accounts.bank_account_number')<span></span> </label>
+                                    <label>@lang('accounts.bank_account_number')@if(is_required('bank_account_number')==true) <span> *</span> @endif </label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('bank_account_number'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('bank_account_number') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="bank_name" value="{{old('bank_name')}}">
-                                    <label>@lang('student.bank_name') <span></span> </label>
+                                    <label>@lang('student.bank_name') @if(is_required('bank_name')==true) <span> *</span> @endif </label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('bank_name'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('bank_name') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -890,22 +1004,37 @@
                             <div class="col-lg-6">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <textarea class="primary-input form-control" cols="0" rows="3" name="previous_school_details">{{old('previous_school_details')}}</textarea>
-                                    <label>@lang('student.previous_school_details')</label>
+                                    <label>@lang('student.previous_school_details')@if(is_required('previous_school_details')==true) <span> *</span> @endif</label>
                                     <span class="focus-border textarea"></span>
+                                    @if ($errors->has('previous_school_details'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('previous_school_details') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <textarea class="primary-input form-control" cols="0" rows="3" name="additional_notes">{{old('additional_notes')}}</textarea>
-                                    <label>@lang('student.additional_notes')</label>
+                                    <label>@lang('student.additional_notes') @if(is_required('additional_notes')==true) <span> *</span> @endif</label>
                                     <span class="focus-border textarea"></span>
+                                    @if ($errors->has('additional_notes'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('additional_notes') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect mt-30">
                                     <input class="primary-input form-control" type="text" name="ifsc_code" value="{{old('ifsc_code')}}">
-                                    <label>@lang('student.ifsc_code')</label>
+                                    <label>@lang('student.ifsc_code') @if(is_required('ifsc_code')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('ifsc_code'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('ifsc_code') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -914,29 +1043,49 @@
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input form-control" type="text" name="document_title_1" value="{{old('document_title_1')}}">
-                                    <label>@lang('student.document_01_title')</label>
+                                    <label>@lang('student.document_01_title') @if(is_required('document_file_1')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('document_title_1'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('document_title_1') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="document_title_2" value="{{old('document_title_2')}}">
-                                    <label>@lang('student.document_02_title')</label>
+                                    <label>@lang('student.document_02_title') @if(is_required('document_file_2')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('document_title_2'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('document_title_2') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="document_title_3" value="{{old('document_title_3')}}">
-                                    <label>@lang('student.document_03_title')</label>
+                                    <label>@lang('student.document_03_title') @if(is_required('document_file_3')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('document_title_3'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('document_title_3') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="input-effect sm2_mb_20 md_mb_20">
                                     <input class="primary-input" type="text" name="document_title_4" value="{{old('document_title_4')}}">
-                                    <label>@lang('student.document_04_title')</label>
+                                    <label>@lang('student.document_04_title') @if(is_required('document_file_4')==true) <span> *</span> @endif</label>
                                     <span class="focus-border"></span>
+                                    @if ($errors->has('document_title_4'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $errors->first('document_title_4') }}</strong>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -945,12 +1094,12 @@
                                 <div class="row no-gutters input-right-icon">
                                     <div class="col">
                                         <div class="input-effect sm2_mb_20 md_mb_20">
-                                            <input class="primary-input" type="text" id="placeholderFileOneName" placeholder="01"
+                                            <input class="primary-input" type="text" id="placeholderFileOneName" placeholder="01  @if(is_required('document_file_1')==true) * @endif"
                                                 readonly="">
                                             <span class="focus-border"></span>
-                                            @if ($errors->has('file'))
+                                            @if ($errors->has('document_file_1'))
                                                         <span class="invalid-feedback d-block" role="alert">
-                                                            <strong>{{ @$errors->first('file') }}</strong>
+                                                            <strong>{{ @$errors->first('document_file_1') }}</strong>
                                                         </span>
                                                 @endif
 
@@ -968,12 +1117,12 @@
                                 <div class="row no-gutters input-right-icon">
                                     <div class="col">
                                         <div class="input-effect sm2_mb_20 md_mb_20">
-                                            <input class="primary-input" type="text" id="placeholderFileTwoName" placeholder="02"
+                                            <input class="primary-input" type="text" id="placeholderFileTwoName" placeholder="02 @if(is_required('document_file_2')==true) * @endif"
                                                 readonly="">
                                             <span class="focus-border"></span>
-                                            @if ($errors->has('file'))
+                                            @if ($errors->has('document_file_2'))
                                                         <span class="invalid-feedback d-block" role="alert">
-                                                            <strong>{{ @$errors->first('file') }}</strong>
+                                                            <strong>{{ @$errors->first('document_file_2') }}</strong>
                                                         </span>
                                                 @endif
                                         </div>
@@ -990,12 +1139,12 @@
                                 <div class="row no-gutters input-right-icon">
                                     <div class="col">
                                         <div class="input-effect sm2_mb_20 md_mb_20">
-                                            <input class="primary-input" type="text" id="placeholderFileThreeName" placeholder="03"
+                                            <input class="primary-input" type="text" id="placeholderFileThreeName" placeholder="03 @if(is_required('document_file_3')==true) * @endif"
                                                 readonly="">
                                             <span class="focus-border"></span>
-                                            @if ($errors->has('file'))
+                                            @if ($errors->has('document_file_3'))
                                                         <span class="invalid-feedback d-block" role="alert">
-                                                            <strong>{{ @$errors->first('file') }}</strong>
+                                                            <strong>{{ @$errors->first('document_file_3') }}</strong>
                                                         </span>
                                                 @endif
                                         </div>
@@ -1012,12 +1161,12 @@
                                 <div class="row no-gutters input-right-icon">
                                     <div class="col">
                                         <div class="input-effect sm2_mb_20 md_mb_20">
-                                            <input class="primary-input" type="text" id="placeholderFileFourName" placeholder="04"
+                                            <input class="primary-input" type="text" id="placeholderFileFourName" placeholder="04 @if(is_required('document_file_4')==true) * @endif"
                                                 readonly="">
                                             <span class="focus-border"></span>
-                                            @if ($errors->has('file'))
+                                            @if ($errors->has('document_file_4'))
                                                         <span class="invalid-feedback d-block" role="alert">
-                                                            <strong>{{ @$errors->first('file') }}</strong>
+                                                            <strong>{{ @$errors->first('document_file_4') }}</strong>
                                                         </span>
                                                 @endif
                                         </div>
@@ -1199,7 +1348,43 @@
                 $(placeholder).attr('placeholder', filename);
             }
         }
+        $(document).on('change','.phone_number',function(){
+           
+            let email =  $("#email_address").val();
+            let phone =  $(this).val();
+            checkExitStudent(email, phone);
+        });
+        $(document).on('change','.email_address',function(){
+            let email = $(this).val();
+            let phone = $("#phone_number").val();
+            checkExitStudent(email, phone);
+        });
+        function checkExitStudent(email, phone){
+           var url = $("#url").val();
+           var formData = {
+                email : email,
+                phone : phone,
+            }
+            $.ajax({
+                type: "GET",
+                data: formData,
+                dataType: "json",
+                url: url + "/" + "student/check-exit",
+                success: function(data) {
+                    if(data.student !=null) {
+                        $('#exitStudent').removeClass('d-none');
+                    } else {
+                        $('#exitStudent').addClass('d-none');
+                        $('#edit_info').prop('checked', false); 
+                    }
+                  
+                },
+                error: function(data) {
+                    console.log("Error:", data);
+                }
 
+            })
+        }
         
     })
 </script>

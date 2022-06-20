@@ -22,7 +22,7 @@ class CreateSmModulePermissionsTable extends Migration
             $table->string('name')->nullable();
 
             $table->tinyInteger('active_status')->default(1);
-$table->integer('created_by')->nullable()->default(1)->unsigned();
+            $table->integer('created_by')->nullable()->default(1)->unsigned();
 
             $table->integer('updated_by')->nullable()->default(1)->unsigned();
 

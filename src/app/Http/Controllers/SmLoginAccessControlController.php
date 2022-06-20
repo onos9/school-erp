@@ -12,6 +12,8 @@ use App\YearCheck;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\StudentRecord;
+use App\SmSection;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -64,19 +66,24 @@ class SmLoginAccessControlController extends Controller
             $classes = SmClass::get();
 
             if ($request->role == "2") {
-
-
-                $students = SmStudent::query()->with('parents','class','section','user','parents.parent_user');
-                $students->where('active_status', 1);
-                if ($request->class != "") {
-                    $students->where('class_id', $request->class);
-                }
-                if ($request->section != "") {
-                    $students->where('section_id', $request->section);
-                }
+                $class = SmClass::find($request->class);
+                $section = SmSection::find($request->section);
+                $students = SmStudent::query()->with(['parents', 'user','parents.parent_user', 'studentRecords' => function($q) use($request){
+                    return $q->where('class_id', $request->class)->when($request->section, function($q) use($request){
+                        $q->where('section_id', $request->section);
+                    })->where('school_id', auth()->user()->school_id);
+                }])->whereHas('studentRecords', function($q) use($request){
+                    return $q->where('class_id', $request->class)->when($request->section, function($q) use($request){
+                        $q->where('section_id', $request->section);
+                    })->where('school_id', auth()->user()->school_id);
+                });
+                $students->where('active_status', 1)
+                ->where('school_id', auth()->user()->school_id);
+                
                 $students = $students->get();
+               
 
-                return view('backEnd.systemSettings.login_access_control', compact('students', 'role', 'roles', 'classes'));
+                return view('backEnd.systemSettings.login_access_control', compact('students', 'role', 'roles', 'classes', 'class', 'section'));
             } elseif ($request->role == "3") {
                 $parents = SmParent::with('parent_user')->where('active_status', 1)->where('school_id', Auth::user()->school_id)->get();
                 return view('backEnd.systemSettings.login_access_control', compact('parents', 'role', 'roles', 'classes'));

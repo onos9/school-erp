@@ -21,8 +21,13 @@ class SmMarkStore extends Model
     {
         return $this->belongsTo('App\SmSection', 'section_id', 'id');
     }
+
+    public function subjectName()
+    {
+        return $this->belongsTo('App\SmSubject', 'subject_id', 'id');
+    }
  
-    public static function get_mark_by_part($student_id, $exam_id, $class_id, $section_id, $subject_id,$exam_setup_id){
+    public static function get_mark_by_part($student_id, $exam_id, $class_id, $section_id, $subject_id,$exam_setup_id, $record_id){
     	
         try {
             $getMark= SmMarkStore::where([
@@ -31,6 +36,7 @@ class SmMarkStore extends Model
                 ['class_id',$class_id], 
                 ['section_id',$section_id], 
                 ['exam_setup_id',$exam_setup_id], 
+                ['student_record_id', $record_id], 
                 ['subject_id',$subject_id]
             ])->first();
             if(!empty($getMark)){
@@ -46,19 +52,21 @@ class SmMarkStore extends Model
         }
     }
 
-    public static function is_absent_check($student_id, $exam_id, $class_id, $section_id, $subject_id){
+    public static function is_absent_check($student_id, $exam_id, $class_id, $section_id, $subject_id, $record_id)
+    {
         
         try {
             $getMark= SmMarkStore::where([
                 ['student_id',$student_id], 
                 ['exam_term_id',$exam_id], 
                 ['class_id',$class_id], 
+                ['student_record_id', $record_id], 
                 ['section_id',$section_id], 
                 ['subject_id',$subject_id]
             ])->first();
-            if(!empty($getMark)){
+            if (!empty($getMark)) {
                 $output= $getMark->is_absent;
-            }else{
+            } else {
                 $output= '0';
             }
             return $output;
@@ -68,13 +76,14 @@ class SmMarkStore extends Model
         }
     }
 
-     public static function teacher_remarks($student_id, $exam_id, $class_id, $section_id, $subject_id){
+    public static function teacher_remarks($student_id, $exam_id, $class_id, $section_id, $subject_id, $record_id) {
         
         $getMark= SmMarkStore::where([
             ['student_id',$student_id], 
             ['exam_term_id',$exam_id], 
             ['class_id',$class_id], 
             ['section_id',$section_id], 
+            ['student_record_id', $record_id], 
             ['subject_id',$subject_id]
         ])->first();
 

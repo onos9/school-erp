@@ -32,8 +32,8 @@ class SmSectionFactory extends Factory
 
         return [
             'section_name' => $this->section[$this->i++] ?? $this->faker->word,
+            'school_id' => 1,
             'created_at' => date('Y-m-d h:i:s'),
-           
         ];
     }
 }

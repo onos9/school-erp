@@ -152,7 +152,6 @@ class AcademicController extends Controller
 
     public function classReport(Request $request)
     {
-
         try {
 
             $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();

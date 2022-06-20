@@ -438,7 +438,7 @@
                                         </h5>
                                     </div>
 
-                                    <div class="profile_thumb profile_100" style="background-image: url({{ file_exists(@$studentDetails->student_photo) ? asset($studentDetails->student_photo) : asset('public/uploads/staff/demo/staff.jpg') }})"></div>
+                                    <div class="profile_thumb profile_100" style="background-image: url({{ file_exists(@$studentDetails->studentDetail->student_photo) ? asset($studentDetails->studentDetail->student_photo) : asset('public/uploads/staff/demo/staff.jpg') }})"></div>
                                 </div>
                             </td>
                         </thead>
@@ -451,7 +451,7 @@
         <div class="meritTableBody">
             <!-- middle content  -->
             <div class="student_name_highlight">
-                {{$student_detail->full_name}}
+                {{$student_detail->studentDetail->full_name}}
             </div>
             <table class="table">
                 <tbody>
@@ -524,7 +524,7 @@
                                                     <span>@lang('common.date_of_birth')</span>
                                                     <span>:</span>
                                                 </span>
-                                                {{$student_detail->date_of_birth != ""? dateConvert($student_detail->date_of_birth):''}}
+                                                {{$student_detail->studentDetail->date_of_birth != ""? dateConvert($student_detail->studentDetail->date_of_birth):''}}
                                             </p>
                                         </td>
                                    </tr>

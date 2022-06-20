@@ -53,7 +53,7 @@
                                                 <div class="addressleft_text">
                                                     <p><span>@lang('fees.fees_invoice_issued_to')</p>
                                                     <p><span><strong>@lang('student.student_name') </span> <span class="nowrap">: {{@$invoiceInfo->studentInfo->full_name}}</span> </strong></p>
-                                                    <p><span>@lang('common.class')</span> <span>: {{@$invoiceInfo->studentInfo->class->class_name}} ({{@$invoiceInfo->studentInfo->section->section_name}})</span> </p>
+                                                    <p><span>@lang('student.class_section')</span> <span>: {{@$invoiceInfo->recordDetail->class->class_name}} ({{@$invoiceInfo->recordDetail->section->section_name}})</span> </p>
                                                     <p><span>@lang('student.roll_no')</span> <span>: {{@$invoiceInfo->studentInfo->roll_no}}</span> </p>
                                                     <p><span>@lang('student.admission_no')</span> <span>: {{@$invoiceInfo->studentInfo->admission_no}}</span> </p>
                                                 </div>
@@ -142,7 +142,12 @@
                     @endphp
                     <tr>
                         <td>{{$key+1}}</td>
-                        <td>{{@$invoiceDetail->transcationFeesType->name}}</td>
+                        <td>
+                            {{@$invoiceDetail->transcationFeesType->name}}
+                            @if($invoiceDetail->note)
+                                <i class="fa fa-info-circle" aria-hidden="true"data-tooltip="tooltip" title="{{$invoiceDetail->note}}" style="courser:help;"></i>
+                            @endif
+                        </td>
                         <td>{{($invoiceDetail->fine)? $invoiceDetail->fine : 0}}</td>
                         <td>{{($invoiceDetail->paid_amount)? $invoiceDetail->paid_amount : 0}}</td>
                         <td class="text-right pr-0">{{generalSetting()->currency_symbol}}{{number_format($total , 2, '.', '')}}</td>
@@ -153,3 +158,8 @@
         </div>
     </section>
 @endsection
+@push('script')
+    <script>
+        $('[data-tooltip="tooltip"]').tooltip();
+    </script>
+@endpush

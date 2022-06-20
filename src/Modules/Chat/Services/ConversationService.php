@@ -69,7 +69,7 @@ class ConversationService
             ->where('read_at', null)
             ->get();
         foreach ($notifications as $notification){
-            if ($notification->data->group->id == $groupId){
+            if (optional(optional($notification->data)->group)->id == $groupId){
                 $notification->update([
                     'read_at' => Carbon::now()
                 ]);

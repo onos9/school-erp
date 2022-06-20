@@ -42,10 +42,14 @@ window.paymentValue = $('#paymentMethodAddFees').val();
 
                                 $.each(item, function(i, allStudent) {
                                     let rollno = allStudent.roll_no;
+                                    if(rollno == null){
+                                        rollno = '';
+                                    }
+                                    let section = allStudent.section.section_name;
                                     $("#selectStudent").append(
                                         $("<option>", {
                                             value: allStudent.id,
-                                            text: allStudent.full_name +" "+"(Roll-"+rollno+")",
+                                            text: allStudent.student_detail.full_name +" "+"("+section+ " - " +rollno+")",
                                         })
                                     );
                                 });
@@ -107,6 +111,10 @@ window.paymentValue = $('#paymentMethodAddFees').val();
         // Get Value Form Input Field
             $(document).on('keyup', '.amount', function()
             {
+                let paymentStatus = $('#paymentStatus').val();
+                    if(paymentStatus == 'full'){
+                        fullPaid($(this));
+                    }
                 if($('#cloneAmount').is(':checked')){
                     let subTotal = parseFloat($(this).val());
                     if(isNaN(subTotal)){
@@ -129,12 +137,19 @@ window.paymentValue = $('#paymentMethodAddFees').val();
 
             $(document).on('keyup', '.weaver', function()
             {
+               
                 weaverCalculation(this);
-                paidAmountCalculation(this);
+               
                 //Total
                     amount();
                     weaver();
                     subTotal();
+                    
+                    let paymentStatus = $('#paymentStatus').val();
+                    if(paymentStatus == 'full'){
+                        fullPaid($(this));
+                    }
+                    paidAmountCalculation(this);
                     paidAmount();
             });
 
@@ -254,6 +269,12 @@ window.paymentValue = $('#paymentMethodAddFees').val();
 
     });
 
+    function fullPaid($this){
+        let tr = $this.parents('tr');
+        let amount = tr.find('.subTotal').text();
+        tr.find('.paidAmount').val(amount);
+    }
+
 // Function Part
         function paymentStatus(paymentType)
         {
@@ -266,6 +287,17 @@ window.paymentValue = $('#paymentMethodAddFees').val();
                 weaver();
                 subTotal();
                 paidAmount();
+            }else if(paymentType === "full"){
+                $('#paymentMethod').removeClass('d-none');
+                $('.paidAmount').removeAttr('disabled');
+                $('.paidAmount').prop('readonly', true);
+                amount();
+                weaver();
+                subTotal();
+                paidAmount();
+                $.each($('.amount'), function(){
+                    fullPaid($(this));
+                });
             }else{
                 $('#paymentMethod').removeClass('d-none');
                 $('.paidAmount').removeAttr('disabled');
@@ -349,6 +381,7 @@ window.paymentValue = $('#paymentMethodAddFees').val();
                     showPaidAmount+=paidAmount;
                 });
             $('.showPaidAmount').html(showPaidAmount.toFixed(2));
+            $('.totalPaidAmount').val(showPaidAmount);
         }
 
         function weaverCalculation(el)
@@ -440,14 +473,13 @@ window.paymentValue = $('#paymentMethodAddFees').val();
         }
 
     //Add Fees Calculation
-
-    function validWeaver(el){
-        let weaver = parseFloat($(el).closest('tr').find($('.addFeesWeaver')).val());
-        let previousWeaver = parseFloat($(el).closest('tr').find($('.previousWeaver')).val());
-        if(previousWeaver > weaver){
-            parseFloat($(el).closest('tr').find($('.addFeesWeaver')).val(previousWeaver));
-        }
-    }
+        function validWeaver(el){
+            let weaver = parseFloat($(el).closest('tr').find($('.addFeesWeaver')).val());
+            let previousWeaver = parseFloat($(el).closest('tr').find($('.previousWeaver')).val());
+            if(previousWeaver > weaver){
+                parseFloat($(el).closest('tr').find($('.addFeesWeaver')).val(previousWeaver));
+            }
+        }   
         function addFeesCalculation(el){
             let weaverType = $('.weaverType').val();
             let showTotalValue = parseFloat($(el).closest('tr').find($('.showTotalValue')).val());
@@ -589,6 +621,195 @@ window.paymentValue = $('#paymentMethodAddFees').val();
             weaver();
         });
 
+
+        $("#feesSelectClass").on("change", function() {
+            var url = $("#classToSectionRoute").val();
+            var i = 0;
+            var formData = {
+                class_id: $(this).val(),
+            };
+            
+            $.ajax({
+                type: "GET",
+                data: formData,
+                dataType: "json",
+                url: url,
+
+                beforeSend: function() {
+                    $('#select_section_loader').addClass('pre_loader');
+                    $('#select_section_loader').removeClass('loader');
+                },
+
+                success: function(data) {
+                    var a = "";
+                    $.each(data, function(i, item) {
+                        if (item.length) {
+                            $("#feesSection").find("option").not(":first").remove();
+                            $("#feesSectionDiv ul")
+                                .find("li")
+                                .not(":first")
+                                .remove();
+
+                            $.each(item, function(i, section) {
+                                $("#feesSection").append(
+                                    $("<option>", {
+                                        value: section.id,
+                                        text: section.section_name,
+                                    })
+                                );
+
+                                $("#feesSectionDiv ul").append(
+                                    "<li data-value='" +
+                                    section.id +
+                                    "' class='option'>" +
+                                    section.section_name +
+                                    "</li>"
+                                );
+                            });
+                        } else {
+                            $("#feesSectionDiv .current").html(
+                                "SELECT SECTION *"
+                            );
+                            $("#feesSection").find("option").not(":first").remove();
+                            $("#feesSectionDiv ul")
+                                .find("li")
+                                .not(":first")
+                                .remove();
+                        }
+                    });
+                },
+                error: function(data) {
+                    console.log("Error:", data);
+                },
+                complete: function() {
+                    i--;
+                    if (i <= 0) {
+                        $('#select_section_loader').removeClass('pre_loader');
+                        $('#select_section_loader').addClass('loader');
+                    }
+                }
+            });
+        });
+
+        $(document).ready(function() {
+            $("#feesSection").on("change", function() {
+                var url = $("#sectionToStudentRoute").val();
+                var i = 0;
+                var class_id = $("#feesSelectClass").val();
+                var formData = {
+                    section_id: $(this).val(),
+                    class_id: class_id,
+                };
+
+                $.ajax({
+                    type: "GET",
+                    data: formData,
+                    dataType: "json",
+                    url: url,
+
+                    beforeSend: function() {
+                        $('#student_section_loader').addClass('pre_loader');
+                        $('#student_section_loader').removeClass('loader');
+                    },
+
+                    success: function(data) {
+                        $.each(data, function(i, item) {
+                            if (item.length) {
+                                $("#selectStudent").find("option").not(":first").remove();
+                                $("#selectStudentDiv ul").find("li").not(":first").remove();
+
+                                $.each(item, function(i, allStudent) {
+                                    let rollno = allStudent.roll_no;
+                                    if(rollno == null){
+                                        rollno = '';
+                                    }
+                                    let section = allStudent.section.section_name;
+                                    $("#selectStudent").append(
+                                        $("<option>", {
+                                            value: allStudent.id,
+                                            text: allStudent.student_detail.full_name +" "+"("+section+ " - " +rollno+")",
+                                        })
+                                    );
+                                });
+                                $("#selectStudent").niceSelect('update');
+                            } else {
+                                $("#selectStudent").find("option").not(":first").remove();
+                                $("#selectStudentDiv ul").find("li").not(":first").remove();
+                            }
+                        });
+                    },
+                    error: function(data) {
+                        console.log("Error:", data);
+                    },
+                    complete: function() {
+                        i--;
+                        if (i <= 0) {
+                            $('#student_section_loader').removeClass('pre_loader');
+                            $('#student_section_loader').addClass('loader');
+                        }
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function() {
+            $("#feesSelectClass").on("change", function() {
+                var url = $("#classToStudentRoute").val();
+                var i = 0;
+                var formData = {
+                    class_id: $(this).val(),
+                };
+
+                $.ajax({
+                    type: "GET",
+                    data: formData,
+                    dataType: "json",
+                    url: url,
+
+                    beforeSend: function() {
+                        $('#student_section_loader').addClass('pre_loader');
+                        $('#student_section_loader').removeClass('loader');
+                    },
+
+                    success: function(data) {
+                        $.each(data, function(i, item) {
+                            if (item.length) {
+                                $("#selectStudent").find("option").not(":first").remove();
+                                $("#selectStudentDiv ul").find("li").not(":first").remove();
+
+                                $.each(item, function(i, allStudent) {
+                                    let rollno = allStudent.roll_no;
+                                    if(rollno == null){
+                                        rollno = '';
+                                    }
+                                    let section = allStudent.section.section_name;
+                                    $("#selectStudent").append(
+                                        $("<option>", {
+                                            value: allStudent.id,
+                                            text: allStudent.student_detail.full_name +" "+"("+section+ " - " +rollno+")",
+                                        })
+                                    );
+                                });
+                                $("#selectStudent").niceSelect('update');
+                            } else {
+                                $("#selectStudent").find("option").not(":first").remove();
+                                $("#selectStudentDiv ul").find("li").not(":first").remove();
+                            }
+                        });
+                    },
+                    error: function(data) {
+                        console.log("Error:", data);
+                    },
+                    complete: function() {
+                        i--;
+                        if (i <= 0) {
+                            $('#student_section_loader').removeClass('pre_loader');
+                            $('#student_section_loader').addClass('loader');
+                        }
+                    }
+                });
+            });
+        });
     // Totltip Active
         //$('[data-tooltip="tooltip"]').tooltip();
 

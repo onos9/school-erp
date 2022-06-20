@@ -47,4 +47,6 @@ return[
     'delete_uploaded_content'=>'Delete uploaded content',
     'download_uploaded_content'=>'Download uploaded content',
     'home_work_file'=>'HomeWork File',
+    'evalution'=>'Evaluation',
+    'homework_evalute_notification' => 'Homework evalute notification'
 ];

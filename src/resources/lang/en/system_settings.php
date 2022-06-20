@@ -1,4 +1,4 @@
-<?php
+<?php 
     return [
         'disabled_student'=> 'Disabled Student',
         'setup_exam_rule'=> 'Setup Exam Role',
@@ -304,9 +304,9 @@
         'text_alignment'=>'Text Alignment',
         'update_system'=> 'Update System',
         'update_details'=>'Update Details',
-        'System_Status'=> 'System Status',
+        'System_Status'=> 'System Status', 
         'Upgrade'=> 'Upgrade',
-        'Version'=> 'Version',
+        'Version'=> 'Version', 
         'check_update'=>'Check Update',
         'PHP_version'=>'PHP Version',
         'curl_enable'=>'CURL Enable',
@@ -343,4 +343,15 @@
        'dashboard_setup'=>'Dashboard',
        'layout_image'=>'Layout image',
        'are_you_sure_to_remove'=>'Are you sure to remove',
+        'Preloader Status' => 'Preloader Status',
+        'Show' => 'Show',
+        'Hide' => 'Hide',
+        'Preloader Type' => 'Preloader Type',
+        'Animation' => 'Animation',
+        'Image' => 'Image',
+        'Preloader Style' => 'Preloader Style',
+        'Settings' => 'Settings',
+        'Preloader Settings' => 'Preloader Settings',
+        'Preloader Image' => 'Preloader Image',
     ];
+    

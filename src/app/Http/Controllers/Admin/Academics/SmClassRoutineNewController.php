@@ -53,7 +53,9 @@ class SmClassRoutineNewController extends Controller
         $section_id = $section;
         $academic_year = SmAcademicYear::find(getAcademicId());
 
-        $sm_weekends = SmWeekend::with('classRoutine', 'classRoutine.subject')->where('school_id', Auth::user()->school_id)->orderBy('order', 'ASC')->where('active_status', 1)->get();
+        $sm_weekends = SmWeekend::with(['classRoutine' => function($q) use($class_id, $section_id){
+            return $q->where('class_id', $class_id)->where('section_id', $section_id)->orderBy('start_time', 'asc');
+        }, 'classRoutine.subject'])->where('school_id', Auth::user()->school_id)->orderBy('order', 'ASC')->where('active_status', 1)->get();
 
         $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
 
@@ -477,6 +479,7 @@ class SmClassRoutineNewController extends Controller
             }
             return view('backEnd.reports.teacher_class_routine_report', compact('teachers'));
         } catch (\Exception $e) {
+           
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -513,6 +516,7 @@ class SmClassRoutineNewController extends Controller
             }
             return view('backEnd.reports.teacher_class_routine_report', compact('class_times', 'teacher_id', 'sm_weekends', 'teachers'));
         } catch (\Exception $e) {
+           
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

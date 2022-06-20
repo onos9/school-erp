@@ -32,9 +32,11 @@ use App\SmChartOfAccount;
 use App\SmLanguagePhrase;
 use App\SmPaymentMethhod;
 use App\SmGeneralSettings;
+use App\SmHomePageSetting;
 use App\Traits\UploadTheme;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\SmFrontendPersmission;
 use Illuminate\Support\Carbon;
 use App\SmPaymentGatewaySetting;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +52,7 @@ use App\Scopes\ActiveStatusSchoolScope;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Modules\MenuManage\Entities\SidebarNew;
 use Modules\RolePermission\Entities\InfixModuleInfo;
 use Modules\RolePermission\Entities\InfixModuleStudentParentInfo;
 use App\Http\Requests\Admin\GeneralSettings\SmEmailSettingsRequest;
@@ -77,10 +80,10 @@ class SmSystemSettingController extends Controller
         }
 
         if ( ($e->mail_driver == "smtp") &&( $e->mail_username == '' || $e->mail_password == ''
-            || $e->mail_encryption == ''
-            || $e->mail_port == ''
-            || $e->mail_host == ''
-            || $e->mail_driver == '' ))
+                || $e->mail_encryption == ''
+                || $e->mail_port == ''
+                || $e->mail_host == ''
+                || $e->mail_driver == '' ))
         {
             Toastr::error('All Field in Smtp Details Must Be filled Up', 'Failed');
             return redirect()->back();
@@ -89,7 +92,7 @@ class SmSystemSettingController extends Controller
             $reciver_email = Auth::user()->email ?? User::find(1)->email;
             $receiver_name = Auth::user()->full_name;
             $compact['user_name'] = $receiver_name;
-            
+
             @send_mail($reciver_email, $receiver_name, "test_mail", $compact);
             Toastr::success('Test Mail Send Successfully Your Email', 'Success');
             return redirect()->back();
@@ -294,8 +297,8 @@ class SmSystemSettingController extends Controller
     {
 
         try {
-            
-            
+
+
             $sms_services['Twilio'] = SmSmsGateway::where('gateway_name','Twilio')->where('school_id',Auth::user()->school_id)->firstOrCreate();
             $sms_services['Msg91'] = SmSmsGateway::where('gateway_name','Msg91')->where('school_id',Auth::user()->school_id)->firstOrCreate();
             $sms_services['TextLocal'] = SmSmsGateway::where('gateway_name','TextLocal')->where('school_id',Auth::user()->school_id)->firstOrCreate();
@@ -309,7 +312,7 @@ class SmSystemSettingController extends Controller
                 $all_sms_services= SmSmsGateway::where('gateway_name', '!=','HimalayaSms')->where('school_id',Auth::user()->school_id)->get();
             }
             $active_sms_service = SmSmsGateway::where('school_id',Auth::user()->school_id)->where('active_status', 1)->first();
-            
+
 
             return view('backEnd.systemSettings.smsSettings', compact('sms_services', 'active_sms_service','all_sms_services'));
         } catch (\Exception $e) {
@@ -518,7 +521,7 @@ class SmSystemSettingController extends Controller
                 $sms_languages->active_status = '0';
                 $sms_languages->school_id = Auth::user()->school_id;
                 $sms_languages->save();
-                
+
                 if ($language_details->code != 'en') {
                     File::copyDirectory(base_path('/resources/lang/en'), base_path('/resources/lang/' . $language_details->code));
                     $modules = Module::all();
@@ -662,11 +665,11 @@ class SmSystemSettingController extends Controller
     }
 
     public function CacheClear(){
-       Artisan::call('cache:clear'); 
-       Artisan::call('view:clear'); 
-       Artisan::call('config:clear'); 
-       Toastr::success('Operation successful', 'Success');
-       return redirect()->back();
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
+        Artisan::call('config:clear');
+        Toastr::success('Operation successful', 'Success');
+        return redirect()->back();
     }
     //download database from public/databaseBackup
     public function downloadDatabase($id)
@@ -1031,7 +1034,7 @@ class SmSystemSettingController extends Controller
                     $gatewayDetail->textlocal_username = $textlocal_username;
                     $gatewayDetail->textlocal_hash = $textlocal_hash;
                     $gatewayDetail->textlocal_sender = $textlocal_sender;
-                   $gatewayDetail->school_id = Auth::user()->school_id;
+                    $gatewayDetail->school_id = Auth::user()->school_id;
                     $results = $gatewayDetail->save();
                 }
             }
@@ -1077,7 +1080,7 @@ class SmSystemSettingController extends Controller
                     $gatewayDetail->gateway_name = $request->gateway_name;
                     $gatewayDetail->africatalking_username = $africatalking_username;
                     $gatewayDetail->africatalking_api_key = $africatalking_api_key;
-                   $gatewayDetail->school_id = Auth::user()->school_id;
+                    $gatewayDetail->school_id = Auth::user()->school_id;
                     $results = $gatewayDetail->save();
                 }
             }
@@ -1172,7 +1175,7 @@ class SmSystemSettingController extends Controller
                     $gatewayDetail->msg91_route = $msg91_route;
                     $gatewayDetail->msg91_country_code = $msg91_country_code;
 
-                   $gatewayDetail->school_id = Auth::user()->school_id;
+                    $gatewayDetail->school_id = Auth::user()->school_id;
                     $results = $gatewayDetail->save();
                 }
             }
@@ -1203,7 +1206,7 @@ class SmSystemSettingController extends Controller
 
             $gatewayDetails = SmSmsGateway::find($sms_service);
             $gatewayDetails->active_status = 1;
-            
+
             $results = $gatewayDetails->update();
 
             if($results){
@@ -1297,55 +1300,38 @@ class SmSystemSettingController extends Controller
             $generalSettData->fees_status       = $request->fees_status;
             $generalSettData->attendance_layout       = $request->attendance_layout;
             $generalSettData->copyright_text  = $request->copyright_text;
-            
-           
+            $generalSettData->multiple_roll  = $request->multiple_roll;
+
             $results = $generalSettData->save();
-            
+
             if(moduleStatusCheck('Fees')){
-            if($generalSettData->fees_status == 1){
-                $ids = [108,381,382,1130,925,926,20,71,1156,1157];
-                foreach($ids as $id){
-                    $all_modules = InfixModuleInfo::find($id);
-                    if($all_modules){
-                        $all_modules->active_status = $id==1130 ? 1: 0;
-                        $all_modules->save();
-    
-                        if($id== 20 || $id== 71){
-                            $studentParent=InfixModuleStudentParentInfo::find($id);
-                            $studentParent->active_status = 0;
-                            $studentParent->save();
-                        }
-    
-                        if($id== 1156 || $id== 1157){
-                            $studentParent=InfixModuleStudentParentInfo::find($id);
-                            $studentParent->active_status = 1;
-                            $studentParent->save();
-                        }
-                    }
-                }
-            }else{
-                $ids = [108,381,382,1130,925,926,20,71,1156,1157];
-                foreach($ids as $id){
-                    $all_modules = InfixModuleInfo::find($id);
-                    if($all_modules){
-                        $all_modules->active_status = $id==1130 ? 0: 1;
-                        $all_modules->save();
-    
-                        if($id== 20 || $id== 71){
-                            $studentParent=InfixModuleStudentParentInfo::find($id);
-                            $studentParent->active_status = 1;
-                            $studentParent->save();
-                        }
-    
-                        if($id== 1156 || $id== 1157){
-                            $studentParent=InfixModuleStudentParentInfo::find($id);
-                            $studentParent->active_status = 0;
-                            $studentParent->save();
-                        }
-                    }
-                }
+
+                $fees_status = [1130];
+                InfixModuleInfo::whereIn('id', $fees_status)->update([
+                    'active_status' => $generalSettData->fees_status
+                ]);
+
+                InfixModuleStudentParentInfo::whereIn('id', [20, 71])->update([
+                    'active_status' => !$generalSettData->fees_status
+                ]);
+
+                InfixModuleStudentParentInfo::whereIn('id', [1156, 1157])->update([
+                    'active_status' => $generalSettData->fees_status
+                ]);
+
+//                SidebarNew::whereIn('infix_module_id', $fees_status)->update([
+//                    'active_status' => $generalSettData->fees_status
+//                ]);
+
+                $not_fees_status = [108, 381, 382, 925, 926, 20, 71, 1156, 1157];
+                InfixModuleInfo::whereIn('id', $not_fees_status)->update([
+                    'active_status' => !$generalSettData->fees_status
+                ]);
+//                SidebarNew::whereIn('infix_module_id', $not_fees_status)->update([
+//                    'active_status' => !$generalSettData->fees_status
+//                ]);
+
             }
-        }
             if ($results) {
                 session()->forget('generalSetting');
                 session()->forget('sessionId');
@@ -1421,7 +1407,7 @@ class SmSystemSettingController extends Controller
                 } else {
                     return ApiBaseMethod::sendError('Something went wrong, please try again');
                 }
-            } 
+            }
             Toastr::success('Operation successful', 'Success');
             return redirect('general-settings');
         } catch (\Exception $e) {
@@ -1547,76 +1533,13 @@ class SmSystemSettingController extends Controller
     public function updateEmailSettingsData(SmEmailSettingsRequest $request)
     {
         try {
-           
+
             if ($request->engine_type == "smtp") {
-
-                $key1 = 'MAIL_USERNAME';
-                $key2 = 'MAIL_PASSWORD';
-                $key3 = 'MAIL_ENCRYPTION';
-                $key4 = 'MAIL_PORT';
-                $key5 = 'MAIL_HOST';
-                $key6 = 'MAIL_MAILER';
-                $key7 = 'MAIL_FROM_ADDRESS';
-
-                $value1 = str_replace(" ", "", $request->mail_username);
-                $value2 = str_replace(" ", "", $request->mail_password);
-                $value3 = str_replace(" ", "", $request->mail_encryption);
-                $value4 = str_replace(" ", "", $request->mail_port);
-                $value5 = str_replace(" ", "", $request->mail_host);
-                $value6 = str_replace(" ", "", $request->mail_driver);
-                $value7 = str_replace(" ", "", $request->from_email);
-
-                $path = base_path() . "/.env";
-                $MAIL_USERNAME = env($key1);
-                $MAIL_PASSWORD = env($key2);
-                $MAIL_ENCRYPTION = env($key3);
-                $MAIL_PORT = env($key4);
-                $MAIL_HOST = env($key5);
-                $MAIL_DRIVER = env($key6);
-                $FROM_MAIL = env($key7);
-
-                if (file_exists($path) && !moduleStatusCheck('Saas')) {
-                    file_put_contents($path, str_replace(
-                        "$key1=" . $MAIL_USERNAME,
-                        "$key1=" . $value1,
-                        file_get_contents($path)
-                    ));
-                    file_put_contents($path, str_replace(
-                        "$key2=" . $MAIL_PASSWORD,
-                        "$key2=" . $value2,
-                        file_get_contents($path)
-                    ));
-                    file_put_contents($path, str_replace(
-                        "$key3=" . $MAIL_ENCRYPTION,
-                        "$key3=" . $value3,
-                        file_get_contents($path)
-                    ));
-                    file_put_contents($path, str_replace(
-                        "$key4=" . $MAIL_PORT,
-                        "$key4=" . $value4,
-                        file_get_contents($path)
-                    ));
-                    file_put_contents($path, str_replace(
-                        "$key5=" . $MAIL_HOST,
-                        "$key5=" . $value5,
-                        file_get_contents($path)
-                    ));
-                    file_put_contents($path, str_replace(
-                        "$key6=" . $MAIL_DRIVER,
-                        "$key6=" . $value6,
-                        file_get_contents($path)
-                    ));
-                    file_put_contents($path, str_replace(
-                        "$key7=" . $FROM_MAIL,
-                        "$key7=" . $value7,
-                        file_get_contents($path)
-                    ));
-                }
 
 
                 $e = SmEmailSetting::where('email_engine_type', 'smtp')
-                ->where('school_id', Auth::user()->school_id)
-                ->first();
+                    ->where('school_id', Auth::user()->school_id)
+                    ->first();
 
                 if (empty($e)) {
                     $e = new SmEmailSetting();
@@ -1632,7 +1555,7 @@ class SmSystemSettingController extends Controller
                 $e->mail_password = $request->mail_password;
                 $e->mail_encryption = $request->mail_encryption;
                 $e->active_status = $request->active_status;
-               
+
                 $results = $e->save();
 
                 if ($request->active_status == 1) {
@@ -1642,20 +1565,20 @@ class SmSystemSettingController extends Controller
                     $gs->email_driver = "smtp";
                     $gs->save();
                     $phpp = SmEmailSetting::where('email_engine_type', 'php')
-                    ->where('school_id', Auth::user()->school_id)
-                    ->first();
+                        ->where('school_id', Auth::user()->school_id)
+                        ->first();
                     if ($phpp) {
                         $phpp->active_status = 0;
                         $phpp->save();
                     }
-                   
+
                 }
             }
 
             if ($request->engine_type == "php") {
 
                 $php = SmEmailSetting::where('email_engine_type', 'php')->where('school_id', Auth::user()->school_id)->first();
-               
+
                 if (empty($php)) {
                     $php = new SmEmailSetting();
                     $php->mail_driver = 'php';
@@ -1676,7 +1599,7 @@ class SmSystemSettingController extends Controller
                         $smtp->active_status = 0;
                         $smtp->save();
                     }
-                    
+
                 }
 
             }
@@ -1709,7 +1632,7 @@ class SmSystemSettingController extends Controller
                 else{
                     return redirect()->back()->with(['smtp' => 'active']);
                 }
-                
+
             } else {
                 Toastr::error('Operation Failed', 'Failed');
                 return redirect()->back();
@@ -1740,6 +1663,11 @@ class SmSystemSettingController extends Controller
             if(moduleStatusCheck('KhaltiPayment') == False){
                 $paymeny_gateway->where('method','!=','Khalti');
             }
+
+            if(moduleStatusCheck('MercadoPago') == False){
+                $paymeny_gateway->where('method','!=','MercadoPago');
+            }
+            
             $paymeny_gateway = $paymeny_gateway->withoutGlobalScope(ActiveStatusSchoolScope::class);
             $paymeny_gateway = $paymeny_gateway->get();
 
@@ -1755,8 +1683,8 @@ class SmSystemSettingController extends Controller
                 $paymeny_gateway_settings->where('gateway_name','!=','RazorPay');
             }
 
-            if(moduleStatusCheck('KhaltiPayment') == False){
-                $paymeny_gateway_settings->where('gateway_name','!=','Khalti');
+            if(moduleStatusCheck('MercadoPago') == False){
+                $paymeny_gateway_settings->where('gateway_name','!=','MercadoPago');
             }
 
             $paymeny_gateway_settings = $paymeny_gateway_settings->get();
@@ -1774,6 +1702,10 @@ class SmSystemSettingController extends Controller
                 $payment_methods->where('method','!=','Khalti');
             }
 
+            if(moduleStatusCheck('MercadoPago') == False){
+                $payment_methods->where('method','!=','MercadoPago');
+            }
+
             $payment_methods = $payment_methods->get();
 
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
@@ -1786,7 +1718,7 @@ class SmSystemSettingController extends Controller
 
     public function updatePaymentGateway(Request $request)
     {
-      
+
         if ($request->gateway_name == "Stripe" || $request->gateway_name == "Paystack") {
             $input = $request->all();
 
@@ -1809,7 +1741,8 @@ class SmSystemSettingController extends Controller
         try {
             $paymeny_gateway = [
                 'gateway_name', 'gateway_username', 'gateway_password', 'gateway_signature', 'gateway_client_id', 'gateway_mode',
-                'gateway_secret_key', 'gateway_secret_word', 'gateway_publisher_key', 'gateway_private_key', 'cheque_details', 'bank_details'
+                'gateway_secret_key', 'gateway_secret_word', 'gateway_publisher_key', 'gateway_private_key', 'cheque_details', 'bank_details',
+                'mercado_pago_public_key','mercado_pago_acces_token'
             ];
             $count = 0;
             $gatewayDetails = SmPaymentGatewaySetting::where('gateway_name', $request->gateway_name)->where('school_id', Auth::user()->school_id)->first();
@@ -1848,9 +1781,9 @@ class SmSystemSettingController extends Controller
                 ->update(['active_status' => 0]);
             foreach ($request->gateways as $pid => $isChecked) {
                 $results = SmPaymentMethhod::where('school_id', Auth::user()->school_id)
-                ->where('id', '=', $pid)
-                ->withoutGlobalScope(ActiveStatusSchoolScope::class)
-                ->update(['active_status' => 1]);
+                    ->where('id', '=', $pid)
+                    ->withoutGlobalScope(ActiveStatusSchoolScope::class)
+                    ->update(['active_status' => 1]);
             }
 
             if ($results) {
@@ -1895,7 +1828,7 @@ class SmSystemSettingController extends Controller
                     $gatewayDetail->paypal_signature = $paypal_signature;
                     $gatewayDetail->paypal_client_id = $paypal_client_id;
                     $gatewayDetail->paypal_secret_id = $paypal_secret_id;
-                   $gatewayDetail->school_id = Auth::user()->school_id;
+                    $gatewayDetail->school_id = Auth::user()->school_id;
                     $results = $gatewayDetail->save();
                 }
             }
@@ -1916,7 +1849,7 @@ class SmSystemSettingController extends Controller
 
     public function updateStripeData()
     {
-    
+
         try {
             $gateway_id = $_POST['gateway_id'];
             $stripe_api_secret_key = $_POST['stripe_api_secret_key'];
@@ -1935,7 +1868,7 @@ class SmSystemSettingController extends Controller
                     $gatewayDetail = new SmPaymentGatewaySetting();
                     $gatewayDetail->stripe_api_secret_key = $stripe_api_secret_key;
                     $gatewayDetail->stripe_publisher_key = $stripe_publisher_key;
-                   $gatewayDetail->school_id = Auth::user()->school_id;
+                    $gatewayDetail->school_id = Auth::user()->school_id;
                     $results = $gatewayDetail->save();
                 }
             }
@@ -1970,7 +1903,7 @@ class SmSystemSettingController extends Controller
                     $gatewayDetail = new SmPaymentGatewaySetting();
                     $gatewayDetail->pay_u_money_key = $pay_u_money_key;
                     $gatewayDetail->pay_u_money_salt = $pay_u_money_salt;
-                   $gatewayDetail->school_id = Auth::user()->school_id;
+                    $gatewayDetail->school_id = Auth::user()->school_id;
                     $results = $gatewayDetail->save();
                 }
             }
@@ -2024,8 +1957,8 @@ class SmSystemSettingController extends Controller
     {
 
         $delete_directory = SmLanguage::find($request->id);
-        
-     
+
+
         try {
 
             if ($delete_directory) {
@@ -2037,9 +1970,9 @@ class SmSystemSettingController extends Controller
                     }
                 }
                 $delete_directory->delete();
-                
+
                 return redirect()->back()->with('message-success-delete', 'Language has been deleted successfully');
-                
+
             } else {
                 return redirect()->back()->with('message-danger-delete', 'Something went wrong, please try again');
             }
@@ -2065,16 +1998,16 @@ class SmSystemSettingController extends Controller
     {
 
         try {
-            
+
             if ($id) {
                 $this->setDefaultLanguge((int) $id);
-            } 
+            }
 
             Toastr::success('Operation Success', 'Success');
             return redirect()->back();
 
         } catch (\Exception $e) {
-       
+
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -2092,7 +2025,7 @@ class SmSystemSettingController extends Controller
         $language->active_status = 1;
         $language->save();
 
-    
+
 
         $lang = Language::where('code', $language->language_universal)->first();
 
@@ -2109,14 +2042,14 @@ class SmSystemSettingController extends Controller
             }
             $user->save();
         }
-                        
+
         if( $lang->rtl == 1 ){
             session()->put('user_text_direction',1);
         }
         else{
             session()->put('user_text_direction',2);
         }
-        
+
         session()->put('user_language', $lang->code);
         session()->put('locale', $lang->code);
     }
@@ -2182,7 +2115,7 @@ class SmSystemSettingController extends Controller
                 file_put_contents($file, '');
             }
             file_put_contents($file, '<?php return ' . var_export($LU, true) . ';');
-           
+
             Toastr::success('Operation successful', 'Success');
             return redirect()->back();
         } catch (\Exception $e) {
@@ -2579,7 +2512,7 @@ class SmSystemSettingController extends Controller
     public function admin_UpdateSystem(Request $request)
     {
         $input = $request->all();
-       
+
 
         $validator = Validator::make($input, [
             'content_file' => "required",
@@ -2638,45 +2571,45 @@ class SmSystemSettingController extends Controller
         }
     }
 
-   //ajax theme Style Active
-            public function themeStyleActive(Request $request)
-                {
+    //ajax theme Style Active
+    public function themeStyleActive(Request $request)
+    {
 
-                try {
-                        if ($request->id) {
-                            if(Auth::check() && Auth::user()->role_id==1){
-                                $modified = SmStyle::where('is_active', 1)->where('school_id', Auth::user()->school_id)
-                                ->update(array('is_active' => 0));
+        try {
+            if ($request->id) {
+                if(Auth::check() && Auth::user()->role_id==1){
+                    $modified = SmStyle::where('is_active', 1)->where('school_id', Auth::user()->school_id)
+                        ->update(array('is_active' => 0));
 
-                                    $selected = SmStyle::findOrFail($request->id);
-                                    $selected->is_active = 1;
-                                    $res = $selected->save();
-                        }
-                        else{
-                                $user=User::find(Auth::user()->id);
-                                $user->style_id=$request->id;
-                                $modified = $user->save();
-                        }
-
-                            session()->forget('all_styles');
-                            $all_styles = SmStyle::where('school_id', 1)->where('active_status', 1)->get() ;
-                            session()->put('all_styles', $all_styles);
-
-                            session()->forget('active_style');
-                            $active_style = SmStyle::findOrFail($request->id);
-                            session()->put('active_style', $active_style);
-
-                            return response()->json([$modified]);
-                        } else {
-                        return '';
-                    }
-                        }
-                         catch (\Exception $e) {
-                        Toastr::error('Operation Failed', 'Failed');
-                        return redirect()->back();
+                    $selected = SmStyle::findOrFail($request->id);
+                    $selected->is_active = 1;
+                    $res = $selected->save();
                 }
-                
+                else{
+                    $user=User::find(Auth::user()->id);
+                    $user->style_id=$request->id;
+                    $modified = $user->save();
+                }
+
+                session()->forget('all_styles');
+                $all_styles = SmStyle::where('school_id', 1)->where('active_status', 1)->get() ;
+                session()->put('all_styles', $all_styles);
+
+                session()->forget('active_style');
+                $active_style = SmStyle::findOrFail($request->id);
+                session()->put('active_style', $active_style);
+
+                return response()->json([$modified]);
+            } else {
+                return '';
             }
+        }
+        catch (\Exception $e) {
+            Toastr::error('Operation Failed', 'Failed');
+            return redirect()->back();
+        }
+
+    }
 
     //ajax theme Style Active
     public function themeStyleRTL(Request $request)
@@ -2706,7 +2639,7 @@ class SmSystemSettingController extends Controller
 
     public function ajaxUserLanguageChange(Request $request)
     {
-      
+
         try {
 
             if ($request->id) {
@@ -2724,13 +2657,13 @@ class SmSystemSettingController extends Controller
                     }else{
                         $user->rtl_ltl = 2;
                         session()->put('user_text_direction',2);
-                    } 
+                    }
                     $user->save();
 
                     session()->put('user_language', $request->id);
                 }
-                
-               
+
+
                 return response()->json([$request->id]);
             } else {
                 return 'en';
@@ -2894,20 +2827,20 @@ class SmSystemSettingController extends Controller
         try {
             // return $request;
             $path = base_path() . "/.env";
-                
+
             $envFile = app()->environmentFilePath();
             $str = file_get_contents($envFile);
-                    $envKey='FCM_SECRET_KEY';
-                    $envValue='"'.$request->fcm_key.'"';
-                    $str .= "\n";
-                    $keyPosition = strpos($str, "{$envKey}=");
-                    $endOfLinePosition = strpos($str, "\n", $keyPosition);
-                    $oldLine = substr($str, $keyPosition, $endOfLinePosition - $keyPosition);
-                    if (!$keyPosition || !$endOfLinePosition || !$oldLine) {
-                        $str .= "{$envKey}={$envValue}\n";
-                    } else {
-                        $str = str_replace($oldLine, "{$envKey}={$envValue}", $str);
-                    }
+            $envKey='FCM_SECRET_KEY';
+            $envValue='"'.$request->fcm_key.'"';
+            $str .= "\n";
+            $keyPosition = strpos($str, "{$envKey}=");
+            $endOfLinePosition = strpos($str, "\n", $keyPosition);
+            $oldLine = substr($str, $keyPosition, $endOfLinePosition - $keyPosition);
+            if (!$keyPosition || !$endOfLinePosition || !$oldLine) {
+                $str .= "{$envKey}={$envValue}\n";
+            } else {
+                $str = str_replace($oldLine, "{$envKey}={$envValue}", $str);
+            }
             $str = substr($str, 0, -1);
             if (!file_put_contents($envFile, $str)) {
                 Toastr::error('Operation Failed', 'Failed');
@@ -3189,7 +3122,7 @@ class SmSystemSettingController extends Controller
         }
     }
 
-  
+
 
     public function schoolSettingsView(Request $request)
     {
@@ -3250,9 +3183,9 @@ class SmSystemSettingController extends Controller
 
             if (config('app.app_sync')) {
                 Toastr::warning('This Feature Restricted in demo mode !');
-                 return back();
-         }
-            
+                return back();
+            }
+
             $request->validate([
                 'updateFile' => ['required', 'mimes:zip'],
             ]);
@@ -3302,7 +3235,7 @@ class SmSystemSettingController extends Controller
 
                 if (isset($json['migrations']) & !empty($json['migrations'])) {
                     foreach ($json['migrations'] as $migration) {
-                       
+
                         Artisan::call('migrate',
                             array(
                                 '--path' => $migration,
@@ -3316,7 +3249,7 @@ class SmSystemSettingController extends Controller
                     'software_version' => $json['version'],
 
                 ]);
-            
+
             }
 
 
@@ -3340,7 +3273,7 @@ class SmSystemSettingController extends Controller
             if (storage_path('app/tempUpdate')) {
                 $this->delete_directory(storage_path('app/tempUpdate'));
             }
-           
+
             Toastr::error($e->getMessage(), trans('common.error'));
             return redirect()->back();
         }
@@ -3348,9 +3281,9 @@ class SmSystemSettingController extends Controller
 
 
     public function moduleFileUpload(Request $request)
-    {  
+    {
         ini_set('memory_limit', '-1');
-        
+
         if (Config::get('app.app_sync')) {
             Toastr::warning("Disabled For Demo" , "Warning");
             return redirect()->back();
@@ -3366,34 +3299,34 @@ class SmSystemSettingController extends Controller
             ]);
 
 
-        if ($request->hasFile('module_file')) {
-            $path = $request->module_file->store('module_file');
-            $request->module_file->getClientOriginalName();
-            $zip = new ZipArchive;
-            $res = $zip->open(storage_path('app/' . $path));
-            if ($res === true) {
-                $zip->extractTo(storage_path('app/tempUpdate'));
-                $zip->close();
-            } else {
-                abort(500, 'Error! Could not open File');
+            if ($request->hasFile('module_file')) {
+                $path = $request->module_file->store('module_file');
+                $request->module_file->getClientOriginalName();
+                $zip = new ZipArchive;
+                $res = $zip->open(storage_path('app/' . $path));
+                if ($res === true) {
+                    $zip->extractTo(storage_path('app/tempUpdate'));
+                    $zip->close();
+                } else {
+                    abort(500, 'Error! Could not open File');
+                }
+
+
+                $src = storage_path('app/tempUpdate');
+
+
+                $dst = base_path('/Modules/');
+                $this->recurse_copy($src, $dst);
+
+
+                if (storage_path('app/module_file')) {
+                    $this->delete_directory(storage_path('app/module_file'));
+                }
+                if (storage_path('app/tempUpdate')) {
+                    $this->delete_directory(storage_path('app/tempUpdate'));
+                }
+
             }
-
-
-            $src = storage_path('app/tempUpdate');
-
-
-            $dst = base_path('/Modules/');
-            $this->recurse_copy($src, $dst);
-
-
-            if (storage_path('app/module_file')) {
-                $this->delete_directory(storage_path('app/module_file'));
-            }
-            if (storage_path('app/tempUpdate')) {
-                $this->delete_directory(storage_path('app/tempUpdate'));
-            }
-
-        }
             Toastr::success("Your module successfully uploaded", 'Success');
             return redirect()->back();
 
@@ -3404,9 +3337,4 @@ class SmSystemSettingController extends Controller
             return redirect()->back();
         }
     }
-
-    
 }
-
-
-    

@@ -157,6 +157,8 @@
 
                     {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'student-promote-store', 'method' => 'POST', 'enctype' => 'multipart/form-data', 'id' => 'student_promote_submit']) }}
                     <input type="hidden" name="current_session" value="{{$current_session}}">
+                    <input type="hidden" name="pre_class" value="{{$current_class}}">
+                    <input type="hidden" name="pre_section" value="{{$current_section}}">
                     <input type="hidden" name="promote_session" value="{{$promote_session}}">
                     <div class="row">
                         <div class="col-lg-12">

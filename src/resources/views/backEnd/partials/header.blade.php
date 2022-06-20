@@ -50,23 +50,29 @@ $generalSetting = generalSetting();
 
     <link rel="stylesheet" href="{{asset('public/chat/css/notification.css')}}">
     <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/editor/summernote-bs4.css">
+    <link rel="stylesheet" href="{{asset('public/backEnd/css/metisMenu.css')}}">
+    <link rel="stylesheet" href="{{asset('public/backEnd/css/preloader.css')}}">
+
 
     @if(request()->route()->getPrefix() == '/chat')
         <link rel="stylesheet" href="{{asset('public/chat/css/style.css')}}">
     @endif
+    <link rel="stylesheet" href="{{asset('public/backEnd/css/menu.css')}}">
     @yield('css')
 
     <link rel="stylesheet" href="{{asset('public/backEnd/css/loade.css')}}" />
 
     @if(userRtlLtl() ==1)
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/style.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/infix.css" />
-    @else
-   
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/{{activeStyle()->path_main_style}}" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/{{activeStyle()->path_infix_style}}" />
+        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/style.css" />
+        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/infix.css" />
+    <!-- new for lawn green v  -->
+
     @endif
-   
+
+    @if(userRtlLtl() != 1 || (userRtlLtl() && activeStyle()->path_main_style != "style.css"))
+        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/{{activeStyle()->path_main_style}}" />
+        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/{{activeStyle()->path_infix_style}}" />
+        @endif
     <style>
         .dataTables_wrapper .dataTables_paginate .paginate_button.current,
         .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
@@ -126,7 +132,7 @@ if(session()->has('homework_zip_file')){
 @endphp
 
 <body class="admin" style=" @if(@activeStyle()->id==1) {{$css}} @else background:{{@activeStyle()->dashboardbackground}} !important; @endif ">
-
+          @include('backEnd.preloader')
     @php
 
         $arrContextOptions=array(
@@ -144,6 +150,7 @@ if(session()->has('homework_zip_file')){
     @endphp
     <input type="text" hidden value="{{ base64_encode($tt) }}" id="logo_img">
     <input type="text" hidden value="{{ $generalSetting->school_name }}" id="logo_title">
+
     <div class="main-wrapper" style="min-height: 600px">
         <input type="hidden" id="nodata" value="@lang('common.no_data_available_in_table')">
         <!-- Sidebar  -->
@@ -157,7 +164,10 @@ if(session()->has('homework_zip_file')){
         @include('backEnd.partials.sidebar')
         @endif
         <!-- Page Content  -->
+        
         <div id="main-content">
             <input type="hidden" name="url" id="url" value="{{url('/')}}">
+
+            
 
          @include('backEnd.partials.menu')

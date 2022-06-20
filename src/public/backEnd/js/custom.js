@@ -4,6 +4,18 @@
             headers: {
                 "X-CSRF-TOKEN": $('meta[name="_token"]').attr("content"),
             },
+            beforeSend: function(){
+                // $(".prelaoder_wrapper")
+                //     .fadeOut("slow", function () {
+                //         $(this).show();
+                //     });
+            },
+            complete: function(){
+                // $(".prelaoder_wrapper")
+                //     .fadeOut("slow", function () {
+                //         $(this).hide();
+                //     });
+            }
         });
         $('[data-toggle="tooltip"]').tooltip();
     });
@@ -30,8 +42,10 @@
         }
     });
 
-    $(document).ready(function() {
+        
 
+    $(document).ready(function() {
+        // alert('yes');
         var default_postion = $('#default_position').val();
         document.getElementsByTagName("html")[0].style.visibility = "visible";
         if (default_postion != 0) {
@@ -138,6 +152,19 @@
             var url = $("#url").val();
             var i = 0;
 
+          var class_id = $(this).val();
+          
+          $("#sectionSelectStudent").empty().append(
+            $("<option>", {
+                value:  '',
+                text: window.jsLang('select_section') + ' *',
+            })
+        );
+
+        if (!class_id){
+            $("#sectionSelectStudent").trigger('change').niceSelect('update');
+            return;
+        }
             var formData = {
                 id: $(this).val(),
             };
@@ -154,12 +181,7 @@
                 },
                 success: function(data) {
 
-                    $("#sectionSelectStudent").empty().append(
-                        $("<option>", {
-                            value:  '',
-                            text: window.jsLang('select_section') + ' *',
-                        })
-                    );
+                    
                     $.each(data, function(i, item) {
                        
                         if (item.length) {
@@ -174,8 +196,8 @@
                             });
                         } 
                     });
-                    $("#sectionSelectStudent").trigger('change').niceSelect('update')
                     
+                    $("#sectionSelectStudent").trigger('change').niceSelect('update')
 
                 },
                 error: function(data) {
@@ -665,9 +687,16 @@
     $(document).ready(function() {
         $(".relationButton").on("click", function() {
             if ($(this).val() == "F") {
-                $("#guardians_name").val($("#fathers_name").val());
-                $("#guardians_occupation").val($("#fathers_occupation").val());
-                $("#guardians_phone").val($("#fathers_phone").val());
+                if($("#fathers_name").length){
+                    $("#guardians_name").val($("#fathers_name").val());
+                }
+                if($("#fathers_occupation").length){
+                    $("#guardians_occupation").val($("#fathers_occupation").val());
+                }
+                if($("#fathers_phone").length){
+                    $("#guardians_phone").val($("#fathers_phone").val());
+                }
+
                 $("#relation").val("Father");
 
                 var fathers_photo = $("#placeholderFathersName").attr("placeholder");
@@ -676,9 +705,16 @@
                     $("#placeholderGuardiansName").attr("placeholder", sd);
                 }
             } else if ($(this).val() == "M") {
-                $("#guardians_name").val($("#mothers_name").val());
-                $("#guardians_occupation").val($("#mothers_occupation").val());
-                $("#guardians_phone").val($("#mothers_phone").val());
+                if($("#mothers_name").length){
+                    $("#guardians_name").val($("#mothers_name").val());
+                }
+                if($("#mothers_occupation").length){
+                    $("#guardians_occupation").val($("#mothers_occupation").val());
+                }
+                if($("#mothers_phone").length){
+                    $("#guardians_phone").val($("#mothers_phone").val());
+                }
+
                 $("#relation").val("Mother");
 
                 var mothers_photo = $("#placeholderMothersName").attr("placeholder");
@@ -687,9 +723,7 @@
                     $("#placeholderGuardiansName").attr("placeholder", sd);
                 }
             } else {
-                $("#guardians_name").val("");
-                $("#guardians_occupation").val("");
-                $("#guardians_phone").val("");
+
                 $("#relation").val("Other");
                 $("#placeholderGuardiansName").attr("placeholder", "PHOTO");
             }
@@ -804,6 +838,39 @@
             var fileInput = event.srcElement;
             var fileName = fileInput.files[0].name;
             document.getElementById("placeholderFileFourName").placeholder = fileName;
+        }
+    }
+
+    var fileInput = document.getElementById("document_file_5");
+    if (fileInput) {
+        fileInput.addEventListener("change", showFileName);
+
+        function showFileName(event) {
+            var fileInput = event.srcElement;
+            var fileName = fileInput.files[0].name;
+            document.getElementById("placeholderFileFiveName").placeholder = fileName;
+        }
+    }
+
+    var fileInput = document.getElementById("certificateBackGroundImage");
+    if (fileInput) {
+        fileInput.addEventListener("change", showFileName);
+
+        function showFileName(event) {
+            var fileInput = event.srcElement;
+            var fileName = fileInput.files[0].name;
+            document.getElementById("certificateBackgroundImage").placeholder = fileName;
+        }
+    }
+
+    var fileInput = document.getElementById("document_file_6");
+    if (fileInput) {
+        fileInput.addEventListener("change", showFileName);
+
+        function showFileName(event) {
+            var fileInput = event.srcElement;
+            var fileName = fileInput.files[0].name;
+            document.getElementById("placeholderFileSixName").placeholder = fileName;
         }
     }
 
@@ -1483,7 +1550,6 @@
                 },
 
                 success: function(data) {
-                    console.log(data);
                     $.each(data, function(i, item) {
                         if (item.length) {
                             $("#select_student").find("option").not(":first").remove();
@@ -1834,167 +1900,170 @@
     // });
 
     // fees group assign
-    $(document).ready(function() {
-        $("#btn-assign-fees-group").click(function() {
-            $('#select_class_routine_loader').removeClass('dloader').addClass('pre_dloader');
-            var url = $("#url").val();
-            var assigned_status = $(".assigned_status").val();
-            var checked_ids = $("input[name='student_checked[]']:checked")
-            .map(function() {
-                return $(this).val();
-            })
-            .get();
-            var students = $("input[name='student_checked[]']")
-            .map(function() {
-                return $(this).val();
-            })
-            .get();
-            var abc = $("input[name='student_checked[]']:checked")
-                .map(function() {
-                    return $(this).val();
-                })
-                .get();
-             console.log(checked_ids);
+    // $(document).ready(function() {
+    //     $("#btn-assign-fees-group").click(function(e) {
+    //         $('#select_class_routine_loader').removeClass('dloader').addClass('pre_dloader');
+    //         var url = $("#url").val();
+    //         var assigned_status = $(".assigned_status").val();
+    //         var checked_ids = $("input[name='student_checked[]']:checked")
+    //         .map(function() {
+    //             return $(this).val();
+    //         })
+    //         .get();
+    //         var students = $("input[name='student_checked[]']")
+    //         .map(function() {
+    //             return $(this).val();
+    //         })
+    //         .get();
+    //         var classId = $("input[name='class[]']").map(function() { return $(this).val();}).get();
+    //         var sectionId = $("input[name='section[]']").map(function() {return $(this).val();}).get();
+    //         var abc = $("input[name='student_checked[]']:checked")
+    //             .map(function() {
+    //                 return $(this).val();
+    //             })
+    //             .get();
 
-            if (abc != "" || assigned_status == 1) {
-                var formData = {
-                    checked_ids:checked_ids,
-                    students: students,
-                    fees_group_id: $("#fees_group_id").val(),
-                };
-                // get section for student
-                $.ajax({
-                    type: "POST",
-                    data: formData,
-                    dataType: "json",
-                    url: url + "/" + "btn-assign-fees-group",
-                    success: function(data) {
-                        $(".assigned_status").val(1);
-                        // location.reload();
-                        // console.log(data);
-                        setTimeout(function() {
-                            toastr.success("Operation successful", "Successful", {
-                                timeOut: 5000,
-                            });
-                        }, 500);
-                        $('#select_class_routine_loader').removeClass('pre_dloader').addClass('dloader');
-                    },
-                    error: function(data) {
-                        $('#select_class_routine_loader').removeClass('pre_dloader').addClass('dloader');
-                        //  console.log("Error:", data);
-                        setTimeout(function() {
-                            toastr.error("Somethning went wrong!", "Error Alert", {
-                                timeOut: 5000,
-                            });
-                        }, 500);
-                    },
-                });
-            } else {
-                setTimeout(function() {
-                    toastr.error("Student not selected", "Error Alert", {
-                        timeOut: 5000,
-                    });
-                }, 500);
-            }
-        });
-    });
+    //         if (abc != "" || assigned_status == 1) {
+    //             var formData = {
+    //                 checked_ids:checked_ids,
+    //                 students: students,
+    //                 classId: classId,
+    //                 sectionId: sectionId,
+    //                 fees_group_id: $("#fees_group_id").val(),
+    //             };
+    //             // get section for student
+    //             $.ajax({
+    //                 type: "POST",
+    //                 data: formData,
+    //                 dataType: "json",
+    //                 url: url + "/" + "btn-assign-fees-group",
+    //                 success: function(data) {
+    //                     $(".assigned_status").val(1);
+    //                     // location.reload();
+    //                     // console.log(data);
+    //                     setTimeout(function() {
+    //                         toastr.success("Operation successful", "Successful", {
+    //                             timeOut: 5000,
+    //                         });
+    //                     }, 500);
+    //                     $('#select_class_routine_loader').removeClass('pre_dloader').addClass('dloader');
+    //                 },
+    //                 error: function(data) {
+    //                     $('#select_class_routine_loader').removeClass('pre_dloader').addClass('dloader');
+    //                     //  console.log("Error:", data);
+    //                     setTimeout(function() {
+    //                         toastr.error("Somethning went wrong!", "Error Alert", {
+    //                             timeOut: 5000,
+    //                         });
+    //                     }, 500);
+    //                 },
+    //             });
+    //         } else {
+    //             setTimeout(function() {
+    //                 toastr.error("Student not selected", "Error Alert", {
+    //                     timeOut: 5000,
+    //                 });
+    //             }, 500);
+    //         }
+    //     });
+    // });
 
     // fees group assign
-    $(document).ready(function() {
-        $("#btn-assign-fees-discount").on("click", function() {
-            var url = $("#url").val();
-            var abc = $("input[name='student_checked[]']:checked")
-                .map(function() {
-                    return $(this).val();
-                })
-                .get();
+    // $(document).ready(function() {
+    //     $("#btn-assign-fees-discount").on("click", function() {
+    //         var url = $("#url").val();
+    //         var abc = $("input[name='student_checked[]']:checked")
+    //             .map(function() {
+    //                 return $(this).val();
+    //             })
+    //             .get();
 
-            // console.log(abc);
+    //         // console.log(abc);
 
-            for (var prop in abc) {
-                console.log(prop + " = " + abc[prop]);
+    //         for (var prop in abc) {
+    //             console.log(prop + " = " + abc[prop]);
 
-                var e = document.getElementById("fees_master" + abc[prop]);
-                var get_master_id = e.options[e.selectedIndex].value;
-                console.log("mas" + get_master_id);
-                if (get_master_id == "") {
-                    setTimeout(function() {
-                        toastr.warning(
-                            "Please select fees type/group for selected student !",
-                            "Warning", {
-                                timeOut: 5000,
-                            }
-                        );
-                    }, 500);
-                    return false;
-                }
-            }
+    //             var e = document.getElementById("fees_master" + abc[prop]);
+    //             var get_master_id = e.options[e.selectedIndex].value;
+    //             console.log("mas" + get_master_id);
+    //             if (get_master_id == "") {
+    //                 setTimeout(function() {
+    //                     toastr.warning(
+    //                         "Please select fees type/group for selected student !",
+    //                         "Warning", {
+    //                             timeOut: 5000,
+    //                         }
+    //                     );
+    //                 }, 500);
+    //                 return false;
+    //             }
+    //         }
 
-            // var e = document.getElementById("fees_master"+abc);
-            // var get_master_id = e.options[e.selectedIndex].value;
+    //         // var e = document.getElementById("fees_master"+abc);
+    //         // var get_master_id = e.options[e.selectedIndex].value;
 
-            var fm_id = [];
-            $('select[name="fees_master_id[]"] option:selected').each(function() {
-                fm_id.push($(this).val());
-            });
+    //         var fm_id = [];
+    //         $('select[name="fees_master_id[]"] option:selected').each(function() {
+    //             fm_id.push($(this).val());
+    //         });
 
-            // console.log('master_id'+fm_id);
-            var formData = {
-                checked_ids: $("input[name='student_checked[]']:checked")
-                    .map(function() {
-                        return $(this).val();
-                    })
-                    .get(),
-                fees_master_ids: $('select[name="fees_master_id[]"] option:selected')
-                    .map(function() {
-                        return $(this).val();
-                    })
-                    .get(),
-                students: $("input[name='student_checked[]']")
-                    .map(function() {
-                        return $(this).val();
-                    })
-                    .get(),
-                fees_discount_id: $("#fees_discount_id").val(),
-                // fees_master_id: fm_id,
-            };
-            console.log(formData);
+    //         // console.log('master_id'+fm_id);
+    //         var formData = {
+    //             checked_ids: $("input[name='student_checked[]']:checked")
+    //                 .map(function() {
+    //                     return $(this).val();
+    //                 })
+    //                 .get(),
+    //             fees_master_ids: $('select[name="fees_master_id[]"] option:selected')
+    //                 .map(function() {
+    //                     return $(this).val();
+    //                 })
+    //                 .get(),
+    //             students: $("input[name='student_checked[]']")
+    //                 .map(function() {
+    //                     return $(this).val();
+    //                 })
+    //                 .get(),
+    //             fees_discount_id: $("#fees_discount_id").val(),
+    //             // fees_master_id: fm_id,
+    //         };
+    //         console.log(formData);
 
-            // get section for student
-            $.ajax({
-                type: "GET",
-                data: formData,
-                dataType: "json",
-                url: url + "/" + "fees-discount-assign-store",
-                success: function(data) {
-                    console.log(data.no);
-                    if (data.no) {
-                        toastr.error("Student select please!", "Error Alert", {
-                            timeOut: 5000,
-                        });
-                    } else
-                        setTimeout(function() {
-                            toastr.success(
-                                "Successfully assigned Fees Discount!",
-                                "Success Alert", {
-                                    iconClass: "customer-info",
-                                }, {
-                                    timeOut: 2000,
-                                }
-                            );
-                        }, 500);
-                },
-                error: function(data) {
-                    console.log("Error:", data);
-                    setTimeout(function() {
-                        toastr.error("Somethning went wrong!", "Error Alert", {
-                            timeOut: 5000,
-                        });
-                    }, 500);
-                },
-            });
-        });
-    });
+    //         // get section for student
+    //         $.ajax({
+    //             type: "GET",
+    //             data: formData,
+    //             dataType: "json",
+    //             url: url + "/" + "fees-discount-assign-store",
+    //             success: function(data) {
+    //                 console.log(data.no);
+    //                 if (data.no) {
+    //                     toastr.error("Student select please!", "Error Alert", {
+    //                         timeOut: 5000,
+    //                     });
+    //                 } else
+    //                     setTimeout(function() {
+    //                         toastr.success(
+    //                             "Successfully assigned Fees Discount!",
+    //                             "Success Alert", {
+    //                                 iconClass: "customer-info",
+    //                             }, {
+    //                                 timeOut: 2000,
+    //                             }
+    //                         );
+    //                     }, 500);
+    //             },
+    //             error: function(data) {
+    //                 console.log("Error:", data);
+    //                 setTimeout(function() {
+    //                     toastr.error("Somethning went wrong!", "Error Alert", {
+    //                         timeOut: 5000,
+    //                     });
+    //                 }, 500);
+    //             },
+    //         });
+    //     });
+    // });
 
     // student section info for student admission
 
@@ -3166,35 +3235,35 @@
         }
     );*/
 
-    $(document).on("keyup", "#student_form #roll_number", function(event) {
-        var url = $("#url").val();
+    // $(document).on("keyup", "#student_form #roll_number", function(event) {
+    //     var url = $("#url").val();
 
-        var formData = {
-            roll_no: $(this).val(),
-            section: $("#sectionSelectStudent").val(),
-            class: $("#classSelectStudent").val(),
-        };
+    //     var formData = {
+    //         roll_no: $(this).val(),
+    //         section: $("#sectionSelectStudent").val(),
+    //         class: $("#classSelectStudent").val(),
+    //     };
 
-        // get roll for student
-        $.ajax({
-            type: "GET",
-            data: formData,
-            dataType: "json",
-            url: url + "/" + "ajax-get-roll-id-check",
-            success: function(data) {
-                if (data.length != 0) {
-                    $("#student_form #roll-error strong").html(
-                        "The roll no already exist"
-                    );
-                } else {
-                    $("#student_form #roll-error strong").html("");
-                }
-            },
-            error: function(data) {
-                console.log("Error:", data);
-            },
-        });
-    });
+    //     // get roll for student
+    //     $.ajax({
+    //         type: "GET",
+    //         data: formData,
+    //         dataType: "json",
+    //         url: url + "/" + "ajax-get-roll-id-check",
+    //         success: function(data) {
+    //             if (data.length != 0) {
+    //                 $("#student_form #roll-error strong").html(
+    //                     "The roll no already exist"
+    //                 );
+    //             } else {
+    //                 $("#student_form #roll-error strong").html("");
+    //             }
+    //         },
+    //         error: function(data) {
+    //             console.log("Error:", data);
+    //         },
+    //     });
+    // });
 
     $(document).on("change", "#fees_master_form #fees_group", function(event) {
         if ($(this).val() == 1 || $(this).val() == 2) {

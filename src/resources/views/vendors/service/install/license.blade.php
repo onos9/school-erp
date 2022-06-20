@@ -15,11 +15,11 @@
             <div class="col-md-12">
                 <form method="post" action="{{ route('service.license') }}" id="content_form">
                     <div class="form-group">
-                        <label class="required" for="access_code">{{ __('service::install.access_code') }} | Random value</label>
+                        <label class="required" for="access_code">{{ __('service::install.access_code') }}</label>
                         <input type="text" class="form-control " name="access_code" id="access_code"  required="required" autofocus=""  placeholder="{{ __('service::install.access_code') }}" >
                     </div>
                     <div class="form-group">
-                        <label class="required" for="envato_email">{{ __('service::install.envato_email') }} | Random value</label>
+                        <label class="required" for="envato_email">{{ __('service::install.envato_email') }}</label>
                         <input type="email" class="form-control" name="envato_email" id="envato_email" required="required" placeholder="{{ __('service::install.envato_email') }}" >
                     </div>
 

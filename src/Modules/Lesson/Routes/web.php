@@ -76,6 +76,8 @@ Route::prefix('lesson')->group(function() {
     //ajax Controller
     Route::get('ajaxSelectLesson', 'AjaxController@ajaxSelectLesson');
     Route::get('ajaxSelectTopic', 'AjaxController@ajaxSelectTopic');
+    Route::get('ajaxGetTopicRow', 'AjaxController@ajaxGetTopicRow');
+    Route::post('delete-lesson-topic', 'LessonPlanController@deleteLessonTopic');
     Route::get('lessonSubject', 'AjaxController@getSubjectLesson');
 
 
@@ -97,4 +99,7 @@ Route::prefix('lesson')->group(function() {
                 return Response::download($file);
             }
         })->name('download-document');
+
+    Route::get('lessonPlan-setting','LessonPlanController@setting')->name('lesson.lessonPlan-setting')->middleware('userRolePermission:835');
+    Route::post('lessonPlan-setting','LessonPlanController@postSetting');
 });

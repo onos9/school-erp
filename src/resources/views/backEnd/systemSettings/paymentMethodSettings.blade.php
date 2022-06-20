@@ -1,7 +1,7 @@
 @extends('backEnd.master')
     @section('title')
         @lang('system_settings.payment_method_settings')
-    @endsection 
+    @endsection
 @section('mainContent')
 @push('css')
     <style>
@@ -43,7 +43,7 @@
         <div class="row pt-20">
             <div class="col-lg-3">
                 <div class="main-title pt-30">
-                    <h3 class="mb-30">@lang('system_settings.select_a_payment_gateway')   </h3>  
+                    <h3 class="mb-30">@lang('system_settings.select_a_payment_gateway')   </h3>
                 </div>
                 @if(userPermission(413))
                     {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'is-active-payment']) }}
@@ -53,18 +53,18 @@
                         <div class="col-lg-12">
                             <table class="table">
                                 @foreach($paymeny_gateway as $value)
-                                    @if(moduleStatusCheck('RazorPay') == FALSE && $value->method =="RazorPay") 
+                                    @if(moduleStatusCheck('RazorPay') == FALSE && $value->method =="RazorPay")
                                 @else
                                     <tr>
-                                        <td class="CustomPaymentMethod">                                              
+                                        <td class="CustomPaymentMethod">
                                             <div class="input-effect">
-                                                <input type="checkbox" id="gateway_{{@$value->method}}" class="common-checkbox class-checkbox" name="gateways[{{@$value->id}}]" 
+                                                <input type="checkbox" id="gateway_{{@$value->method}}" class="common-checkbox class-checkbox" name="gateways[{{@$value->id}}]"
                                                 value="{{@$value->id}}" {{@$value->active_status == 1? 'checked':''}}>
                                                 <label for="gateway_{{@$value->method}}">{{@$value->method}}</label>
                                             </div>
-                                        </td> 
+                                        </td>
                                         <td class="CustomPaymentMethod"></td>
-                                    </tr>                               
+                                    </tr>
                                 @endif
                                 @endforeach
                             </table>
@@ -75,7 +75,7 @@
                             @endif
                         </div>
                     </div>
-                    @php 
+                    @php
                         $tooltip = "";
                         if(userPermission(413)){ $tooltip = ""; }else{  $tooltip = "You have no permission to Update"; }
                     @endphp
@@ -88,67 +88,67 @@
                                     <span class="ti-check"></span>
                                     @lang('common.update')
                                 </button>
-                          @endif  
+                          @endif
                         </div>
                     </div>
                 </div>
                     {{ Form::close() }}
             </div>
 
-            <div class="col-lg-9"> 
+            <div class="col-lg-9">
                  <div class="row pt-20">
                     <div class="main-title pt-10">
-                        <h3 class="mb-30">@lang('system_settings.gateway_setting')</h3>  
+                        <h3 class="mb-30">@lang('system_settings.gateway_setting')</h3>
                     </div>
                     <ul class="nav nav-tabs justify-content-end mt-sm-md-20 mb-30" role="tablist">
-                        @foreach($paymeny_gateway_settings as $row) 
+                        @foreach($paymeny_gateway_settings as $row)
                         @if(moduleStatusCheck('RazorPay') == FALSE && $row->gateway_name =="RazorPay")
                         @else
                             <li class="nav-item">
-                                <a class="nav-link 
+                                <a class="nav-link
                                 @if(!empty(Session::get('gateway_name')) && !empty(Session::get('active_status')))
-                                    @if(Session::get('gateway_name') == @$row->gateway_name && Session::get('active_status') == "active") active show 
+                                    @if(Session::get('gateway_name') == @$row->gateway_name && Session::get('active_status') == "active") active show
                                     @endif
                                  @else
                                     @if(@$row->gateway_name=='PayPal') active show @endif
                                   @endif "
-                                 href="#{{@$row->gateway_name}}" role="tab" data-toggle="tab">{{@$row->gateway_name}}</a> 
-                            </li> 
+                                 href="#{{@$row->gateway_name}}" role="tab" data-toggle="tab">{{@$row->gateway_name}}</a>
+                            </li>
                         @endif
-                        @endforeach 
+                        @endforeach
                     </ul>
                  </div>
                 <!-- Tab panes -->
-             
+
                 <div class="tab-content">
-                    @foreach($paymeny_gateway_settings as $row) 
+                    @foreach($paymeny_gateway_settings as $row)
                             <div role="tabpanel" class="tab-pane fade   @if(@$row->gateway_name=='PayPal') active show @endif " id="{{@$row->gateway_name}}">
                                 @if(userPermission(414))
                                     <form class="form-horizontal" action="{{route('update-payment-gateway')}}" method="POST">
-                                @endif   
-                                    @csrf 
+                                @endif
+                                    @csrf
                                     <div class="white-box">
                                         <div class="">
-                                            <input type="hidden" name="url" id="url" value="{{URL::to('/')}}"> 
-                                            <input type="hidden" name="gateway_name" id="gateway_{{@$row->gateway_name}}" value="{{@$row->gateway_name}}"> 
+                                            <input type="hidden" name="url" id="url" value="{{URL::to('/')}}">
+                                            <input type="hidden" name="gateway_name" id="gateway_{{@$row->gateway_name}}" value="{{@$row->gateway_name}}">
                                             <div class="row mb-30">
                                                <div class="col-md-12">
-                                                <?php 
+                                                <?php
                                                 if(@$row->gateway_name=="PayPal")
                                                 {
                                                     @$paymeny_gateway = ['gateway_name','gateway_username','gateway_password','gateway_signature','gateway_client_id','gateway_mode','gateway_secret_key'];
-                                                } 
+                                                }
                                                 else if(@$row->gateway_name=="Stripe")
-                                                { 
-                                                    @$paymeny_gateway = ['gateway_name','gateway_username','gateway_secret_key','gateway_publisher_key']; 
+                                                {
+                                                    @$paymeny_gateway = ['gateway_name','gateway_username','gateway_secret_key','gateway_publisher_key'];
                                                 }
                                                 else if(@$row->gateway_name=="Paystack")
-                                                { 
+                                                {
                                                     @$paymeny_gateway = ['gateway_name','gateway_username','gateway_secret_key','gateway_publisher_key'];
                                                 }
 
                                                 else if(@$row->gateway_name=="Khalti")
-                                                { 
+                                                {
                                                     @$paymeny_gateway = ['gateway_name','gateway_publisher_key','gateway_secret_key'];
                                                 }
                                                 else if(@$row->gateway_name=="Khalti")
@@ -157,18 +157,23 @@
                                                 }
 
                                                 else if(@$row->gateway_name=="RazorPay")
-                                                { 
+                                                {
                                                     @$paymeny_gateway = ['gateway_name','gateway_secret_key','gateway_publisher_key'];
 
                                                 }
+                                                else if(@$row->gateway_name=="MercadoPago")
+                                                {
+                                                    @$paymeny_gateway = ['gateway_name','mercado_pago_public_key','mercado_pago_acces_token'];
+
+                                                }
                                                 else if(@$row->gateway_name=="Xendit")
-                                                { 
+                                                {
                                                     @$paymeny_gateway = ['gateway_name','gateway_secret_key','gateway_username'];
 
                                                 }
 
                                                 else if(@$row->gateway_name=="Raudhahpay")
-                                                { 
+                                                {
                                                     @$paymeny_gateway = ['gateway_name','gateway_password','gateway_username'];
 
                                                 }
@@ -176,15 +181,29 @@
                                                 else if(@$row->gateway_name=="Bank"){
                                                     @$paymeny_gateway = ['gateway_name', 'bank_details'];
 
-                                                }else if(@$row->gateway_name=="Cheque"){ 
+                                                }else if(@$row->gateway_name=="Cheque"){
                                                     @$paymeny_gateway = ['gateway_name','cheque_details'];
 
                                                 }
-                                                    if(@$row->gateway_name=="Stripe" || @$row->gateway_name=="Paystack" || @$row->gateway_name=="RazorPay" || @$row->gateway_name=="Xendit" || @$row->gateway_name=="Raudhahpay" || @$row->gateway_name=="PayPal" || @$row->gateway_name=="Khalti" ){
+                                                    if(@$row->gateway_name=="Stripe" || @$row->gateway_name=="Paystack" || @$row->gateway_name=="RazorPay" || @$row->gateway_name=="Xendit" || @$row->gateway_name=="Raudhahpay" || @$row->gateway_name=="PayPal" || @$row->gateway_name=="Khalti" || @$row->gateway_name=="MercadoPago" ){
                                                     $count=0;
                                                     foreach ($paymeny_gateway as $input_field) {
-                                                        @$newStr = @$input_field;
-                                                        @$label_name = str_replace('_', ' ', @$newStr);  
+                                                        if(@$row->gateway_name=="RazorPay"){
+                                                            if($input_field == 'gateway_publisher_key'){
+                                                                @$newStr = 'gateway_secret_key';
+                                                            }
+                                                            elseif($input_field == 'gateway_secret_key'){
+                                                                @$newStr = 'gateway_publisher_key';
+                                                            }
+                                                            else{
+                                                                @$newStr = 'gateway_publisher_key';
+                                                            }
+
+                                                        }else{
+                                                            @$newStr = @$input_field;
+                                                        }
+
+                                                        @$label_name = str_replace('_', ' ', @$newStr);
                                                         @$value= @$row->$input_field; ?>
                                                         <div class="row">
                                                             <div class="col-lg-12 mb-30">
@@ -230,7 +249,7 @@
                                                                     <tr>
                                                                         <td>
                                                                             <div class="input-effect">
-                                                                                <input type="checkbox" data-id="{{@$bank_account->id}}" id="bank{{@$bank_account->id}}" class="common-checkbox class-checkbox accountStatus" name="account_status" 
+                                                                                <input type="checkbox" data-id="{{@$bank_account->id}}" id="bank{{@$bank_account->id}}" class="common-checkbox class-checkbox accountStatus" name="account_status"
                                                                                 value="{{@$bank_account->id}}" {{@$bank_account->active_status == 1? 'checked':''}}>
                                                                                 <label for="bank{{@$bank_account->id}}">{{@$value->method}}</label>
                                                                             </div>
@@ -245,12 +264,12 @@
                                                             </table>
                                                         </div>
                                                     </div>
-                                                </div>    
+                                                </div>
                                         <?php }elseif(@$row->gateway_name=="Cheque") {
                                                 $count=0;
                                                     foreach ($paymeny_gateway as $input_field) {
                                                         @$newStr = @$input_field;
-                                                        @$label_name = str_replace('_', ' ', @$newStr);  
+                                                        @$label_name = str_replace('_', ' ', @$newStr);
                                                         @$value= @$row->$input_field; ?>
                                                         @if($count == 0)
                                                         <div class="row">
@@ -280,18 +299,18 @@
                                                             </div>
                                                         </div>
                                                         @endif
-                                                        <?php $count++; } 
+                                                        <?php $count++; }
                                               }
                                               ?>
                                             </div>
                                             <div class="col-md-7">
                                                 <div class="row justify-content-center">
                                                     @if(!empty(@$row->logo))
-                                                        <img class="logo"  src="{{ URL::asset(@$row->logo) }}" style="width: auto; height: 100px; ">  
+                                                        <img class="logo"  src="{{ URL::asset(@$row->logo) }}" style="width: auto; height: 100px; ">
                                                     @endif
                                                 </div>
                                                 <div class="row justify-content-center">
-                                                  
+
                                                         @if(session()->has('message-success'))
                                                           <p class=" text-success">
                                                               {{ session()->get('message-success') }}
@@ -300,12 +319,12 @@
                                                           <p class=" text-danger">
                                                               {{ session()->get('message-danger') }}
                                                           </p>
-                                                        @endif 
+                                                        @endif
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    @php 
+                                    @php
                                         $tooltip = "";
                                         if(userPermission(414)){
                                                 $tooltip = "";
@@ -322,17 +341,17 @@
                                                         {{ url('payment_gateway_success_callback/Paystack')}}
                                                             @endif
                                                     </a>  As Paystack Callback Url </strong>
-                                                @endif    
-                                                
+                                                @endif
+
                                                 @if(@$row->gateway_name=="Raudhahpay")
-                                                <strong class="main-title"> N.B: Please Set This url  <a class="disabled" href="{{ url('raudhahpay/payment_success_callback')}}" disable>{{ url('raudhahpay/payment_success_callback')}}</a>  As Raudhahpay WebHook Url </strong>  
-                                                @endif 
+                                                <strong class="main-title"> N.B: Please Set This url  <a class="disabled" href="{{ url('raudhahpay/payment_success_callback')}}" disable>{{ url('raudhahpay/payment_success_callback')}}</a>  As Raudhahpay WebHook Url </strong>
+                                                @endif
 
                                             <div class="row mt-40">
                                                 <div class="col-lg-12 text-center">
                                                     @if(Illuminate\Support\Facades\Config::get('app.app_sync'))
                                                     <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Disabled For Demo "> <button class="primary-btn fix-gr-bg  demo_view" style="pointer-events: none;" type="button" >@lang('common.update') </button></span>
-                                                    @else 
+                                                    @else
                                                     <button class="primary-btn fix-gr-bg" data-toggle="tooltip" title="{{@$tooltip}}">
                                                         <span class="ti-check"></span>
                                                         @lang('common.update')
@@ -341,11 +360,11 @@
                                                 </div>
                                             </div>
                                     @endif
-                                
+
                                 </div>
                             </form>
-                        </div> 
-                    @endforeach 
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>

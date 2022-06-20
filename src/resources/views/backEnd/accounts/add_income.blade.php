@@ -251,7 +251,9 @@
                                     <th>@lang('common.name')</th>
                                     <th>@lang('accounts.payment_method')</th>
                                     <th>@lang('common.date')</th>
-                                    <th>@lang('accounts.a_c_Head')</th>
+                                    <th>
+                                        @lang('accounts.a_c_Head') 
+                                    </th>
                                     <th>@lang('accounts.amount')({{generalSetting()->currency_symbol}})</th>
                                     <th>@lang('common.action')</th>
                                 </tr>
@@ -263,7 +265,12 @@
                                     <td>{{@$add_income->name}}</td>
                                     <td>{{@$add_income->paymentMethod !=""?@$add_income->paymentMethod->method:trans('accounts.bank')}} {{@$add_income->payment_method_id == "3"? '('.@$add_income->account->account_name.')':''}}</td>
                                     <td>{{@$add_income->date != ""? dateConvert(@$add_income->date):''}}</td>
-                                    <td>{{isset($add_income->ACHead->head)? $add_income->ACHead->head: ''}}</td>
+                                    <td>
+                                        {{isset($add_income->ACHead->head)? $add_income->ACHead->head: ''}}
+                                        @if($add_income->description)
+                                            <i class="ti-info" data-toggle="tooltip" title="{{ $add_income->description }}"></i>
+                                        @endif
+                                    </td>
                                     <td>{{@$add_income->amount}}</td>
                                     <td>
                                         @if ($add_income->name != "Opening Balance")

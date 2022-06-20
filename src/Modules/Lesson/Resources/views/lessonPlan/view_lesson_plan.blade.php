@@ -30,22 +30,44 @@
         <th class="d-flex justify-content-between align-items-center"><span>@lang('lesson::lesson.lesson')</span><strong>:</strong></th>
     <td> {{$lessonPlanDetail->lessonName->lesson_title}}</td>
     </tr>
+
     <tr>
      
-        <th class="d-flex justify-content-between align-items-center"><span>@lang('common.topic')</span><strong>:</strong></th>
+        <th class="d-flex justify-content-between align-items-center">
+            <span>@lang('common.topic')</span>
+            <strong>:</strong>
+        </th>
 
-        <td> {{$lessonPlanDetail->topicName->topic_title}}
+        <td>
+            @if(count($lessonPlanDetail->topics) > 0) 
+                @foreach ($lessonPlanDetail->topics as $topic)
+                {{$topic->topicName->topic_title}},
+                @endforeach
+            @else  
+            {{$lessonPlanDetail->topicName->topic_title}}
+            @endif
 
         </td>
     </tr>
+    @if(generalSetting()->sub_topic_enable)
     <tr>
         
-        <th class="d-flex justify-content-between align-items-center"><span>@lang('lesson::lesson.sub_topic')</span><strong>:</strong></th>
+        <th class="d-flex justify-content-between align-items-center">
+            <span>@lang('lesson::lesson.sub_topic')</span>
+            <strong>:</strong>
+        </th>
 
-        <td> {{$lessonPlanDetail->sub_topic}}
-
+        <td> 
+            @if (count($lessonPlanDetail->topics) > 0)
+                @foreach ($lessonPlanDetail->topics as $topic)
+                {{$topic->sub_topic_title}},
+                @endforeach
+            @else
+                {{$lessonPlanDetail->sub_topic}}
+            @endif
         </td>
     </tr>
+    @endif
     <tr>
         
         <th class="d-flex justify-content-between align-items-center"><span>@lang('lesson::lesson.lecture_youtube_link')</span><strong>:</strong></th>
@@ -78,30 +100,38 @@
       
 
     </tr>
+    @if($lessonPlanDetail->general_objectives)
     <tr>
         
         <th class="d-flex justify-content-between align-items-center"><span>@lang('lesson::lesson.general_objectives')</span><strong>:</strong></th>
 
         <td colspan="2"> {{$lessonPlanDetail->general_objectives}}</td>
     </tr>
+    @endif
+    @if($lessonPlanDetail->teaching_method)
     <tr>
         
-        <th class="d-flex justify-content-between align-items-center"><span>@lang('lesson::lesson.teaching_method')<</span><strong>:</strong></th>
+        <th class="d-flex justify-content-between align-items-center"><span>@lang('lesson::lesson.teaching_method')</span><strong>:</strong></th>
 
         <td colspan="2"> {{$lessonPlanDetail->teaching_method}}</td>
     </tr>
+    @endif
+    @if($lessonPlanDetail->previous_knowlege)
     <tr>
         
         <th class="d-flex justify-content-between align-items-center"><span>@lang('lesson::lesson.previous_knowledge')</span><strong>:</strong></th>
 
         <td colspan="2"> {{$lessonPlanDetail->previous_knowlege}}</td>
     </tr>
+    @endif
+    @if($lessonPlanDetail->comp_question)
     <tr>
         
         <th class="d-flex justify-content-between align-items-center"><span>@lang('lesson::lesson.comprehensive_questions')</span><strong>:</strong></th>
 
         <td colspan="2"> {{$lessonPlanDetail->comp_question}}</td>
     </tr>
+    @endif
     <tr>
         
          <th class="d-flex justify-content-between align-items-center"><span>@lang('common.note')</span><strong>:</strong></th>

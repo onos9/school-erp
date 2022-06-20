@@ -53,10 +53,7 @@ class SmStudentIdCardController extends Controller
 
     public function store(SmStudentIdCardRequest $request)
     {
-
-
         try {
-
             $destination='public/uploads/studentIdCard/';
             $id_card = new SmStudentIdCard();
             $id_card->title = $request->title;
@@ -227,38 +224,32 @@ class SmStudentIdCardController extends Controller
         }
     }
 
-    public function generateIdCardBulk(Request $request){
+    public function generateIdCardBulk(Request $request)
+    {
         
         $request->validate([
             'role' => 'required',
-            'id_card' => 'required',         
-            'grid_gap' => 'required',         
+            'id_card' => 'required',
+            'grid_gap' => 'required',
         ]);
-        if($request->role==2){
-            $s_students=SmStudent::query()->with('section','class','parents','bloodGroup');
-            if($request->class){
-                $s_students->where('class_id',$request->class_id);
-            }
-            if($request->section){
-                $request->where('section_id',$request->section_id);
-            }
-           $s_students = $s_students->get();
-       }elseif($request->role==3){
-           $studentGuardian = SmStudent::get('parent_id');
-           $s_students = SmParent::whereIn('id',$studentGuardian)->get();
-       }
-       else{
-           $s_students=SmStaff::where('role_id',$request->role)->status()->get();
-       }
-       $id_card = SmStudentIdCard::status()->find($request->id_card);
+        if ($request->role==2) {
+            $s_students = SmStudent::query()->with('parents', 'bloodGroup');
+            $s_students = $s_students->get();
+        } elseif ($request->role==3) {
+            $studentGuardian = SmStudent::get('parent_id');
+            $s_students = SmParent::whereIn('id', $studentGuardian)->get();
+        } else {
+            $s_students = SmStaff::where('role_id', $request->role)->status()->get();
+        }
+        $id_card = SmStudentIdCard::status()->find($request->id_card);
 
-       $role_id = $request->role;
-       $gridGap = $request->grid_gap;
+        $role_id = $request->role;
+        $gridGap = $request->grid_gap;
 
-     return view('backEnd.admin.idCard.student_id_card_print_bulk', ['id_card' => $id_card, 's_students' => $s_students,'role_id'=>$role_id,'gridGap'=>$gridGap]);
+        return view('backEnd.admin.idCard.student_id_card_print_bulk', ['id_card' => $id_card, 's_students' => $s_students,'role_id'=>$role_id,'gridGap'=>$gridGap]);
 
-     $pdf = PDF::loadView('backEnd.admin.student_id_card_print_2', ['id_card' => $id_card, 's_students' => $s_students]);
-     return $pdf->stream($id_card->title . '.pdf');
+        $pdf = PDF::loadView('backEnd.admin.student_id_card_print_2', ['id_card' => $id_card, 's_students' => $s_students]);
+        return $pdf->stream($id_card->title . '.pdf');
     }
 
     public function ajaxIdCard(Request $request){

@@ -5,22 +5,17 @@ namespace App\PaymentGateway;
 use App\User;
 use App\SmParent;
 use App\SmStudent;
-use App\SmAddIncome;
-use App\SmPaymentMethhod;
 use App\SmPaymentGatewaySetting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Brian2694\Toastr\Facades\Toastr;
-use Illuminate\Support\Facades\Auth;
 use Unicodeveloper\Paystack\Paystack;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
 use Modules\Lms\Entities\CoursePurchaseLog;
 use Modules\Fees\Entities\FmFeesTransaction;
-use Modules\Fees\Entities\FmFeesInvoiceChield;
 use Modules\Wallet\Entities\WalletTransaction;
-use Modules\Fees\Http\Controllers\FeesController;
-use Modules\Fees\Entities\FmFeesTransactionChield;
+use Modules\Fees\Http\Controllers\FeesExtendedController;
 
 class PaystackPayment{
 
@@ -49,16 +44,7 @@ class PaystackPayment{
                 $email=$user->email;
             }
            
-
-            $paystack_info = SmPaymentGatewaySetting::where('gateway_name', 'Paystack')
-                            ->where('school_id', Auth::user()->school_id)
-                            ->first();
-
-            if(!$paystack_info || !$paystack_info->gateway_secret_key){
-                Toastr::warning('Paystack Credentials Can Not Be Blank', 'Warning');
-                return redirect()->send()->back();
-            }
-
+            $paystack_info = SmPaymentGatewaySetting::where('gateway_name', 'Paystack')->where('school_id', auth()->user()->school_id)->first();
             Config::set('paystack.publicKey', $paystack_info->gateway_publisher_key);
             Config::set('paystack.secretKey', $paystack_info->gateway_secret_key);
             Config::set('paystack.merchantEmail', $paystack_info->gateway_username);
@@ -89,53 +75,53 @@ class PaystackPayment{
                         "callback_url" => '/payment_gateway_success_callback/Paystack',
                         "currency" => (generalSetting()->currency != ""  ? generalSetting()->currency : "ZAR")
                 ];
-            }
-            elseif($data['type'] == "Lms"){
+            }elseif($data['type'] == "Lms"){
+                Session::put('student_id', $data['student_id']);
                 Session::put('payment_type', "Lms");
-                Session::put('amount',  $data['amount']*100);
-                Session::put('payment_mode', "Paystack");
+                Session::put('amount',  $data['amount']);
+                Session::put('payment_method', "Paystack");
                 Session::put('purchase_log_id', $data['purchase_log_id']);
                 $payStackData= [
                     "amount" => intval($data['amount']*100),
                     "email" => $email,
                     "callback_url" => '/payment_gateway_success_callback/Paystack',
                     "currency" => (generalSetting()->currency != ""  ? generalSetting()->currency : "ZAR")
-            ];
-            
+                ];
             }
+
             $this->paystack = new Paystack();
             $url = $this->paystack->getAuthorizationResponse($payStackData)['data']['authorization_url'];
             return $url;
-        } catch (\Exception $e) {            
+        } catch (\Exception $e) {       
             Log::info($e->getMessage());
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->send()->back();
         }
     }
-//url = url + payment_gateway_success_callback/Paystack
+
     public function successCallBack()
     {
-        $user = Auth::User();
         DB::beginTransaction();
         try {
-            $user = Auth::User();
+            $user = auth()->User();
             $walletType = Session::get('wallet_type');
             $amount = Session::get('amount');
 
             if(Session::get('payment_type') == "Wallet") {
                 $addPayment = new WalletTransaction();
-                $addPayment->amount= $amount;
+                $addPayment->amount= Session::get('amount');
                 $addPayment->payment_method= "Paystack";
                 $addPayment->user_id= $user->id;
-                $addPayment->type= $walletType;
-                $addPayment->school_id= Auth::user()->school_id;
+                $addPayment->type= Session::get('wallet_type');
+                $addPayment->school_id= auth()->user()->school_id;
                 $addPayment->academic_id= getAcademicId();
                 $addPayment->status = 'approve';
                 $result = $addPayment->save();
+
                 if($result){
                     $user = User::find($user->id);
                     $currentBalance = $user->wallet_balance;
-                    $user->wallet_balance = $currentBalance + $amount;
+                    $user->wallet_balance = $currentBalance + Session::get('amount');
                     $user->update();
                     $gs = generalSetting();
                     $compact['full_name'] =  $user->full_name;
@@ -143,10 +129,11 @@ class PaystackPayment{
                     $compact['create_date'] =  date('Y-m-d');
                     $compact['school_name'] =  $gs->school_name;
                     $compact['current_balance'] =  $user->wallet_balance;
-                    $compact['add_balance'] =  $amount;
+                    $compact['add_balance'] =  Session::get('amount');
 
                     @send_mail($user->email, $user->full_name, "wallet_approve", $compact);
                 }
+
                 DB::commit();
 
                 Session::forget('payment_type');
@@ -158,8 +145,8 @@ class PaystackPayment{
             }elseif(Session::get('payment_type') == "Fees"){
                 $transcation= FmFeesTransaction::find(Session::get('transcation_id'));
 
-                $addAmount = new FeesController;
-                $addAmount->addFeesAmount(Session::get('fees_payment_id'), null);
+                $extendedController = new FeesExtendedController();
+                $extendedController->addFeesAmount(Session::get('transcation_id'), null);
                 
                 DB::commit();
 
@@ -175,12 +162,23 @@ class PaystackPayment{
             }elseif(Session::get('payment_type') == "Lms"){
                 if(Session::get('purchase_log_id')){
                     $coursePurchase = CoursePurchaseLog::find(Session::get('purchase_log_id'));
-                    $coursePurchase->active_status = 1;
+                    $coursePurchase->active_status = 'approve';
                     $coursePurchase->save();
+
+                    lmsProfit($coursePurchase->instructor_id, $coursePurchase->amount);                   
+
+                    addIncome(Session::get('payment_method'), 'Lms Fees Collect', Session::get('amount'), Session::get('purchase_log_id'), Auth()->user()->id);
                     DB::commit();
-                    return redirect('lms/student/purchase-log');
+
+                    Session::forget('payment_type');
+                    Session::forget('amount');
+                    Session::forget('payment_mode');
+                    Session::forget('purchase_log_id');
+
+                    Toastr::success('Operation successful', 'Success');
+                    return redirect()->to(url('lms/student/purchase-log',Session::get('student_id')));
+                    Session::forget('student_id');
                 }
-                Session::forget('payment_type');
             }
         } catch (\Exception $e) {
             DB::rollback();

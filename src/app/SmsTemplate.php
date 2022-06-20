@@ -48,6 +48,16 @@ class SmsTemplate extends Model
         $body = str_replace('[title]', @$data['title'], $body);
         $body = str_replace('[description]', @$data['description'], $body);
 
+
+        $body = str_replace('[class_name]', @$data['class_name'], $body);
+        $body = str_replace('[section_name]', @$data['section_name'], $body);
+        $body = str_replace('[exam_type]', @$data['exam_type'], $body);
+        $body = str_replace('[subject_marks]', @$data['subject_marks'], $body);
+        
+        $body = str_replace('[parent_name]', @$data['parent_name'], $body);
+
+        $body = str_replace('[school_name]', @$data['school_name'], $body);
+
         return $body;
     }
 
@@ -71,7 +81,11 @@ class SmsTemplate extends Model
         $body = str_replace('[admission_number]', @$data['admission_number'], $body);
         $reset_link = url('reset/password' . '/' . @$data['user_email'] . '/' . @$data['random']);
 
+        $body = str_replace('http://[reset_link]', @$reset_link, $body);
+        $body = str_replace('https://[reset_link]', @$reset_link, $body);
+        $body = str_replace('//[reset_link]', @$reset_link, $body);
         $body = str_replace('[reset_link]', @$reset_link, $body);
+        
         //Password Reset End
 
         // FrontEnd Contact Start
@@ -82,12 +96,17 @@ class SmsTemplate extends Model
         // FrontEnd Contact End
 
         // Login Information Start
-        $body = str_replace('[password]', '123456', $body);
+        $body = str_replace('[password]', gv($data, 'password', '123456'), $body);
+        $body = str_replace('[institute_name]', gv($data, 'institute_name'), $body);
+        $body = str_replace('[application_name]', gv($data, 'applicateion_name'), $body);
+        $body = str_replace('[login_url]', gv($data, 'login_url'), $body);
+        $body = str_replace('[name]', gv($data, 'name'), $body);
+
 
         $body = str_replace('[title]', @$data['title'], $body);
         $body = str_replace('[description]', @$data['description'], $body);
 
-        if ($data['slug'] == 'student') {
+        if (@$data['slug'] == 'student') {
             $student_info = SmStudent::find(@$data['id']);
             $parent_info = SmParent::find(@$student_info->parent_id);
 
@@ -95,7 +114,7 @@ class SmsTemplate extends Model
             $body = str_replace('[father_name]', @$parent_info->fathers_name, $body);
             $body = str_replace('[username]', @$user->username . '/' . @$user->email, $body);
             $body = str_replace('[admission_number]', @$student_info->admission_no, $body);
-        } elseif ($data['slug'] == 'parent') {
+        } elseif (@$data['slug'] == 'parent') {
             $parent_info = SmParent::find(@$data['id']);
             $student_info = SmStudent::where('parent_id', @$parent_info->id)->first();
 
@@ -107,24 +126,25 @@ class SmsTemplate extends Model
             $body = str_replace('[admission_number]', @$student_info->admission_no, $body);
         } else {
             $body = str_replace('[username]', @$user->username, $body);
+            $body = str_replace('[email]', gv($data, 'email', @$user->email), $body);
         }
         // Login Information End
 
         //Bank Reject Payment Start
-        $body = str_replace('[student_name]', $data['student_name'], $body);
-        $body = str_replace('[parent_name]', $data['parent_name'], $body);
-        $body = str_replace('[note]', $data['note'], $body);
-        $body = str_replace('[date]', $data['date'], $body);
+        $body = str_replace('[student_name]', @$data['student_name'], $body);
+        $body = str_replace('[parent_name]', @$data['parent_name'], $body);
+        $body = str_replace('[note]', @$data['note'], $body);
+        $body = str_replace('[date]', @$data['date'], $body);
         //Bank Reject Payment End
 
         //lead module 
-        $body = str_replace('[assign_user]', $data['lead_assign_user'], $body);
-        $body = str_replace('[lead_name]', $data['lead_name'], $body);
-        $body = str_replace('[lead_email]', $data['lead_email'], $body);
-        $body = str_replace('[lead_phone]', $data['lead_phone'], $body);
-        $body = str_replace('[reminder_date]', $data['reminder_date'], $body);
-        $body = str_replace('[reminder_time]', $data['reminder_time'], $body);
-        $body = str_replace('[reminder_description]', $data['reminder_description'], $body);
+        $body = str_replace('[assign_user]', @$data['lead_assign_user'], $body);
+        $body = str_replace('[lead_name]', @$data['lead_name'], $body);
+        $body = str_replace('[lead_email]', @$data['lead_email'], $body);
+        $body = str_replace('[lead_phone]', @$data['lead_phone'], $body);
+        $body = str_replace('[reminder_date]', @$data['reminder_date'], $body);
+        $body = str_replace('[reminder_time]', @$data['reminder_time'], $body);
+        $body = str_replace('[reminder_description]', @$data['reminder_description'], $body);
         //end module
 
         // Wallet Start
@@ -135,7 +155,18 @@ class SmsTemplate extends Model
         $body = str_replace('[reject_reason]', @$data['reject_reason'], $body);
         $body = str_replace('[previous_balance]', @$data['previous_balance'], $body);
         $body = str_replace('[refund_amount]', generalSetting()->currency_symbol . number_format(@$data['refund_amount'], 2, '.', ''), $body);
+        
         // Wallet End
+
+        $body = str_replace('[class_name]', @$data['class_name'], $body);
+        $body = str_replace('[section_name]', @$data['section_name'], $body);
+        $body = str_replace('[exam_type]', @$data['exam_type'], $body);
+        $body = str_replace('[subject_marks]', @$data['subject_marks'], $body);
+        
+        $body = str_replace('[parent_name]', @$data['parent_name'], $body);
+
+        $body = str_replace('[school_name]', @$data['school_name'], $body);
+
 
         return $body;
     }

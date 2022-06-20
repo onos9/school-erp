@@ -49,6 +49,12 @@
                                 <div class="col-lg-3 mt-30-md" id="select_section_div">
                                     <select class="w-100 bb niceSelect form-control{{ $errors->has('section') ? ' is-invalid' : '' }} select_section" id="select_section" name="section">
                                         <option data-display="@lang('common.select_section') *" value="">@lang('common.select_section') *</option>
+                                        @if(isset($class_id))
+                                            @foreach ($class->classSection as $section)
+                                            <option value="{{ $section->sectionName->id }}" {{ old('section')==$section->sectionName->id ? 'selected' : '' }} >
+                                                {{ $section->sectionName->section_name }}</option>
+                                            @endforeach
+                                        @endif
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_section_loader">
                                         <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
@@ -96,7 +102,7 @@
                     </div>
                 </div>
             </div>
-       
+          
             <div class="row mt-40">
                 <div class="col-lg-12">
                     <div class="row">
@@ -131,9 +137,30 @@
                                 <tbody>
                                     @foreach($students as $student)
                                     <tr>
-                                        <td>{{ @$student->class != ""? @$student->class->class_name:""}} ({{@$student->section->section_name}})<input type="hidden" name="id[]" value="{{@$student->student_id}}"></td>
+                                        <td>
+                                         
+                                            
+                                            @if(isset($class_id))
+                                            @php if(!empty($student->recordClass)){ echo $student->recordClass->class->class_name; }else { echo ''; } @endphp
+                                            @if(isset($section_id))
+                                            
+                                            ({{$student->recordSection != ""? $student->recordSection->section->section_name:""}})
+                                            @else   
+                                            (@foreach ($student->recordClasses as $section)
+                                            {{$section->section->section_name}},
+                                            @endforeach)
+                                            @endif                                              
+                                            
+                                           @else  
+                                           @foreach ($student->studentRecords as $record)
+                                           {{__('common.class') }} : {{ $record->class->class_name}}
+                                           ({{ $record->section->section_name}}), <br>
+                                            @endforeach
+                                           @endif
+                                            
+                                            <input type="hidden" name="id[]" value="{{@$student->student_id}}"></td>
                                         <td>{{ @$student->admission_no}}</td>
-                                        <td>{{ @$student->full_name}}</td>
+                                        <td>{{ @$student->full_name}}</td>guardian-report-search
                                         <td>{{ @$student->mobile}}</td>
                                         <td>{{ @$student->parents !=""?@$student->parents->fathers_name:""}}</td>
                                         <td>{{ @$student->parents !=""?@$student->parents->fathers_mobile:""}}</td>
@@ -152,6 +179,7 @@
                     </div>
                 </div>
             </div>
+           
         </div>
     </section>
 

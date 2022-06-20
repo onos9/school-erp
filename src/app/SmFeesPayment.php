@@ -32,4 +32,9 @@ class SmFeesPayment extends Model
             return $data;
         }
     }
+
+    public function recordDetail()
+    {
+        return $this->belongsTo('App\Models\StudentRecord', 'record_id', 'id');
+    }
 }

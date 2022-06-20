@@ -51,6 +51,7 @@
                 <input type="hidden" name="class_id" value="{{$std_info->class_id}}">
                 <input type="hidden" name="section_id" value="{{$std_info->section_id}}">
                 <input type="hidden" name="fees_type_id" value="{{$fees_type_id}}">
+                <input type="hidden" name="record_id" value="{{$record_id}}">
 
                 <div class="row mt-25">
                     <div class="col-lg-12" id="sibling_class_div">

@@ -73,7 +73,7 @@ class SendAbsentNotification extends Command
                         $parent_email[]=$value->guardians_email;
                         $parent_mobile[]=$value->guardians_mobile;
                     }
-                $absent_subject_list=SmSubjectAttendance::getAbsentSubjectList(1);
+                    
         
                     $sms_template = SmsTemplate::where('school_id',Auth::user()->school_id)->first();
                     $template = $sms_template->student_absent_notification_sms;

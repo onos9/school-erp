@@ -88,8 +88,9 @@
                                                 <select class="w-100 bb niceSelect form-control{{ $errors->has('student') ? ' is-invalid' : '' }}" id="selectStudent" name="student">
                                                 <option data-display="@lang('common.select_student') *" value="">@lang('common.select_student')*</option>
                                                 @if (isset($invoiceInfo))
+                                                @dump($students)
                                                     @foreach ($students as $student)
-                                                        <option value="{{$student->id}}" {{($student->id == $invoiceInfo->student_id)? 'selected':''}}>{{$student->full_name}} (@lang('student.roll')-{{$student->roll_no}})</option>
+                                                        <option value="{{$student->id}}" {{($student->id == $invoiceInfo->record_id)? 'selected':''}}>{{$student->studentDetail->full_name}} ({{$student->section->section_name}} - {{$student->roll_no}})</option>
                                                     @endforeach
                                                 @endif
                                             </select>
@@ -229,7 +230,7 @@
                             </div>
                         </div>
 
-                        <div class="row mt-30">
+                       <div class="row mt-30">
                             <div class="col-lg-12">
                                 <div class="white-box pb-0 fees_invoice_type_div">
                                     <div class="row">
@@ -250,6 +251,14 @@
                                                     <strong>{{ $errors->first('fees_type') }}</strong>
                                                 </span>
                                             @endif
+                                        </div>
+                                    </div>
+                                    <div class="row mt-20">
+                                        <div class="col-lg-12 justify-content-end d-flex">
+                                            <div class="text-right">
+                                                <input type="checkbox" name="singleInvoice" id="singleInvoice" class="common-radio" value="1">
+                                                <label for="singleInvoice">@lang('fees::feesModule.group_fees_generate_seperate_invoice')</label>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="row mt-20">
@@ -358,6 +367,7 @@
                                                 <td class="showSubTotalDiscount">0.00</td>
                                                 <td class="showPaidAmount">0.00</td>
                                                 <td></td>
+                                                <input class="totalPaidAmount" type="hidden" name="total_paid_amount">
                                             </tr>
                                         </tfoot>
                                     </table>

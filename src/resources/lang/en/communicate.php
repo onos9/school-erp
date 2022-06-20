@@ -1,6 +1,6 @@
 <?php 
 return[
-    'send_email_\/_sms_'=> 'Send Email / Sms',
+    'send_email_\/_sms'=> 'Send Email / Sms',
     'email_\/_sms_log'=> 'Email / Sms Log',
     'notice_board'=> 'Notice Board',
     'for_whom'=> 'For Whom',
@@ -151,5 +151,7 @@ return[
     'parent_leave_appllication_for_student'=>'Parent leave application for_student',
     'communicate_sms'=>'Communicate sms',
     'lead_reminder'=>'Lead Reminder',
+    'exam_mark_student'=>'Exam Mark Student',
+    'exam_mark_parent'=>'Exam Mark Parent',
 
 ];

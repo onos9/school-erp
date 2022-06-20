@@ -1,20 +1,335 @@
-(function ($) {
+(function($) {
+  $(document).ready(function(){
+    // metisMenu
+
+    var metismenu = $("#sidebar_menu");
+    if (metismenu.length) {
+      metismenu.metisMenu();
+    }
+
+    $(".open_miniSide").click(function () {
+      $(".sidebar").toggleClass("mini_sidebar");
+      $("#main-content").toggleClass("mini_main_content");
+    });
+
+    $(".open_miniSide").on("click", function () {
+      $(".sidebar").toggleClass("ps ps--active-y");
+    });
+  });
+  $(document).click(function (event) {
+    if (!$(event.target).closest(".sidebar,.sidebar_icon  ").length) {
+      $("body").find(".sidebar").removeClass("active");
+    }
+  });
+  $(document).click(function(event) {
+    if (!$(event.target).closest("#sidebar,#sidebarCollapse").length) {
+      $("body").find("#sidebar").removeClass("active");
+    }
+  });
+
+  $(".open_miniSide").click(function () {
+    $(".sidebar").toggleClass("mini_sidebar");
+  });
+
+
+
+  $(document).click(function(event) {
+    if (!$(event.target).closest("#navbarSupportedContent,.client_thumb_btn")
+        .length
+    ) {
+      $("body").find("#navbarSupportedContent").removeClass("show");
+    }
+  });
+
+  if ($("#table_id, .school-table-data").length) {
+
+    window.table = $("#table_id, .school-table-data").DataTable({
+      bLengthChange: false,
+      bDestroy: true,
+      language: {
+        search: "<i class='ti-search'></i>",
+        searchPlaceholder: window.jsLang('search'),
+        paginate: {
+          next: "<i class='ti-arrow-right'></i>",
+          previous: "<i class='ti-arrow-left'></i>",
+        },
+      },
+      dom: "Bfrtip",
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        title: $("#logo_title").val(),
+        titleAttr: window.jsLang('copy_table'),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
+        },
+      },
+        {
+          extend: "excelHtml5",
+          text: '<i class="fa fa-file-excel-o"></i>',
+          titleAttr: window.jsLang('export_to_excel'),
+          title: $("#logo_title").val(),
+          margin: [10, 10, 10, 0],
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "csvHtml5",
+          text: '<i class="fa fa-file-text-o"></i>',
+          titleAttr: window.jsLang('export_to_csv'),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "pdfHtml5",
+          text: '<i class="fa fa-file-pdf-o"></i>',
+          title: $("#logo_title").val(),
+          titleAttr: window.jsLang('export_to_pdf'),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+          orientation: "landscape",
+          pageSize: "A4",
+          margin: [0, 0, 0, 12],
+          alignment: "center",
+          header: true,
+          customize: function(doc) {
+            doc.content[1].margin = [100, 0, 100, 0]; //left, top, right, bottom
+            doc.content.splice(1, 0, {
+              margin: [0, 0, 0, 12],
+              alignment: "center",
+              image: "data:image/png;base64," + $("#logo_img").val(),
+            });
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
+          },
+        },
+        {
+          extend: "print",
+          text: '<i class="fa fa-print"></i>',
+          titleAttr: window.jsLang('print'),
+          title: $("#logo_title").val(),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "colvis",
+          text: '<i class="fa fa-columns"></i>',
+          postfixButtons: ["colvisRestore"],
+        },
+      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
+      responsive: true,
+      order: [0, 'desc']
+    });
+
+  }
+
+
+  if ($("#tableWithoutSort").length) {
+    $("#tableWithoutSort").DataTable({
+      bLengthChange: false,
+      bDestroy: true,
+      language: {
+        search: "<i class='ti-search'></i>",
+        searchPlaceholder: window.jsLang('search'),
+        paginate: {
+          next: "<i class='ti-arrow-right'></i>",
+          previous: "<i class='ti-arrow-left'></i>",
+        },
+      },
+      dom: "Bfrtip",
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        title: $("#logo_title").val(),
+        titleAttr: window.jsLang('copy_table'),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
+        },
+      },
+        {
+          extend: "excelHtml5",
+          text: '<i class="fa fa-file-excel-o"></i>',
+          titleAttr: window.jsLang('export_to_excel'),
+          title: $("#logo_title").val(),
+          margin: [10, 10, 10, 0],
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "csvHtml5",
+          text: '<i class="fa fa-file-text-o"></i>',
+          titleAttr: window.jsLang('export_to_csv'),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "pdfHtml5",
+          text: '<i class="fa fa-file-pdf-o"></i>',
+          title: $("#logo_title").val(),
+          titleAttr: window.jsLang('export_to_pdf'),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+          orientation: "landscape",
+          pageSize: "A4",
+          margin: [0, 0, 0, 12],
+          alignment: "center",
+          header: true,
+          customize: function(doc) {
+            doc.content[1].margin = [100, 0, 100, 0]; //left, top, right, bottom
+            doc.content.splice(1, 0, {
+              margin: [0, 0, 0, 12],
+              alignment: "center",
+              image: "data:image/png;base64," + $("#logo_img").val(),
+            });
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
+          },
+        },
+        {
+          extend: "print",
+          text: '<i class="fa fa-print"></i>',
+          titleAttr: window.jsLang('print'),
+          title: $("#logo_title").val(),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "colvis",
+          text: '<i class="fa fa-columns"></i>',
+          postfixButtons: ["colvisRestore"],
+        },
+      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
+      responsive: true,
+      ordering: false,
+    });
+  }
+
+  if ($("#noSearch").length) {
+    $("#noSearch").DataTable({
+      bLengthChange: false,
+      bDestroy: true,
+      language: {
+        search: "<i class='ti-search'></i>",
+        searchPlaceholder: window.jsLang('search'),
+        paginate: {
+          next: "<i class='ti-arrow-right'></i>",
+          previous: "<i class='ti-arrow-left'></i>",
+        },
+      },
+      dom: "Bfrtip",
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        title: $("#logo_title").val(),
+        titleAttr: window.jsLang('copy_table'),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
+        },
+      },
+        {
+          extend: "excelHtml5",
+          text: '<i class="fa fa-file-excel-o"></i>',
+          titleAttr: window.jsLang('export_to_excel'),
+          title: $("#logo_title").val(),
+          margin: [10, 10, 10, 0],
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "csvHtml5",
+          text: '<i class="fa fa-file-text-o"></i>',
+          titleAttr: window.jsLang('export_to_csv'),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "pdfHtml5",
+          text: '<i class="fa fa-file-pdf-o"></i>',
+          title: $("#logo_title").val(),
+          titleAttr: window.jsLang('export_to_pdf'),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+          orientation: "landscape",
+          pageSize: "A4",
+          margin: [0, 0, 0, 12],
+          alignment: "center",
+          header: true,
+          customize: function(doc) {
+            doc.content[1].margin = [100, 0, 100, 0]; //left, top, right, bottom
+            doc.content.splice(1, 0, {
+              margin: [0, 0, 0, 12],
+              alignment: "center",
+              image: "data:image/png;base64," + $("#logo_img").val(),
+            });
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
+          },
+        },
+        {
+          extend: "print",
+          text: '<i class="fa fa-print"></i>',
+          titleAttr: window.jsLang('print'),
+          title: $("#logo_title").val(),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "colvis",
+          text: '<i class="fa fa-columns"></i>',
+          postfixButtons: ["colvisRestore"],
+        },
+      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
+      responsive: true,
+      ordering: false,
+      searching: false,
+    });
+  }
+
+  //attendance
+
   /*-------------------------------------------------------------------------------
-         Nice Select 
-	   -------------------------------------------------------------------------------*/
+       Nice Select
+     -------------------------------------------------------------------------------*/
   if ($(".niceSelect").length) {
     $(".niceSelect").niceSelect();
   }
+  if ($(".niceSelect").length) {
+    $(".nice_Select3").niceSelect();
+  }
 
   function slideToggle(clickBtn, toggleDiv) {
-    clickBtn.on("click", function () {
+    clickBtn.on("click", function() {
       toggleDiv.stop().slideToggle("slow");
     });
   }
 
   function removeDiv(clickBtn, toggleDiv) {
-    clickBtn.on("click", function () {
-      toggleDiv.hide("slow", function () {
+    clickBtn.on("click", function() {
+      toggleDiv.hide("slow", function() {
         toggleDiv.remove();
       });
     });
@@ -26,17 +341,17 @@
   removeDiv($("#areaChartBtnRemovetn"), $("#incomeExpenseSessionDiv"));
 
   /*-------------------------------------------------------------------------------
-         Start Primary Button Ripple Effect
-	   -------------------------------------------------------------------------------*/
-  $(".primary-btn").on("click", function (e) {
+       Start Primary Button Ripple Effect
+     -------------------------------------------------------------------------------*/
+  $(".primary-btn").on("click", function(e) {
     // Remove any old one
     $(".ripple").remove();
 
     // Setup
     var primaryBtnPosX = $(this).offset().left,
-      primaryBtnPosY = $(this).offset().top,
-      primaryBtnWidth = $(this).width(),
-      primaryBtnHeight = $(this).height();
+        primaryBtnPosY = $(this).offset().top,
+        primaryBtnWidth = $(this).width(),
+        primaryBtnHeight = $(this).height();
 
     // Add the element
     $(this).prepend("<span class='ripple'></span>");
@@ -54,21 +369,21 @@
 
     // Add the ripples CSS and start the animation
     $(".ripple")
-      .css({
-        width: primaryBtnWidth,
-        height: primaryBtnHeight,
-        top: y + "px",
-        left: x + "px",
-      })
-      .addClass("rippleEffect");
+        .css({
+          width: primaryBtnWidth,
+          height: primaryBtnHeight,
+          top: y + "px",
+          left: x + "px",
+        })
+        .addClass("rippleEffect");
   });
   /*-------------------------------------------------------------------------------
-         End Primary Button Ripple Effect
-	   -------------------------------------------------------------------------------*/
+       End Primary Button Ripple Effect
+     -------------------------------------------------------------------------------*/
 
   /*-------------------------------------------------------------------------------
-         Start Add Earnings
-	   -------------------------------------------------------------------------------*/
+       Start Add Earnings
+     -------------------------------------------------------------------------------*/
   // $('#addEarnings').on('click', function() {
   // 	$('#addEarningsTableBody').append(
   // 		'<tr>' +
@@ -96,15 +411,15 @@
   // });
 
   /*-------------------------------------------------------------------------------
-         End Add Earnings
-	   -------------------------------------------------------------------------------*/
+       End Add Earnings
+     -------------------------------------------------------------------------------*/
 
   /*-------------------------------------------------------------------------------
-         Start Add Deductions
-	   -------------------------------------------------------------------------------*/
-  $("#addDeductions").on("click", function () {
+       Start Add Deductions
+     -------------------------------------------------------------------------------*/
+  $("#addDeductions").on("click", function() {
     $("#addDeductionsTableBody").append(
-      "<tr>" +
+        "<tr>" +
         '<td width="80%" class="pr-30 pt-20">' +
         '<div class="input-effect mt-10">' +
         '<input class="primary-input form-control" type="text" id="searchByFileName">' +
@@ -128,12 +443,12 @@
     );
   });
 
-  $("#addDeductionsTableBody").on("click", ".close-deductions", function () {
+  $("#addDeductionsTableBody").on("click", ".close-deductions", function() {
     $(this)
-      .closest("tr")
-      .fadeOut(500, function () {
-        $(this).closest("tr").remove();
-      });
+        .closest("tr")
+        .fadeOut(500, function() {
+          $(this).closest("tr").remove();
+        });
   });
 
   // $('#addEarningsTableBody').on('click', '.close-earnings', function() {
@@ -145,12 +460,12 @@
   // });
 
   /*-------------------------------------------------------------------------------
-         End Add Earnings
-	   -------------------------------------------------------------------------------*/
+       End Add Earnings
+     -------------------------------------------------------------------------------*/
 
   /*-------------------------------------------------------------------------------
-         Start Upload file and chane placeholder name
-	   -------------------------------------------------------------------------------*/
+       Start Upload file and chane placeholder name
+     -------------------------------------------------------------------------------*/
   var fileInput = document.getElementById("browseFile");
   if (fileInput) {
     fileInput.addEventListener("change", showFileName);
@@ -177,20 +492,20 @@
   }
 
   /*-------------------------------------------------------------------------------
-         End Upload file and chane placeholder name
-	   -------------------------------------------------------------------------------*/
+       End Upload file and chane placeholder name
+     -------------------------------------------------------------------------------*/
 
   /*-------------------------------------------------------------------------------
-         Start Check Input is empty
-	   -------------------------------------------------------------------------------*/
-  $(".input-effect input").each(function () {
+       Start Check Input is empty
+     -------------------------------------------------------------------------------*/
+  $(".input-effect input").each(function() {
     if ($(this).val().length > 0) {
       $(this).addClass("read-only-input");
     } else {
       $(this).removeClass("read-only-input");
     }
 
-    $(this).on("keyup", function () {
+    $(this).on("keyup", function() {
       if ($(this).val().length > 0) {
         $(this).siblings(".invalid-feedback").fadeOut("slow");
       } else {
@@ -199,7 +514,7 @@
     });
   });
 
-  $(".input-effect textarea").each(function () {
+  $(".input-effect textarea").each(function() {
     if ($(this).val().length > 0) {
       $(this).addClass("read-only-input");
     } else {
@@ -208,10 +523,10 @@
   });
 
   /*-------------------------------------------------------------------------------
-         End Check Input is empty
-	   -------------------------------------------------------------------------------*/
-  $(window).on("load", function () {
-    $(".input-effect input, .input-effect textarea").focusout(function () {
+       End Check Input is empty
+     -------------------------------------------------------------------------------*/
+  $(window).on("load", function() {
+    $(".input-effect input, .input-effect textarea").focusout(function() {
       if ($(this).val() != "") {
         $(this).addClass("has-content");
       } else {
@@ -221,18 +536,18 @@
   });
 
   /*-------------------------------------------------------------------------------
-         End Input Field Effect
-	   -------------------------------------------------------------------------------*/
+       End Input Field Effect
+     -------------------------------------------------------------------------------*/
   // Search icon
-  $("#search-icon").on("click", function () {
+  $("#search-icon").on("click", function() {
     $("#search").focus();
   });
 
-  $("#start-date-icon").on("click", function () {
+  $("#start-date-icon").on("click", function() {
     $("#startDate").focus();
   });
 
-  $("#end-date-icon").on("click", function () {
+  $("#end-date-icon").on("click", function() {
     $("#endDate").focus();
   });
 
@@ -240,7 +555,7 @@
     autoclose: true,
     setDate: new Date(),
   });
-  $(".primary-input.date").on("changeDate", function (ev) {
+  $(".primary-input.date").on("changeDate", function(ev) {
     // $(this).datepicker('hide');
     $(this).focus();
   });
@@ -249,32 +564,40 @@
     format: "LT",
   });
 
+  if ($)
+    $('.primary-input.datetime').datetimepicker({
+      format : 'YYYY-MM-DD H:mm'
+    });
+
   /*-------------------------------------------------------------------------------
-               Start Side Nav Active Class Js
-             -------------------------------------------------------------------------------*/
-  $("#sidebarCollapse").on("click", function () {
-    $("#sidebar").toggleClass("active");
+                       Start Side Nav Active Class Js
+                     -------------------------------------------------------------------------------*/
+
+  $(document).ready(function() {
+    $("#sidebarCollapse").on("click", function() {
+      $("#sidebar").toggleClass("active");
+    });
   });
-  $("#sidebar > ul > li > a").on("click", function () {
+  $("#sidebar > ul > li > a").on("click", function() {
     $("#sidebar > ul > li > a").removeClass("active");
     $(this).addClass("active");
     jQuery(".collapse").collapse("hide");
   });
 
-  jQuery(".sidebar-header .dropdown-toggle").on("click", function (e) {
+  jQuery(".sidebar-header .dropdown-toggle").on("click", function(e) {
     jQuery(".collapse").collapse("hide");
   });
 
   setNavigation();
   /*-------------------------------------------------------------------------------
-         Start Side Nav Active Class Js
-	   -------------------------------------------------------------------------------*/
-  $(window).on("load", function () {
-    $(".dataTables_wrapper .dataTables_filter input").on("focus", function () {
+       Start Side Nav Active Class Js
+     -------------------------------------------------------------------------------*/
+  $(window).on("load", function() {
+    $(".dataTables_wrapper .dataTables_filter input").on("focus", function() {
       $(".dataTables_filter > label").addClass("jquery-search-label");
     });
 
-    $(".dataTables_wrapper .dataTables_filter input").on("blur", function () {
+    $(".dataTables_wrapper .dataTables_filter input").on("blur", function() {
       $(".dataTables_filter > label").removeClass("jquery-search-label");
     });
   });
@@ -284,15 +607,21 @@
   // 	$(this).closest('.sub-activity-box').remove();
   // });
 
-  $(".single-cms-box .btn").on("click", function () {
-    $(this).fadeOut(500, function () {
+  $(".single-cms-box .btn").on("click", function() {
+    $(this).fadeOut(500, function() {
       $(this).closest(".col-lg-2.mb-30").hide();
     });
   });
-
+  // bootstrap tab for data table
+  $('a[data-toggle="tab"]').on("shown.bs.tab", function(e) {
+    $($.fn.dataTable.tables(true))
+        .DataTable()
+        .columns.adjust()
+        .responsive.recalc();
+  });
   /*----------------------------------------------------*/
   /*  Magnific Pop up js (Image Gallery)
-          /*----------------------------------------------------*/
+                  /*----------------------------------------------------*/
   $(".pop-up-image").magnificPopup({
     type: "image",
     gallery: {
@@ -301,8 +630,8 @@
   });
 
   /*-------------------------------------------------------------------------------
-         Jquery Table
-	   -------------------------------------------------------------------------------*/
+       Jquery Table
+     -------------------------------------------------------------------------------*/
   if ($("#table_id_table").length) {
     $("#table_id_table").DataTable({
       language: {
@@ -343,65 +672,120 @@
       bLengthChange: false,
     });
   }
+  if ($("#default_table").length) {
+    $("#default_table").DataTable({
+      select: true,
+      language: {
+        paginate: {
+          next: "<i class='ti-arrow-right'></i>",
+          previous: "<i class='ti-arrow-left'></i>",
+        },
+      },
+      destroy: true,
+      paging: true,
+      bFilter: false,
+      bLengthChange: false,
+      columnDefs: [{
+        visible: false,
+      }, ],
+      responsive: true,
+    });
+  }
 
+  if ($("#default_table_searching").length) {
+    $("#default_table_searching").DataTable({
+      bLengthChange: false,
+      bDestroy: true,
+      language: {
+        search: "<i class='ti-search'></i>",
+        searchPlaceholder: window.jsLang('search'),
+        paginate: {
+          next: "<i class='ti-arrow-right'></i>",
+          previous: "<i class='ti-arrow-left'></i>",
+        },
+      },
+      columnDefs: [{
+        visible: false,
+      }, ],
+      responsive: true,
+    });
+  }
+
+  if ($("#default_table2").length) {
+    $("#default_table2").DataTable({
+      select: true,
+      bInfo: false,
+      destroy: true,
+      language: {
+        paginate: {
+          next: "<i class='ti-arrow-right'></i>",
+          previous: "<i class='ti-arrow-left'></i>",
+        },
+      },
+
+      paging: false,
+      bFilter: false,
+      bLengthChange: false,
+      columnDefs: [{
+        visible: false,
+      }, ],
+      responsive: true,
+    });
+  }
   if ($("#table_id_s, .school-table-data").length) {
     $("#table_id_s, .school-table-data").DataTable({
       bLengthChange: false,
       bDestroy: true,
       language: {
         search: "<i class='ti-search'></i>",
-        searchPlaceholder: "Quick Search",
+        searchPlaceholder: window.jsLang('search'),
         paginate: {
           next: "<i class='ti-arrow-right'></i>",
           previous: "<i class='ti-arrow-left'></i>",
         },
       },
       dom: "Bfrtip",
-      buttons: [
-        {
-          extend: "copyHtml5",
-          text: '<i class="fa fa-files-o"></i>',
-          titleAttr: "Copy",
-          title: $("#logo_title").val(),
-          exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
-          },
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        titleAttr: window.jsLang('copy_table'),
+        title: $("#logo_title").val(),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
         },
+      },
         {
           extend: "excelHtml5",
           text: '<i class="fa fa-file-excel-o"></i>',
-          titleAttr: "Excel",
+          titleAttr: window.jsLang('export_to_excel'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
           },
         },
         {
           extend: "csvHtml5",
           text: '<i class="fa fa-file-text-o"></i>',
-          titleAttr: "CSV",
+          titleAttr: window.jsLang('export_to_csv'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
           extend: "pdfHtml5",
           text: '<i class="fa fa-file-pdf-o"></i>',
-          titleAttr: "PDF",
+          titleAttr: window.jsLang('export_to_pdf'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: [0, 1, 2, 4],
+            columns: ':visible:not(.not-export-col)',
             columnGap: 20,
             alignment: "center",
           },
           orientation: "landscape",
           pageSize: "A5",
-          messageTop: function () {
+          messageTop: function() {
             var t = [
               "Class: " + $("#cls").val(),
               "         ",
@@ -412,7 +796,7 @@
           alignment: "center",
           header: true,
           margin: 20,
-          customize: function (doc) {
+          customize: function(doc) {
             doc.content.splice(1, 0, {
               margin: [0, 0, 0, 12],
               alignment: "center",
@@ -421,16 +805,18 @@
             doc.pageMargins = [70, 20, 10, 20];
             doc.defaultStyle.fontSize = 10;
             doc.styles.tableHeader.fontSize = 11;
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
           },
         },
         {
           extend: "print",
           text: '<i class="fa fa-print"></i>',
-          titleAttr: "Print",
+          titleAttr: window.jsLang('print'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
@@ -439,11 +825,9 @@
           postfixButtons: ["colvisRestore"],
         },
       ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
       responsive: true,
     });
   }
@@ -455,55 +839,54 @@
       bDestroy: true,
       language: {
         search: "<i class='ti-search'></i>",
-        searchPlaceholder: "Quick Search",
+        searchPlaceholder: window.jsLang('search'),
         paginate: {
           next: "<i class='ti-arrow-right'></i>",
           previous: "<i class='ti-arrow-left'></i>",
         },
       },
       dom: "Bfrtip",
-      buttons: [
-        {
-          extend: "copyHtml5",
-          text: '<i class="fa fa-files-o"></i>',
-          titleAttr: "Copy",
-          title: $("#logo_title").val(),
-          exportOptions: {
-            columns: ":visible",
-          },
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        titleAttr: window.jsLang('copy_table'),
+        title: $("#logo_title").val(),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
         },
+      },
         {
           extend: "excelHtml5",
           text: '<i class="fa fa-file-excel-o"></i>',
-          titleAttr: "Excel",
+          titleAttr: window.jsLang('export_to_excel'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
           },
         },
         {
           extend: "csvHtml5",
           text: '<i class="fa fa-file-text-o"></i>',
-          titleAttr: "CSV",
+          titleAttr: window.jsLang('export_to_csv'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
           extend: "pdfHtml5",
           text: '<i class="fa fa-file-pdf-o"></i>',
-          titleAttr: "PDF",
+          titleAttr: window.jsLang('export_to_pdf'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
             columnGap: 20,
           },
           orientation: "landscape",
           pageSize: "A4",
-          messageTop: function () {
+          messageTop: function() {
             var t = [
               "Class: " + $("#cls").val(),
               "         ",
@@ -515,7 +898,7 @@
           alignment: "center",
           header: true,
           margin: 20,
-          customize: function (doc) {
+          customize: function(doc) {
             doc.content.splice(1, 0, {
               margin: [0, 0, 0, 12],
               alignment: "center",
@@ -524,15 +907,18 @@
             doc.pageMargins = [100, 20, 10, 20];
             doc.defaultStyle.fontSize = 10;
             doc.styles.tableHeader.fontSize = 11;
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
           },
         },
         {
           extend: "print",
           text: '<i class="fa fa-print"></i>',
-          titleAttr: "Print",
+          titleAttr: window.jsLang('print'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
@@ -541,11 +927,9 @@
           postfixButtons: ["colvisRestore"],
         },
       ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
       responsive: true,
     });
   }
@@ -559,52 +943,50 @@
       bDestroy: true,
       language: {
         search: "<i class='ti-search'></i>",
-        searchPlaceholder: "Quick Search",
+        searchPlaceholder: window.jsLang('search'),
       },
       dom: "Bfrtip",
-      buttons: [
-        {
-          extend: "copyHtml5",
-          text: '<i class="fa fa-files-o"></i>',
-          titleAttr: "Copy",
-          title: $("#logo_title").val(),
-          exportOptions: {
-            columns: ":visible",
-          },
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        titleAttr: window.jsLang('copy_table'),
+        title: $("#logo_title").val(),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
         },
+      },
         {
           extend: "excelHtml5",
           text: '<i class="fa fa-file-excel-o"></i>',
-          titleAttr: "Excel",
+          titleAttr: window.jsLang('export_to_excel'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
-
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
           },
         },
         {
           extend: "csvHtml5",
           text: '<i class="fa fa-file-text-o"></i>',
-          titleAttr: "CSV",
+          titleAttr: window.jsLang('export_to_csv'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
           extend: "pdfHtml5",
           text: '<i class="fa fa-file-pdf-o"></i>',
-          titleAttr: "PDF",
+          titleAttr: window.jsLang('export_to_pdf'),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
             columnGap: 20,
           },
           orientation: "landscape",
           pageSize: "A4",
           fontSize: 10,
-          messageTop: function () {
+          messageTop: function() {
             var t = [
               "Class: " + $("#cls").val(),
               "         ",
@@ -614,7 +996,7 @@
           },
           alignment: "center",
           header: true,
-          customize: function (doc) {
+          customize: function(doc) {
             doc.content.splice(1, 0, {
               margin: [0, 0, 0, 12],
               alignment: "center",
@@ -623,16 +1005,19 @@
             doc.pageMargins = [10, 20, 10, 20];
             doc.defaultStyle.fontSize = 6;
             doc.styles.tableHeader.fontSize = 7;
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
           },
           title: $("#logo_title").val(),
         },
         {
           extend: "print",
           text: '<i class="fa fa-print"></i>',
-          titleAttr: "Print",
+          titleAttr: window.jsLang('print'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
@@ -641,11 +1026,9 @@
           postfixButtons: ["colvisRestore"],
         },
       ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
     });
   }
   //student panel
@@ -657,45 +1040,43 @@
       bDestroy: true,
       language: {
         search: "<i class='ti-search'></i>",
-        searchPlaceholder: "Quick Search",
+        searchPlaceholder: window.jsLang('search'),
       },
       dom: "Bfrtip",
-      buttons: [
-        {
-          extend: "copyHtml5",
-          text: '<i class="fa fa-files-o"></i>',
-          titleAttr: "Copy",
-          title: $("#logo_title").val(),
-          exportOptions: {
-            columns: ":visible",
-          },
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        titleAttr: window.jsLang('copy_table'),
+        title: $("#logo_title").val(),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)',
         },
+      },
         {
           extend: "excelHtml5",
           text: '<i class="fa fa-file-excel-o"></i>',
-          titleAttr: "Excel",
+          titleAttr: window.jsLang('export_to_excel'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
-
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
           },
         },
         {
           extend: "csvHtml5",
           text: '<i class="fa fa-file-text-o"></i>',
-          titleAttr: "CSV",
+          titleAttr: window.jsLang('export_to_csv'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)',
           },
         },
         {
           extend: "pdfHtml5",
           text: '<i class="fa fa-file-pdf-o"></i>',
-          titleAttr: "PDF",
+          titleAttr: window.jsLang('export_to_pdf'),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
             columnGap: 20,
           },
@@ -704,7 +1085,7 @@
           fontSize: 10,
           alignment: "center",
           header: true,
-          customize: function (doc) {
+          customize: function(doc) {
             doc.content.splice(1, 0, {
               margin: [0, 0, 0, 12],
               alignment: "center",
@@ -713,16 +1094,19 @@
             doc.pageMargins = [10, 20, 10, 20];
             doc.defaultStyle.fontSize = 6;
             doc.styles.tableHeader.fontSize = 7;
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
           },
           title: $("#logo_title").val(),
         },
         {
           extend: "print",
           text: '<i class="fa fa-print"></i>',
-          titleAttr: "Print",
+          titleAttr: window.jsLang('print'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)',
           },
         },
         {
@@ -731,11 +1115,9 @@
           postfixButtons: ["colvisRestore"],
         },
       ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
     });
   }
   if ($("#table_ids, .school-table-data").length) {
@@ -744,58 +1126,53 @@
       bDestroy: true,
       language: {
         search: "<i class='ti-search'></i>",
-        searchPlaceholder: "Quick Search",
+        searchPlaceholder: window.jsLang('search'),
         paginate: {
           next: "<i class='ti-arrow-right'></i>",
           previous: "<i class='ti-arrow-left'></i>",
         },
       },
       dom: "Bfrtip",
-      buttons: [
-        {
-          extend: "copyHtml5",
-          text: '<i class="fa fa-files-o"></i>',
-          titleAttr: "Copy",
-          title: $("#logo_title").val(),
-          exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
-          },
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        titleAttr: window.jsLang('copy_table'),
+        title: $("#logo_title").val(),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
         },
+      },
         {
           extend: "excelHtml5",
           text: '<i class="fa fa-file-excel-o"></i>',
-          titleAttr: "Excel",
+          titleAttr: window.jsLang('export_to_excel'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
           },
         },
         {
           extend: "csvHtml5",
           text: '<i class="fa fa-file-text-o"></i>',
-          titleAttr: "CSV",
+          titleAttr: window.jsLang('export_to_csv'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
           extend: "pdfHtml5",
           text: '<i class="fa fa-file-pdf-o"></i>',
-          titleAttr: "PDF",
+          titleAttr: window.jsLang('export_to_pdf'),
           exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
+            columns: ':visible:not(.not-export-col)',
             order: "applied",
             columnGap: 20,
           },
           orientation: "landscape",
           pageSize: "A4",
-          messageTop: function () {
+          messageTop: function() {
             var t = [
               "Class: " + $("#cls").val(),
               "         ",
@@ -807,7 +1184,7 @@
           alignment: "center",
           header: true,
           margin: 20,
-          customize: function (doc) {
+          customize: function(doc) {
             doc.content.splice(1, 0, {
               margin: [0, 0, 0, 12],
               alignment: "center",
@@ -816,17 +1193,19 @@
             doc.pageMargins = [70, 20, 10, 20];
             doc.defaultStyle.fontSize = 10;
             doc.styles.tableHeader.fontSize = 11;
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
           },
           title: $("#logo_title").val(),
         },
         {
           extend: "print",
           text: '<i class="fa fa-print"></i>',
-          titleAttr: "Print",
+          titleAttr: window.jsLang('print'),
           title: $("#logo_title").val(),
           exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
@@ -835,11 +1214,9 @@
           postfixButtons: ["colvisRestore"],
         },
       ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
       responsive: true,
     });
   }
@@ -850,70 +1227,72 @@
       bDestroy: true,
       language: {
         search: "<i class='ti-search'></i>",
-        searchPlaceholder: "Quick Search",
+        searchPlaceholder: window.jsLang('search'),
         paginate: {
           next: "<i class='ti-arrow-right'></i>",
           previous: "<i class='ti-arrow-left'></i>",
         },
       },
       dom: "Bfrtip",
-      buttons: [
-        {
-          extend: "copyHtml5",
-          text: '<i class="fa fa-files-o"></i>',
-          title: $("#logo_title").val(),
-          titleAttr: "Copy",
-          exportOptions: {
-            columns: ":visible",
-          },
+      buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        title: $("#logo_title").val(),
+        titleAttr: window.jsLang('copy_table'),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
         },
+      },
         {
           extend: "excelHtml5",
           text: '<i class="fa fa-file-excel-o"></i>',
-          titleAttr: "Excel",
+          titleAttr: window.jsLang('export_to_excel'),
           title: $("#logo_title").val(),
           margin: [10, 10, 10, 0],
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
           extend: "csvHtml5",
           text: '<i class="fa fa-file-text-o"></i>',
-          titleAttr: "CSV",
+          titleAttr: window.jsLang('export_to_csv'),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
           extend: "pdfHtml5",
           text: '<i class="fa fa-file-pdf-o"></i>',
           title: $("#logo_title").val(),
-          titleAttr: "PDF",
+          titleAttr: window.jsLang('export_to_pdf'),
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)'
           },
           orientation: "landscape",
           pageSize: "A4",
           margin: [0, 0, 0, 12],
           alignment: "center",
           header: true,
-          customize: function (doc) {
+          customize: function(doc) {
             doc.content.splice(1, 0, {
               margin: [0, 0, 0, 12],
               alignment: "center",
               image: "data:image/png;base64," + $("#logo_img").val(),
             });
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            }
           },
         },
         {
           extend: "print",
           text: '<i class="fa fa-print"></i>',
-          titleAttr: "Print",
+          titleAttr: window.jsLang('print'),
           title: $("#logo_title").val(),
           alignment: "center",
           exportOptions: {
-            columns: ":visible",
+            columns: ':visible:not(.not-export-col)'
           },
         },
         {
@@ -923,122 +1302,31 @@
           postfixButtons: ["colvisRestore"],
         },
       ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
-      responsive: true,
-    });
-  }
-  if ($("#table_id, .school-table-data").length) {
-    $("#table_id, .school-table-data").DataTable({
-      bLengthChange: false,
-      bDestroy: true,
-      language: {
-        search: "<i class='ti-search'></i>",
-        searchPlaceholder: "Quick Search",
-        paginate: {
-          next: "<i class='ti-arrow-right'></i>",
-          previous: "<i class='ti-arrow-left'></i>",
-        },
-      },
-      dom: "Bfrtip",
-      buttons: [
-        {
-          extend: "copyHtml5",
-          text: '<i class="fa fa-files-o"></i>',
-          title: $("#logo_title").val(),
-          titleAttr: "Copy",
-          exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
-          },
-        },
-        {
-          extend: "excelHtml5",
-          text: '<i class="fa fa-file-excel-o"></i>',
-          titleAttr: "Excel",
-          title: $("#logo_title").val(),
-          margin: [10, 10, 10, 0],
-          exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
-          },
-        },
-        {
-          extend: "csvHtml5",
-          text: '<i class="fa fa-file-text-o"></i>',
-          titleAttr: "CSV",
-          exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
-          },
-        },
-        {
-          extend: "pdfHtml5",
-          text: '<i class="fa fa-file-pdf-o"></i>',
-          title: $("#logo_title").val(),
-          titleAttr: "PDF",
-          exportOptions: {
-            columns: ":visible",
-            columns: ":not(:last-child)",
-          },
-          orientation: "landscape",
-          pageSize: "A4",
-          margin: [0, 0, 0, 12],
-          alignment: "center",
-          header: true,
-          customize: function (doc) {
-            doc.content.splice(1, 0, {
-              margin: [0, 0, 0, 12],
-              alignment: "center",
-              image: "data:image/png;base64," + $("#logo_img").val(),
-            });
-          },
-        },
-        {
-          extend: "print",
-          text: '<i class="fa fa-print"></i>',
-          titleAttr: "Print",
-          title: $("#logo_title").val(),
-          exportOptions: {
-            columns: ":not(:last-child)",
-          },
-        },
-        {
-          extend: "colvis",
-          text: '<i class="fa fa-columns"></i>',
-          postfixButtons: ["colvisRestore"],
-        },
-      ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
+      columnDefs: [{
+        visible: false,
+      }, ],
       responsive: true,
     });
   }
 
   /*-------------------------------------------------------------------------------
-       Full Calendar Js 
-	-------------------------------------------------------------------------------*/
-  if ($('.common-calendar').length) {
-  	$('.common-calendar').fullCalendar({
-  		header: {
-  			left: 'prev,next today',
-  			center: 'title',
-  			right: 'month,agendaWeek,agendaDay'
-  		},
-  		height: 650
-  	});
-  }
+     Full Calendar Js
+  -------------------------------------------------------------------------------*/
+  // if ($('.common-calendar').length) {
+  // 	$('.common-calendar').fullCalendar({
+  // 		header: {
+  // 			left: 'prev,next today',
+  // 			center: 'title',
+  // 			right: 'month,agendaWeek,agendaDay'
+  // 		},
+  // 		height: 650
+  // 	});
+  // }
 
   /*-------------------------------------------------------------------------------
-       Moris Chart Js 
-	-------------------------------------------------------------------------------*/
-  $(document).ready(function () {
+     Moris Chart Js
+  -------------------------------------------------------------------------------*/
+  $(document).ready(function() {
     if ($("#commonAreaChart").length) {
       barChart();
     }
@@ -1060,7 +1348,7 @@
       element: "donutChart",
       data: [
         { label: "Total Collection", value: total_collection },
-        { label: "Due", value: due },
+        { label: "Due", value: total_assign },
       ],
       colors: ["#7c32ff", "#c738d8"],
       resize: true,
@@ -1074,12 +1362,11 @@
       skin: "moono",
       enterMode: CKEDITOR.ENTER_BR,
       shiftEnterMode: CKEDITOR.ENTER_P,
-      toolbar: [
-        {
-          name: "basicstyles",
-          groups: ["basicstyles"],
-          items: ["Bold", "Italic", "Underline", "-", "TextColor", "BGColor"],
-        },
+      toolbar: [{
+        name: "basicstyles",
+        groups: ["basicstyles"],
+        items: ["Bold", "Italic", "Underline", "-", "TextColor", "BGColor"],
+      },
         { name: "styles", items: ["Format", "Font", "FontSize"] },
         { name: "scripts", items: ["Subscript", "Superscript"] },
         {
@@ -1113,7 +1400,7 @@
       dots: true,
       autoplay: true,
       nav: true,
-      rtl: true,
+      rtl: _rtl,
       navText: [
         "<img src='public/backEnd/img/client/prev.png' />",
         "<img src='public/backEnd/img/client/next.png' />",
@@ -1141,22 +1428,18 @@
       disableDoubleClickZoom: true,
       mapTypeControl: false,
       zoom: $zoom,
-      styles: [
-        {
-          featureType: "water",
-          elementType: "geometry.fill",
-          stylers: [
-            {
-              color: "#dcdfe6",
-            },
-          ],
-        },
+      styles: [{
+        featureType: "water",
+        elementType: "geometry.fill",
+        stylers: [{
+          color: "#dcdfe6",
+        }, ],
+      },
         {
           featureType: "transit",
-          stylers: [
-            {
-              color: "#808080",
-            },
+          stylers: [{
+            color: "#808080",
+          },
             {
               visibility: "off",
             },
@@ -1165,10 +1448,9 @@
         {
           featureType: "road.highway",
           elementType: "geometry.stroke",
-          stylers: [
-            {
-              visibility: "on",
-            },
+          stylers: [{
+            visibility: "on",
+          },
             {
               color: "#dcdfe6",
             },
@@ -1177,19 +1459,16 @@
         {
           featureType: "road.highway",
           elementType: "geometry.fill",
-          stylers: [
-            {
-              color: "#ffffff",
-            },
-          ],
+          stylers: [{
+            color: "#ffffff",
+          }, ],
         },
         {
           featureType: "road.local",
           elementType: "geometry.fill",
-          stylers: [
-            {
-              visibility: "on",
-            },
+          stylers: [{
+            visibility: "on",
+          },
             {
               color: "#ffffff",
             },
@@ -1201,19 +1480,16 @@
         {
           featureType: "road.local",
           elementType: "geometry.stroke",
-          stylers: [
-            {
-              color: "#d7d7d7",
-            },
-          ],
+          stylers: [{
+            color: "#d7d7d7",
+          }, ],
         },
         {
           featureType: "poi",
           elementType: "geometry.fill",
-          stylers: [
-            {
-              visibility: "on",
-            },
+          stylers: [{
+            visibility: "on",
+          },
             {
               color: "#ebebeb",
             },
@@ -1222,37 +1498,30 @@
         {
           featureType: "administrative",
           elementType: "geometry",
-          stylers: [
-            {
-              color: "#a7a7a7",
-            },
-          ],
+          stylers: [{
+            color: "#a7a7a7",
+          }, ],
         },
         {
           featureType: "road.arterial",
           elementType: "geometry.fill",
-          stylers: [
-            {
-              color: "#ffffff",
-            },
-          ],
+          stylers: [{
+            color: "#ffffff",
+          }, ],
         },
         {
           featureType: "road.arterial",
           elementType: "geometry.fill",
-          stylers: [
-            {
-              color: "#ffffff",
-            },
-          ],
+          stylers: [{
+            color: "#ffffff",
+          }, ],
         },
         {
           featureType: "landscape",
           elementType: "geometry.fill",
-          stylers: [
-            {
-              visibility: "on",
-            },
+          stylers: [{
+            visibility: "on",
+          },
             {
               color: "#efefef",
             },
@@ -1261,19 +1530,16 @@
         {
           featureType: "road",
           elementType: "labels.text.fill",
-          stylers: [
-            {
-              color: "#696969",
-            },
-          ],
+          stylers: [{
+            color: "#696969",
+          }, ],
         },
         {
           featureType: "administrative",
           elementType: "labels.text.fill",
-          stylers: [
-            {
-              visibility: "on",
-            },
+          stylers: [{
+            visibility: "on",
+          },
             {
               color: "#737373",
             },
@@ -1282,48 +1548,38 @@
         {
           featureType: "poi",
           elementType: "labels.icon",
-          stylers: [
-            {
-              visibility: "off",
-            },
-          ],
+          stylers: [{
+            visibility: "off",
+          }, ],
         },
         {
           featureType: "poi",
           elementType: "labels",
-          stylers: [
-            {
-              visibility: "off",
-            },
-          ],
+          stylers: [{
+            visibility: "off",
+          }, ],
         },
         {
           featureType: "road.arterial",
           elementType: "geometry.stroke",
-          stylers: [
-            {
-              color: "#d6d6d6",
-            },
-          ],
+          stylers: [{
+            color: "#d6d6d6",
+          }, ],
         },
         {
           featureType: "road",
           elementType: "labels.icon",
-          stylers: [
-            {
-              visibility: "off",
-            },
-          ],
+          stylers: [{
+            visibility: "off",
+          }, ],
         },
         {},
         {
           featureType: "poi",
           elementType: "geometry.fill",
-          stylers: [
-            {
-              color: "#dadada",
-            },
-          ],
+          stylers: [{
+            color: "#dadada",
+          }, ],
         },
       ],
     });
@@ -1332,23 +1588,25 @@
   function setNavigation() {
     var current = location.href;
 
-    var url = document.getElementById("url").value;
+    var url = document.getElementById("url");
 
     var previousUrl = document.referrer;
 
     var i = 0;
+    $( "#sidebar_menu" ).find( "a" ).removeClass("active");
+    $( "#sidebar_menu" ).find( "li" ).removeClass("mm-active");
+    $( "#sidebar_menu" ).find( "li ul" ).removeClass("mm-show");
 
-    $("#sidebar ul li ul li a").each(function () {
+    $("#sidebar ul li ul li a").each(function() {
       var $this = $(this);
       // if the current path is like this link, make it active
       if ($this.attr("href") == current) {
         i++;
-        $this.closest(".list-unstyled").addClass("show");
+        $this.closest(".list-unstyled").addClass("mm-show");
+        $this.closest(".list-unstyled").parent().addClass("mm-active");
         // $('#sidebar ul li a').removeClass('active');
-        $this
-          .closest(".list-unstyled")
-          .siblings(".dropdown-toggle")
-          .addClass("active");
+        // $this.closest(".list-unstyled")
+        // .addClass("active");
         $this.addClass("active");
       }
     });
@@ -1360,7 +1618,7 @@
     }
 
     if (i == 0) {
-      $("#sidebar ul li ul li a").each(function () {
+      $("#sidebar ul li ul li a").each(function() {
         var $this = $(this);
         // if the current path is like this link, make it active
         if ($this.attr("href") == previousUrl) {
@@ -1368,9 +1626,9 @@
           $this.closest(".list-unstyled").addClass("show");
           // $('#sidebar ul li a').removeClass('active');
           $this
-            .closest(".list-unstyled")
-            .siblings(".dropdown-toggle")
-            .addClass("active");
+              .closest(".list-unstyled")
+              .siblings(".dropdown-toggle")
+              .addClass("active");
           $this.addClass("active");
         }
       });
@@ -1379,23 +1637,30 @@
     if (current == url + "/" + "exam-attendance-create") {
       $("#subMenuExam").addClass("show");
       $("#subMenuExam")
-        .closest(".list-unstyled")
-        .siblings(".dropdown-toggle")
-        .addClass("active");
+          .closest(".list-unstyled")
+          .siblings(".dropdown-toggle")
+          .addClass("active");
       $("#sidebar a[href='" + url + "/" + "exam-attendance']").addClass(
-        "active"
+          "active"
       );
     }
 
-    $("#close_sidebar").on("click", function () {
+    $("#close_sidebar").on("click", function() {
       $("#sidebar").removeClass("active");
     });
   }
-  // function deleteId() {
-  //     var id = $('.deleteStudentModal').data("id")
-  //    $('#student_delete_i').val(id);
-
-  // }
+  //remove sidebar
+  $(document).click(function(event) {
+    if (!$(event.target).closest(".sidebar_icon, .sidebar").length) {
+      $("body").find(".sidebar").removeClass("active_sidebar");
+    }
+  });
+  //for check
+  $('.radio_question').on('click', function(event) {
+    $(this).siblings('.active').removeClass('active');
+    $(this).addClass('active');
+    // event.preventDefault();
+  });
 
   ("use strict");
 })(jQuery);

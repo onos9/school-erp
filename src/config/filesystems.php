@@ -91,6 +91,10 @@ return [
             'driver' => 'local',
             'root'   => base_path().'/uploads',
         ],
+        'log' => [
+            'driver' => 'local',
+            'root' => storage_path('logs'),
+        ]
 
 
 

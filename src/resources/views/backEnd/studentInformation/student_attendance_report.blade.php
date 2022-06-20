@@ -186,7 +186,7 @@
 <section class="student-attendance">
     <div class="container-fluid p-0">
         <div class="row mt-40">
-            <div class="col-lg-6 no-gutters">
+            <div class="col-lg-12 no-gutters d-flex align-items-center justify-content-between">
                 <div class="main-title">
                     <h3 class="mb-0">@lang('student.student_attendance_report') 
                        <small> <span class="text-success">P:<span id="total_present"></span></span>
@@ -196,8 +196,6 @@
                         <span class="text-dark">H:<span id="total_holiday"></span></span> </small>
                     </h3>
                 </div>
-            </div>
-            <div class="col-lg-6 no-gutters">
                 <a href="{{route('student-attendance-print', [$class_id, $section_id, $month, $year])}}" class="primary-btn small fix-gr-bg pull-right" target="_blank"><i class="ti-printer"> </i>@lang('common.print')</a>
             </div>
         </div>

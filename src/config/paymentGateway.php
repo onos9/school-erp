@@ -5,4 +5,5 @@ return  [
     'Stripe'=>App\PaymentGateway\StripePayment::class,
     'Paystack'=>App\PaymentGateway\PaystackPayment::class,
     'RazorPay'=>App\PaymentGateway\RazorPayPayment::class,
+    'MercadoPago'=>App\PaymentGateway\MercadoPagoPayment::class,
 ];

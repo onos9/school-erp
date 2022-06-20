@@ -63,6 +63,12 @@
                             <div class="col-lg-4 mt-30-md md_mb_20" id="select_section_div">
                                 <select class="w-100 bb niceSelect form-control{{ $errors->has('section') ? ' is-invalid' : '' }} select_section" id="select_section" name="section">
                                     <option data-display="@lang('common.select_section') *" value="">@lang('common.select_section') *</option>
+                                    @if(isset($class_id))
+                                    @foreach ($class->classSection as $section)
+                                    <option value="{{ $section->sectionName->id }}" {{ old('section')==$section->sectionName->id ? 'selected' : '' }} >
+                                        {{ $section->sectionName->section_name }}</option>
+                                    @endforeach
+                                @endif
                                 </select>
                                 <div class="pull-right loader loader_style" id="select_section_loader">
                                     <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
@@ -119,7 +125,20 @@
                             <tr>
                                 <td>{{$student->admission_no}}</td>
                                 <td>{{$student->full_name}}</td>
-                                <td>{{$student->class !=""?$student->class->class_name:""}} ({{$student->section !=""?$student->section->section_name:""}})</td>
+                                <td>
+
+                                   @php if(!empty($student->recordClass)){ echo $student->recordClass->class->class_name; }else { echo ''; } @endphp
+                                        
+                                            @if($section_id==null)                                            
+                                                    
+                                                (@foreach ($student->recordClasses as $section)
+                                                        {{$section->section->section_name}},
+                                                @endforeach)                                     
+                                            @else
+                                            ({{$student->recordSection != ""? $student->recordSection->section->section_name:""}})
+                                            @endif
+                                
+                                </td>
                                 <td>{{$online_exam_question->title}}</td>
                                 <td>{{$online_exam_question->subject !=""?$online_exam_question->subject->subject_name:""}}</td>
                                 <td>{{$total_marks}}</td>

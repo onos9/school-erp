@@ -7,6 +7,7 @@ use App\SmStudent;
 use App\SmFeesAssign;
 use App\SmFeesMaster;
 use App\ApiBaseMethod;
+use App\Http\Controllers\Admin\StudentInfo\SmStudentReportController;
 use App\SmFeesPayment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -32,21 +33,15 @@ class SmFeesReportController extends Controller
 
     public function balanceFeesSearch(Request $request)
     {
-        // $input = $request->all();
-        // $validator = Validator::make($input, [
-        //     'class' => 'required',
-        //     'section' => 'required'
-        // ]);
-        // if ($validator->fails()) {
-        //     if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-        //         return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-        //     }
-        //     return redirect()->back()
-        //         ->withErrors($validator)
-        //         ->withInput();
-        // }
+    
+        $request->validate([
+            'class' => 'required',
+            'section' => 'required'
+        ]);
+     
         try {
-            $students = SmStudent::with('parents', 'feesAssign', 'feesAssign.feesGroupMaster', 'feesAssign.feesPayments', 'feesPayment')->where('class_id', $request->class)->where('section_id', $request->section)->get();
+            $student_ids = SmStudentReportController::classSectionStudent($request);
+            $students = SmStudent::with('parents', 'feesAssign', 'feesAssign.feesGroupMaster', 'feesAssign.feesPayments', 'feesPayment')->whereIn('id', $student_ids)->get();
             $balance_students = [];
 
             $data = [];
@@ -105,10 +100,11 @@ class SmFeesReportController extends Controller
          
             // return $master_ids;
             $class_id = $request->class;
+            $section_id = $request->section;
             $classes = SmClass::get();
             //  return $balance_students;
             $clas = $classes->find($request->class);
-            return view('backEnd.feesCollection.balance_fees_report', compact('classes', 'balance_students', 'class_id', 'clas', 'data'));
+            return view('backEnd.feesCollection.balance_fees_report', compact('classes', 'balance_students', 'class_id', 'clas', 'data', 'section_id'));
 
             // $students = SmStudent::with('parents')->where('class_id', $request->class)->where('section_id', $request->section)->get();
             // $balance_students = [];

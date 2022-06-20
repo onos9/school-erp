@@ -35,7 +35,7 @@ class SmStudentIdCard extends Model
 
     public static function studentName($parent_id){
         $studentInfos = SmStudent::where('parent_id',$parent_id)
-                    ->where('academic_id', getAcademicId())
+                   
                     ->where('school_id', Auth::user()->school_id)
                     ->get(['full_name','student_photo']);
         return $studentInfos;

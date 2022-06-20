@@ -20,25 +20,16 @@ class SmBookFactory extends Factory
      *
      * @return array
      */
-    public         $books = [
-                            'Algorithms & Data Structures',
-                            'Cellular Automata',
-                            'Cloud Computing',
-                            'Competitive Programming',
-                            'Compiler Design',
-                            'Database',
-                            'Datamining',
-                            'Information Retrieval',
-                            'Licensing',
-                            'Machine Learning', 
-                            'Mathematics',  
-                        ];
-    public $i=0;                    
+    public $books = [
+        'Algorithms & Data Structures', 'Cellular Automata', 'Cloud Computing', 'Competitive Programming', 'Compiler Design', 'Database', 'Datamining', 'Information Retrieval', 'Licensing', 'Machine Learning', 'Mathematics'
+    ];
     public function definition()
     {
+        static $i;
+        $i = $i ?? 0;
         return [
             
-            'book_title' => $this->books[$this->i++] ?? $this->faker->word(20),
+            'book_title' => $this->books[$i++] ?? $this->faker->word(20),
 
         ];
     }

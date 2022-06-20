@@ -1,10 +1,14 @@
 @if(userPermission(920) && menuStatus(920))
 <li data-position="{{menuPosition(920)}}" class="sortable_li">
-    <a href="#subMenuBulkPrint" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-        <span class="flaticon-test"></span>
-        @lang('bulkprint::bulk.bulk_print')
+    <a href="javascript:void(0)" class="has-arrow" aria-expanded="false"> 
+        <div class="nav_icon_small">
+            <span class="flaticon-test"></span>
+        </div>
+        <div class="nav_title">
+            @lang('bulkprint::bulk.bulk_print')
+        </div>
     </a>
-    <ul class="collapse list-unstyled" id="subMenuBulkPrint">
+    <ul class="list-unstyled" id="subMenuBulkPrint">
         @if(userPermission(921)  && menuStatus(921))
             <li data-position="{{menuPosition(921)}}">
                 <a href="{{route('student-id-card-bulk-print')}}">@lang('admin.id_card')</a>
@@ -34,8 +38,26 @@
                 <a href="{{route('invoice-settings')}}"> @lang('bulkprint::bulk.fees_invoice_settings')</a>
             </li>
         @endif
+    @else
+        @if(userPermission(1162)  && menuStatus(1162))
+            <li data-position="{{menuPosition(1162)}}">
+                <a href="{{route('fees-invoice-bulk-print')}}"> @lang('bulkprint::bulk.fees_invoice_bulk_print')</a>
+            </li>
+        @endif
+        @if(userPermission(1162)  && menuStatus(1162))
+            <li data-position="{{menuPosition(1162)}}">
+                <a href="{{route('fees-invoice-bulk-print-settings')}}"> @lang('bulkprint::bulk.fees_invoice_bulk_print_settings')</a>
+            </li>
+        @endif
     @endif
-       
+
+        @if (moduleStatusCheck('Lms')== True)
+            @if(userPermission(1566)  && menuStatus(1566))
+                <li data-position="{{menuPosition(1566)}}">
+                    <a href="{{route('lms-certificate-bulk-print')}}"> @lang('bulkprint::bulk.lms_certificate')</a>
+                </li>
+            @endif
+        @endif
     </ul>
 </li>
 @endif

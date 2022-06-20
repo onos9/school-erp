@@ -2,11 +2,15 @@
 @if(auth()->user()->role_id == 1)
     @if(userPermission(1109) && menuStatus(1109))
         <li data-position="{{menuPosition(1109)}}" class="sortable_li">
-            <a href="#subMenuWallet" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                <span class="flaticon-accounting"></span>
-                @lang('wallet::wallet.wallet_deposit')
+            <a href="javascript:void(0)" class="has-arrow" aria-expanded="false">
+                <div class="nav_icon_small">
+                    <span class="flaticon-accounting"></span>
+                </div>
+                <div class="nav_title">
+                    @lang('wallet::wallet.wallet_deposit')
+                </div>
             </a>
-            <ul class="collapse list-unstyled" id="subMenuWallet">
+            <ul class="list-unstyled" id="subMenuWallet">
                 @if(userPermission(1110) && menuStatus(1110))
                     <li data-position="{{menuPosition(1110)}}">
                         <a href="{{route('wallet.pending-diposit')}}"> @lang('wallet::wallet.pending_deposit')</a>
@@ -49,9 +53,13 @@
             {{menuPosition(1124)}}
         @endif
         " class="sortable_li">
-            <a href="{{route('wallet.my-wallet')}}">
-                <span class="flaticon-wallet"></span>
-                @lang('wallet::wallet.my_wallet')
+            <a href="{{route('wallet.my-wallet')}}">                
+                <div class="nav_icon_small">
+                    <span class="flaticon-wallet"></span>
+                </div>
+                <div class="nav_title">
+                    @lang('wallet::wallet.my_wallet')
+                </div>
             </a>
         </li>
     @endif

@@ -62,7 +62,7 @@
                                 <div class="col-lg-3">
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('type') ? ' is-invalid' : '' }}" name="type" id="account-type">
                                         <option data-display="@lang('common.search_type')" value="all">@lang('common.search_type')</option>
-                                        <option value="In">@lang('accounts.date_to')</option>
+                                        <option value="In">@lang('accounts.income')</option>
                                         <option value="Ex">@lang('accounts.expense')</option>
                                     </select>
                                     @if ($errors->has('type'))

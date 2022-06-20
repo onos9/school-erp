@@ -326,10 +326,8 @@
               <tr>
                 <th>@lang('common.sl')</th>
                 <th>@lang('student.admission_no')</th>
-                <th>@lang('student.roll_no')</th>
                 <th>@lang('student.student_name')</th>
-                <th>@lang('common.class')</th>
-                <th>@lang('common.section')</th>
+                <th>@lang('common.class') (@lang('common.section'))</th>
               </tr>
             </thead>
             <tbody>
@@ -337,10 +335,12 @@
                     <tr>
                         <td>{{$key+1}}</td>
                         <td>{{$student->admission_no}}</td>
-                        <td>{{$student->roll_no}}</td>
                         <td>{{$student->full_name}}</td>
-                        <td>{{$student->class->class_name}}</td>
-                        <td>{{$student->section->section_name}}</td>
+                        <td>
+                            @foreach(@$student->studentRecords as $classSection)
+                                {{$classSection->class->class_name}} ({{$classSection->section->section_name}}), 
+                            @endforeach
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

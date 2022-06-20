@@ -28,7 +28,7 @@ class CreateSmGeneralSettingsTable extends Migration
             $table->integer('promotionSetting')->nullable()->default(0);
             $table->string('logo')->nullable();
             $table->string('favicon')->nullable();
-            $table->string('system_version')->nullable()->default('6.1.3');
+            $table->string('system_version')->nullable()->default('6.5.7');
             $table->integer('active_status')->nullable()->default(1);
             $table->string('currency_code')->nullable()->default('USD');
             $table->string('language_name')->nullable()->default('en');
@@ -98,7 +98,9 @@ class CreateSmGeneralSettingsTable extends Migration
             $table->integer('XenditPayment')->default(1)->nullable();
             $table->integer('Wallet')->default(1)->nullable();
             $table->integer('Lms')->default(0)->nullable();
+            $table->integer('University')->default(0)->nullable();
             $table->integer('fees_status')->default(1)->nullable();
+            $table->integer('lms_checkout')->default(0)->nullable();
             $table->integer('academic_id')->nullable()->unsigned();
             $table->foreign('academic_id')->references('id')->on('sm_academic_years')->onDelete('set null');
         });
@@ -121,12 +123,13 @@ class CreateSmGeneralSettingsTable extends Migration
                 'site_title' => 'Infix Education software',
                 'session_id' => 1,
                 'time_zone_id' => 51,
-                'software_version' => '6.4.2',
+                'software_version' => '6.5.7',
                 'system_activated_date' => date('Y-m-d'),
                 'last_update' => date('Y-m-d'),
                 'system_domain' => url('/'),
                 'email_driver'=>"php",
-                'income_head_id'=>"1"
+                'income_head_id'=>1,
+                'academic_id'=>1
             ]
         ]);
 

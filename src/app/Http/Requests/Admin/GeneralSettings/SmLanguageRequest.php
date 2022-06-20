@@ -26,7 +26,7 @@ class SmLanguageRequest extends FormRequest
     {
         $school_id=auth()->user()->school_id;
         return [
-            'name' => ['required', Rule::unique('languages')->where('school_id', $school_id)->ignore($this->code) ],
+            'name' => ['required', Rule::unique('languages')->where('school_id', $school_id)->ignore($this->id) ],
             'code' => 'required | max:15',
             'native' => 'required | max:50',
             'rtl' => 'required',

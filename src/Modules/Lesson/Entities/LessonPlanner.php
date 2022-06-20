@@ -17,27 +17,32 @@ class LessonPlanner extends Model
     }
     public function class()
     {
-        return $this->belongsTo('App\SmClass', 'class_id');
+        return $this->belongsTo('App\SmClass', 'class_id')->withDefault();
     }
 
     public function sectionName()
     {
-        return $this->belongsTo('App\SmSection', 'section_id');
+        return $this->belongsTo('App\SmSection', 'section_id')->withDefault();
     }
     public function subject()
     {
-        return $this->belongsTo('App\SmSubject', 'subject_id');
+        return $this->belongsTo('App\SmSubject', 'subject_id')->withDefault();
     }
     public function lessonName()
     {
-        return $this->belongsTo('Modules\Lesson\Entities\SmLesson', 'lesson_detail_id');
+        return $this->belongsTo('Modules\Lesson\Entities\SmLesson', 'lesson_detail_id')->withDefault();
     }
+    public function topics()
+    {
+        return $this->hasMany('Modules\Lesson\Entities\LessonPlanTopic', 'lesson_planner_id');
+    }
+
     public function topicName()
     {
-         return $this->belongsTo('Modules\Lesson\Entities\SmLessonTopicDetail', 'topic_detail_id');
+         return $this->belongsTo('Modules\Lesson\Entities\SmLessonTopicDetail', 'topic_detail_id')->withDefault();
     }
     public function teacherName(){
-        return $this->belongsTo('App\SmStaff', 'teacher_id');
+        return $this->belongsTo('App\SmStaff', 'teacher_id')->withDefault();
     }
      public function scopeLessonPlanner($query,$teacher,$class,$section,$subject){
                            return $query->where('teacher_id',$teacher)

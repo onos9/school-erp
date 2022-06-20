@@ -112,129 +112,143 @@
 </section>
 
 
-@if(isset($attendances))
+@if(isset($records))
 
 <section class="student-attendance">
     <div class="container-fluid p-0">
+    
         <div class="row mt-40">
-            <div class="col-lg-12 mb-40">
-                <a href="{{route('my-attendance/print', [@$month, @$year])}}" class="primary-btn small fix-gr-bg pull-right" target="_blank"><i class="ti-printer"> </i> @lang('common.print')</a>
-            </div>
-        </div>
-        <div class="row ">
-            <div class="col-lg-4 no-gutters">
-                <div class="main-title">
-                    <h3 class="mb-0">@lang('student.attendance_result')</h3>
+            <div class="col-lg-12 student-details up_admin_visitor">
+                <ul class="nav nav-tabs tabs_scroll_nav" role="tablist">
+                    @foreach($records as $key => $record) 
+                        <li class="nav-item">
+                            <a class="nav-link @if($key== 0) active @endif " href="#tab{{$key}}" role="tab" data-toggle="tab">{{$record->class->class_name}} ({{$record->section->section_name}}) </a>
+                        </li>
+                    @endforeach
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    @foreach($records as $key => $record) 
+                        <div role="tabpanel" class="tab-pane fade  @if($key== 0) active show @endif" id="tab{{$key}}">
+                           <div class="row mt-40">
+                                <div class="col-lg-12 mb-40">
+                                    <a href="{{route('my-attendance/print', [$record->id,$month, $year])}}" class="primary-btn small fix-gr-bg pull-right" target="_blank"><i class="ti-printer"> </i> @lang('common.print')</a>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div id="table_id_student_wrapper" class="dataTables_wrapper no-footer">
+                                        <div class="table-responsive pt-5">
+                                            <table id="table_id_student" class="display school-table dataTable no-footer pt-5" cellspacing="0" width="100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="3%">P</th>
+                                                        <th width="3%">L</th>
+                                                        <th width="3%">A</th>
+                                                        <th width="3%">H</th>
+                                                        <th width="3%">F</th>
+                                                        <th width="2%">%</th>
+                                                        @for($i = 1;  $i<=@$days; $i++)
+                                                        <th width="3%" class="{{($i<=18)? 'all':'none'}}">
+                                                            {{$i}} <br>
+                                                            @php
+                                                                @$date = @$year.'-'.@$month.'-'.$i;
+                                                                @$day = date("D", strtotime(@$date));
+                                                                echo @$day;
+                                                            @endphp
+                                                        </th>
+                                                        @endfor
+                                                    </tr>
+                                                </thead>
+                                                
+                                                <tbody>
+                                                    @php @$total_attendance = 0; @endphp
+                                                    @php @$count_absent = 0; @endphp
+                                                    <tr>
+                                                        <td>
+                                                            @php $p = 0; @endphp
+                                                            @foreach($record->studentAttendance as $value)
+                                                                @if(@$value->attendance_type == 'P')
+                                                                    @php $p++; @$total_attendance++; @endphp
+                                                                @endif
+                                                            @endforeach
+                                                            {{$p}}
+                                                        </td>
+                                                        <td>
+                                                            @php $l = 0; @endphp
+                                                            @foreach($record->studentAttendance as $value)
+                                                                @if(@$value->attendance_type == 'L')
+                                                                    @php $l++; @$total_attendance++; @endphp
+                                                                @endif
+                                                            @endforeach
+                                                            {{$l}}
+                                                        </td>
+                                                        <td>
+                                                            @php $a = 0; @endphp
+                                                            @foreach($record->studentAttendance as $value)
+                                                                @if(@$value->attendance_type == 'A')
+                                                                    @php $a++; @$count_absent++; @$total_attendance++; @endphp
+                                                                @endif
+                                                            @endforeach
+                                                            {{$a}}
+                                                        </td>
+                                                        <td>
+                                                            @php $h = 0; @endphp
+                                                            @foreach($record->studentAttendance as $value)
+                                                                @if(@$value->attendance_type == 'H')
+                                                                    @php $h++; @$total_attendance++; @endphp
+                                                                @endif
+                                                            @endforeach
+                                                            {{$h}}
+                                                        </td>
+                                                        <td>
+                                                            @php $f = 0; @endphp
+                                                            @foreach($record->studentAttendance as $value)
+                                                                @if(@$value->attendance_type == 'F')
+                                                                    @php $f++; @$total_attendance++; @endphp
+                                                                @endif
+                                                            @endforeach
+                                                            {{$f}}
+                                                        </td>
+                                                        <td>  
+                                                        @php
+                                                            @$total_present = @$total_attendance - @$count_absent;
+                                                            if(@$count_absent == 0){
+                                                                echo '100%';
+                                                            }else{
+                                                                @$percentage = @$total_present / @$total_attendance * 100;
+                                                                echo number_format((float)@$percentage, 2, '.', '').'%';
+                                                            }
+                                                        @endphp
+                    
+                                                        </td>
+                                                        @for($i = 1;  $i<=@$days; $i++)
+                                                            @php
+                                                                @$date = @$year.'-'.@$month.'-'.$i;
+                                                            @endphp
+                                                            <td width="3%" class="{{($i<=18)? 'all':'none'}}">
+                                                                @foreach($record->studentAttendance as $value)
+                                                                    @if(strtotime(@$value->attendance_date) == strtotime(@$date))
+                                                                        {{@$value->attendance_type}}
+                                                                    @endif
+                                                                @endforeach
+                                                            </td>
+                                                        
+                                                        @endfor
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            
+                           </div>
+                            
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="table-responsive pt-30">
-                    <div id="table_id_student_wrapper" class="dataTables_wrapper no-footer">
-                <table id="table_id_student" class="display school-table dataTable no-footer pt-5" cellspacing="0" width="100%">
-                    <thead>
-                        <tr>
-                            <th width="3%">P</th>
-                            <th width="3%">L</th>
-                            <th width="3%">A</th>
-                            <th width="3%">H</th>
-                            <th width="3%">F</th>
-                            <th width="2%">%</th>
-                            @for($i = 1;  $i<=@$days; $i++)
-                            <th width="3%" class="{{($i<=18)? 'all':'none'}}">
-                                {{$i}} <br>
-                                @php
-                                    @$date = @$year.'-'.@$month.'-'.$i;
-                                    @$day = date("D", strtotime(@$date));
-                                    echo @$day;
-                                @endphp
-                            </th>
-                            @endfor
-                        </tr>
-                    </thead>
-                    
-                    <tbody>
-                        @php @$total_attendance = 0; @endphp
-                        @php @$count_absent = 0; @endphp
-                        <tr>
-                            <td>
-                                @php $p = 0; @endphp
-                                @foreach($attendances as $value)
-                                    @if(@$value->attendance_type == 'P')
-                                        @php $p++; @$total_attendance++; @endphp
-                                    @endif
-                                @endforeach
-                                {{$p}}
-                            </td>
-                            <td>
-                                @php $l = 0; @endphp
-                                @foreach($attendances as $value)
-                                    @if(@$value->attendance_type == 'L')
-                                        @php $l++; @$total_attendance++; @endphp
-                                    @endif
-                                @endforeach
-                                {{$l}}
-                            </td>
-                            <td>
-                                @php $a = 0; @endphp
-                                @foreach($attendances as $value)
-                                    @if(@$value->attendance_type == 'A')
-                                        @php $a++; @$count_absent++; @$total_attendance++; @endphp
-                                    @endif
-                                @endforeach
-                                {{$a}}
-                            </td>
-                            <td>
-                                @php $h = 0; @endphp
-                                @foreach($attendances as $value)
-                                    @if(@$value->attendance_type == 'H')
-                                        @php $h++; @$total_attendance++; @endphp
-                                    @endif
-                                @endforeach
-                                {{$h}}
-                            </td>
-                            <td>
-                                @php $f = 0; @endphp
-                                @foreach($attendances as $value)
-                                    @if(@$value->attendance_type == 'F')
-                                        @php $f++; @$total_attendance++; @endphp
-                                    @endif
-                                @endforeach
-                                {{$f}}
-                            </td>
-                            <td>  
-                               @php
-                                 @$total_present = @$total_attendance - @$count_absent;
-                                 if(@$count_absent == 0){
-                                     echo '100%';
-                                 }else{
-                                     @$percentage = @$total_present / @$total_attendance * 100;
-                                     echo number_format((float)@$percentage, 2, '.', '').'%';
-                                 }
-                               @endphp
 
-                            </td>
-                            @for($i = 1;  $i<=@$days; $i++)
-                                @php
-                                    @$date = @$year.'-'.@$month.'-'.$i;
-                                @endphp
-                                <td width="3%" class="{{($i<=18)? 'all':'none'}}">
-                                    @foreach($attendances as $value)
-                                        @if(strtotime(@$value->attendance_date) == strtotime(@$date))
-                                            {{@$value->attendance_type}}
-                                        @endif
-                                    @endforeach
-                                </td>
-                               
-                            @endfor
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            </div>
-            </div>
-        </div>
     </div>
 </section>
 @endif

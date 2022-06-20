@@ -117,7 +117,7 @@
                                         </td>
                                         
 
-                                        <td>{{$student->classes}}</td>
+                                        <td>{{$student->recordClass !="" ?$student->recordClass->class->class_name : ''}}</td>
 
                                         <td>{{$student->sessions}}</td>
                                         <td>{{$student->mobile}}</td>

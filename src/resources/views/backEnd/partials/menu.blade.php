@@ -1,8 +1,8 @@
 
-@php 
-$generalSetting= generalSetting();
-$languages = systemLanguage();
-$styles = allStyles();
+@php
+    $generalSetting= generalSetting();
+    $languages = systemLanguage();
+    $styles = allStyles();
 
 @endphp
 <style>
@@ -11,57 +11,57 @@ $styles = allStyles();
     .infix_theme_rtl .list{    padding-top: 40px !important;}
     .infix_theme_style .list{    padding-top: 40px !important;}
     p.date {
-    font-size: 11px;
-}
+        font-size: 11px;
+    }
 
-.mr-10.text-right.bell_time {
-    text-align: right;
-    margin-right: 0;
-    padding-right: 0;
-    position: relative;
-    left: 22px;
-}
+    .mr-10.text-right.bell_time {
+        text-align: right;
+        margin-right: 0;
+        padding-right: 0;
+        position: relative;
+        left: 22px;
+    }
 
-.profile_single_notification i {
-    margin-bottom: 20px;
-}
+    .profile_single_notification i {
+        margin-bottom: 20px;
+    }
 
-.profile_single_notification span.ti-bell {
-    font-size: 12px;
-    margin-right: 5px;
-    display: inline-block;
-    overflow: hidden;
-}
+    .profile_single_notification span.ti-bell {
+        font-size: 12px;
+        margin-right: 5px;
+        display: inline-block;
+        overflow: hidden;
+    }
 
-/* .dropdown-item:last-child .profile_single_notification {background: #;background: #000;} */
+    /* .dropdown-item:last-child .profile_single_notification {background: #;background: #000;} */
 
-.profile_single_notification.d-flex.justify-content-between.align-items-center {
-    /* background: red; */
-    margin-bottom: 10px !important;
-    margin-top: 10px !important;
-}
-.admin .navbar .right-navbar .dropdown .message.notification_msg {
-    font-size: 12px;
-    max-width: 127px;
-     max-height: auto !important;
-     overflow: visible !important;
-    -webkit-transition: all 0.4s ease 0s;
-    -moz-transition: all 0.4s ease 0s;
-    -o-transition: all 0.4s ease 0s;
-    transition: all 0.4s ease 0s;
-    line-height: 1.4;
-    white-space: normal;
+    .profile_single_notification.d-flex.justify-content-between.align-items-center {
+        /* background: red; */
+        margin-bottom: 10px !important;
+        margin-top: 10px !important;
+    }
+    .admin .navbar .right-navbar .dropdown .message.notification_msg {
+        font-size: 12px;
+        max-width: 127px;
+        max-height: auto !important;
+        overflow: visible !important;
+        -webkit-transition: all 0.4s ease 0s;
+        -moz-transition: all 0.4s ease 0s;
+        -o-transition: all 0.4s ease 0s;
+        transition: all 0.4s ease 0s;
+        line-height: 1.4;
+        white-space: normal;
 
-}
-.admin .navbar .right-navbar .dropdown .message {
-    max-height: initial !important;
-}
+    }
+    .admin .navbar .right-navbar .dropdown .message {
+        max-height: initial !important;
+    }
 
-/* sctolled_notify  */
-.sctolled_notify {
-    max-height: 300px;
-    overflow: auto;
-}
+    /* sctolled_notify  */
+    .sctolled_notify {
+        max-height: 300px;
+        overflow: auto;
+    }
 </style>
 <style>
     .nice-select.open .list { min-width: 200px;  left: 0;  padding: 5px; }
@@ -70,15 +70,20 @@ $styles = allStyles();
 @php
     $coltroller_role=1;
 @endphp
+
 <nav class="navbar navbar-expand-lg up_navbar" id="main-nav-for-chat">
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-12">
                 <div class='up_dash_menu'>
-                    <button type="button" id="sidebarCollapse" class="btn d-lg-none nav_icon">
+                    <div id="sidebarCollapse" class="sidebar_icon  d-lg-none btn nav_icon">
                         <i class="ti-more"></i>
-                    </button>
-                    <ul class="nav navbar-nav mr-auto search-bar">
+                    </div>
+                    <div class="collaspe_icon open_miniSide">
+                        <i class="ti-menu"></i>
+                    </div>
+
+                    <ul class="nav navbar-nav mr-auto search-bar ml-0">
                         <li class="">
                             <div class="input-group" id="serching">
                             <span>
@@ -98,45 +103,45 @@ $styles = allStyles();
                             aria-label="Toggle navigation">
                         {{-- <i class="ti-menu"></i> --}}
                         <div class="client_thumb_btn">
-                                @if (!empty(profile()))
-                                    <img class="client_img" src="{{asset(profile())}}" alt="Profile Pic">
-                                @else
-                                    <img class="client_img" src="{{asset('public/uploads/staff/demo/staff.jpg') }}" alt="Profile Pic">
+                            @if (!empty(profile()))
+                                <img class="client_img" src="{{asset(profile())}}" alt="Profile Pic">
+                            @else
+                                <img class="client_img" src="{{asset('public/uploads/staff/demo/staff.jpg') }}" alt="Profile Pic">
                                 {{-- @else --}}
                             @endif
                         </div>
                     </button>
                     <div class="collapse navbar-collapse flex-end" id="navbarSupportedContent">
                         <ul class="nav navbar-nav mr-auto nav-buttons flex-sm-row">
-                                @if ( generalSetting()->website_btn==1)
-                                     <li class="nav-item">
-                                        <a class="primary-btn white mr-10" href="{{url('/')}}/home">@lang('common.website')</a>
+                            @if ( generalSetting()->website_btn==1)
+                                <li class="nav-item">
+                                    <a class="primary-btn white mr-10" href="{{url('/')}}/home">@lang('common.website')</a>
+                                </li>
+                            @endif
+                            @if (generalSetting()->dashboard_btn==1)
+                                @if (Auth::user()->role_id == $coltroller_role)
+                                    <li class="nav-item">
+                                        <a class="primary-btn white mr-10"
+                                           href="{{route('admin-dashboard')}}">@lang('common.dashboard')</a>
                                     </li>
                                 @endif
-                                  @if (generalSetting()->dashboard_btn==1)
-                                        @if (Auth::user()->role_id == $coltroller_role)
-                                        <li class="nav-item">
-                                            <a class="primary-btn white mr-10"
-                                            href="{{route('admin-dashboard')}}">@lang('common.dashboard')</a>
-                                        </li>
-                                        @endif
-                                  @endif
-                                  @if ( generalSetting()->report_btn==1)
-                                  @if (Auth::user()->role_id == $coltroller_role)
-                                  <li class="nav-item">
-                                      <a class="primary-btn white" href="{{route('student_report')}}">@lang('reports.reports')</a>
-                                  </li>
-                                  @endif
-                              @endif
+                            @endif
+                            @if ( generalSetting()->report_btn==1)
+                                @if (Auth::user()->role_id == $coltroller_role)
+                                    <li class="nav-item">
+                                        <a class="primary-btn white" href="{{route('student_report')}}">@lang('reports.reports')</a>
+                                    </li>
+                                @endif
+                            @endif
 
-            
-                    </ul>
-                    {{-- @if (Auth::user()->role_id==1 || Auth::user()->is_administrator=='yes') --}}
+
+                        </ul>
+                        {{-- @if (Auth::user()->role_id==1 || Auth::user()->is_administrator=='yes') --}}
                         <ul class="nav navbar-nav mr-0 nav-setting flex-sm-row d-none d-lg-block colortheme">
                             <li class="nav-item active">
-                            <input type="hidden" name="url" id="url" value="{{url('/')}}">
+                                <input type="hidden" name="url" id="url" value="{{url('/')}}">
                                 <select class="niceSelect infix_session" id="infix_session">
-                                
+
                                     <option data-display="Academic Year" value="0">@lang('common.academic_year') </option>
                                     @foreach (academicYears() as $academic_year)
                                         <option value="{{ @$academic_year->id }}" {{ getAcademicId()==@$academic_year->id?'selected':''}}>{{ @$academic_year->year }} [{{@$academic_year->title}}]</option>
@@ -144,23 +149,23 @@ $styles = allStyles();
                                 </select>
                             </li>
                         </ul>
-                    {{-- @endif --}}
-                   
-                    
-                    @if(@$styles && Auth::user()->role_id == 1 )
-                        @if (generalSetting()->style_btn==1)
-                        <input type="hidden" name="url" id="url" value="{{Url('/')}}">
-                        <ul class="nav navbar-nav mr-0  nav-setting flex-sm-row d-none d-lg-block colortheme">
-                            <li class="nav-item active">
-                                <select class="niceSelect infix_theme_style" id="infix_theme_style">
-                                
-                                    <option data-display="@lang('common.select_style')" value="0">@lang('common.select_style')</option>
-                                    @foreach($styles as $style)
-                                        <option value="{{$style->id}}" {{activeStyle()->id == $style->id?'selected':''}}>{{$style->style_name}}</option>
-                                    @endforeach
-                                </select>
-                            </li>
-                        </ul>
+                        {{-- @endif --}}
+
+
+                        @if(@$styles && Auth::user()->role_id == 1 )
+                            @if (generalSetting()->style_btn==1)
+                                <input type="hidden" name="url" id="url" value="{{Url('/')}}">
+                                <ul class="nav navbar-nav mr-0  nav-setting flex-sm-row d-none d-lg-block colortheme">
+                                    <li class="nav-item active">
+                                        <select class="niceSelect infix_theme_style" id="infix_theme_style">
+
+                                            <option data-display="@lang('common.select_style')" value="0">@lang('common.select_style')</option>
+                                            @foreach($styles as $style)
+                                                <option value="{{$style->id}}" {{activeStyle()->id == $style->id?'selected':''}}>{{$style->style_name}}</option>
+                                            @endforeach
+                                        </select>
+                                    </li>
+                                </ul>
                         @endif
                         {{-- @if (generalSetting()->ltl_rtl_btn==1)
                             <ul class="nav navbar-nav mr-auto nav-setting flex-sm-row d-none d-lg-block colortheme">
@@ -177,11 +182,11 @@ $styles = allStyles();
                             </ul>
                         @endif --}}
                     @endif
-                <!-- Start Right Navbar -->
-                
+                    <!-- Start Right Navbar -->
 
-                    <ul class="nav navbar-nav right-navbar">
-                        @if(generalSetting()->lang_btn==1)
+
+                        <ul class="nav navbar-nav right-navbar">
+                            @if(generalSetting()->lang_btn==1)
                                 <li class="nav-item">
                                     <select class="niceSelect languageChange" name="languageChange" id="languageChange">
                                         <option data-display="@lang('common.select_language')" value="0">@lang('common.select_language')</option>
@@ -190,70 +195,70 @@ $styles = allStyles();
                                         @endforeach
                                     </select>
                                 </li>
-                                @endif
-                        {{-- @endif --}}
-                        {{-- @if(env('BROADCAST_DRIVER') == null)
-                            <jquery-notification-component
-                                    :unreads="{{ json_encode($notifications_for_chat) }}"
-                                    :user_id="{{ json_encode(auth()->id()) }}"
-                                    :redirect_url="{{ json_encode(route('chat.index')) }}"
-                                    :check_new_notification_url="{{ json_encode(route('chat.notification.check')) }}"
-                                    :asset_type="{{ json_encode('/public') }}"
-                                    :mark_all_as_read_url="{{ json_encode(route('chat.notification.allRead')) }}"
-                            ></jquery-notification-component>
-                        @else
-                            <notification-component
-                                    :unreads="{{ json_encode($notifications_for_chat) }}"
-                                    :user_id="{{ json_encode(auth()->id()) }}"
-                                    :redirect_url="{{ json_encode(route('chat.index')) }}"
-                                    :asset_type="{{ json_encode('/public') }}"
-                                    :mark_all_as_read_url="{{ json_encode(route('chat.notification.allRead')) }}"
-                            ></notification-component>
-                        @endif --}}
-                        <li class="nav-item notification-area">
-                            <a href="{{ route('chat.index') }}" class="chat-quick-link">
-                                <i class="fa fa-whatsapp"></i>
-                            </a>
-                        </li>
-                        <li class="nav-item notification-area  d-none d-lg-block">
-                            <div class="dropdown">
-                                <button type="button" class="dropdown-toggle" data-toggle="dropdown">
-                                    <span class="badge" style="left: 25px;">{{count($notifications)}}</span>
-                                    <span class="flaticon-notification"></span>
-                                </button>
-                                
-                                <div class="dropdown-menu">
-                                    <div class="white-box">
-                                        <div class="p-h-20">
-                                            <p class="notification">@lang('common.you_have')
-                                                <span>{{count($notifications)}} @lang('common.new')</span>
-                                                @lang('common.notification')</p>
-                                        </div>
-                                        <div class="sctolled_notify">
-                                        
-                                        @foreach($notifications as $notification)
+                            @endif
+                            {{-- @endif --}}
+                            {{-- @if(env('BROADCAST_DRIVER') == null)
+                                <jquery-notification-component
+                                        :unreads="{{ json_encode($notifications_for_chat) }}"
+                                        :user_id="{{ json_encode(auth()->id()) }}"
+                                        :redirect_url="{{ json_encode(route('chat.index')) }}"
+                                        :check_new_notification_url="{{ json_encode(route('chat.notification.check')) }}"
+                                        :asset_type="{{ json_encode('/public') }}"
+                                        :mark_all_as_read_url="{{ json_encode(route('chat.notification.allRead')) }}"
+                                ></jquery-notification-component>
+                            @else
+                                <notification-component
+                                        :unreads="{{ json_encode($notifications_for_chat) }}"
+                                        :user_id="{{ json_encode(auth()->id()) }}"
+                                        :redirect_url="{{ json_encode(route('chat.index')) }}"
+                                        :asset_type="{{ json_encode('/public') }}"
+                                        :mark_all_as_read_url="{{ json_encode(route('chat.notification.allRead')) }}"
+                                ></notification-component>
+                            @endif --}}
+                            <li class="nav-item notification-area">
+                                <a href="{{ route('chat.index') }}" class="chat-quick-link">
+                                    <i class="fa fa-whatsapp"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item notification-area  d-none d-lg-block">
+                                <div class="dropdown">
+                                    <button type="button" class="dropdown-toggle" data-toggle="dropdown">
+                                        <span class="badge">{{count($notifications)}}</span>
+                                        <span class="flaticon-notification"></span>
+                                    </button>
 
-                                            <a class="dropdown-item pos-re"
-                                               href="{{ route('notification-show',$notification->id) }}">
+                                    <div class="dropdown-menu">
+                                        <div class="white-box">
+                                            <div class="p-h-20">
+                                                <p class="notification">@lang('common.you_have')
+                                                    <span>{{count($notifications)}} @lang('common.new')</span>
+                                                    @lang('common.notification')</p>
+                                            </div>
+                                            <div class="sctolled_notify">
 
-                                                    <div class="profile_single_notification d-flex justify-content-between align-items-center">
-                                                        <div class="mr-30">
-                                                            <p class="message s"> <span class="ti-bell"></span>{{$notification->message}}</p>
+                                                @foreach($notifications as $notification)
+
+                                                    <a class="dropdown-item pos-re"
+                                                       href="{{ route('notification-show',$notification->id) }}">
+
+                                                        <div class="profile_single_notification d-flex justify-content-between align-items-center">
+                                                            <div class="mr-30">
+                                                                <p class="message s"> <span class="ti-bell"></span>{{$notification->message}}</p>
+                                                            </div>
+                                                            <div class="text-right bell_time">
+                                                                <p class="time text-uppercase">{{date("h.i a", strtotime($notification->created_at))}}</p>
+                                                                <p class="date">
+                                                                    {{$notification->date != ""? dateConvert($notification->date):''}}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                        <div class="text-right bell_time">
-                                                            <p class="time text-uppercase">{{date("h.i a", strtotime($notification->created_at))}}</p>
-                                                            <p class="date">
-                                                                {{$notification->date != ""? dateConvert($notification->date):''}}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </a>
+                                                    </a>
 
-                                            @endforeach
+                                                @endforeach
                                             </div>
                                             <a href="{{route('view/all/notification',Auth()->user()->id)}}" class="primary-btn text-center text-uppercase mark-all-as-read">
                                                 @lang('common.mark_all_as_read')
-                                            </a> 
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -280,7 +285,7 @@ $styles = allStyles();
                                                                     @if (Auth::user()->role_id == 2 || Auth::user()->role_id == 3)
                                                                         <p class="message">
                                                                             <strong>
-                                                                                @lang('common.balance'): 
+                                                                                @lang('common.balance'):
                                                                                 {{generalSetting()->currency_symbol}}{{(Auth::user()->wallet_balance != null) ? number_format(Auth::user()->wallet_balance, 2, '.', ''): 0.00}}
                                                                             </strong>
                                                                         </p>
@@ -294,41 +299,34 @@ $styles = allStyles();
 
                                             <ul class="list-unstyled">
                                                 <li>
-                                                   
+
                                                     @if(Auth::user()->is_saas == 1)
                                                         <a href="{{ route('saasStaffDashboard')}}">
                                                             <span class="fa fa-home"></span>
                                                             @lang('common.saas_dashboard')
                                                         </a>
-                                                        @endif
+                                                    @endif
 
                                                     @if(Auth::user()->role_id == "2" && Auth::user()->is_saas == 0)
                                                         <a href="{{ route('student-profile')}}">
                                                             <span class="ti-user"></span>
                                                             @lang('common.view_profile')
                                                         </a>
-                                           
-                                                    @elseif(Auth::user()->role_id != "3" && Auth::user()->is_saas == 0)
+
+                                                    @elseif(Auth::user()->role_id != "3" && Auth::user()->is_saas == 0 && Auth::user()->staff)
 
 
                                                         <a href="{{route('viewStaff', Auth::user()->staff->id)}}">
                                                             <span class="ti-user"></span>
                                                             @lang('common.view_profile')
                                                         </a>
-                                           
-                                                    @elseif(Auth::user()->role_id != "3" && Auth::user()->is_saas == 0)
-                                                        <li>
-                                                            <a href="{{route('viewStaff', Auth::user()->staff->id)}}">
-                                                                <span class="ti-user"></span>
-                                                                @lang('common.view_profile')
-                                                            </a>
-                                                        </li>
+
                                                     @endif
 
-                                                    
+
                                                 </li>
 
-                                               
+
 
                                                 @if(moduleStatusCheck('Saas')== TRUE && Auth::user()->is_administrator=="yes" && Auth::user()->role_id==1 && Auth::user()->is_saas ==0)
 
@@ -347,7 +345,7 @@ $styles = allStyles();
                                                 <li>
                                                     <a href="{{route('updatePassowrd')}}">
                                                         <span class="ti-key"></span>
-                                                        @lang('common.password') 
+                                                        @lang('common.password')
                                                     </a>
                                                 </li>
                                                 <li>
@@ -384,6 +382,5 @@ $styles = allStyles();
 
 
 @section('script')
-
 
 @endsection

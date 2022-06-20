@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-
+use Modules\Wallet\Http\Controllers\api\WalletApiController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/wallet', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:api')->group(function () {
+    Route::get('my-wallet', [WalletApiController::class, 'myWallet']);
+    Route::post('add-wallet', [WalletApiController::class, 'addWalletAmount']);
+    Route::post('confirm-wallet-payment', [WalletApiController::class, 'confirmWalletPayment']);
 });

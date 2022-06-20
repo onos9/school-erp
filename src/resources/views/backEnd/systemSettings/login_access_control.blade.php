@@ -123,7 +123,12 @@
                                         </td>
                                         <td> {{@$student->roll_no}}</td>
                                         <td>{{@$student->first_name.' '.@$student->last_name}}  </td>
-                                        <td>{{!empty(@$student->class)?@$student->class->class_name:''}} ({{!empty(@$student->class)?@$student->section->section_name:''}})</td>
+                                        <td>
+                                            @foreach($student->studentRecords as $record)
+                                            {{!empty(@$record->class)?@$record->class->class_name:''}} ({{!empty(@$record->section)?@$record->section->section_name:''}})
+                                            @endforeach
+                                            
+                                        </td>
                                         <td>
                                             <input type="hidden" name="id" value="{{$student->user_id}}">
                                             <label class="switch">
@@ -170,7 +175,7 @@
                                         </td>
                                         <td>
 
-                                            <input type="hidden" name="ParentID" value="{{$student->parents->user_id}}" id="ParentID">
+                                            <input type="hidden" name="ParentID" value="{{@$student->parents->user_id}}" id="ParentID">
                                            
                                             <label class="switch">
                                                 @if(Illuminate\Support\Facades\Config::get('app.app_sync'))

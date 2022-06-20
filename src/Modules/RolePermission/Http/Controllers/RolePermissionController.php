@@ -254,6 +254,13 @@ class RolePermissionController extends Controller
                     $all_modules->where('module_id','!=',51);
                 }
 
+                if (moduleStatusCheck('Lms')== True) {
+                    if($id != 4){
+                        $all_modules->where('id','!=',1564);
+                        $all_modules->where('id','!=',1565);
+                    }
+                }
+
                 $all_modules =  $all_modules->where('is_saas',0)->where('parent_id',0)->where('active_status', 1)->get();
                 // $all_modules = InfixModuleInfo::where('is_saas',0)->where('active_status', 1)->where('module_id','!=',22)->get();
 

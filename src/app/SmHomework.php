@@ -64,7 +64,7 @@ class SmHomework extends Model
                 ->where('class_id', $class_id)
                 ->where('section_id', $section_id)
                 ->where('school_id', auth()->user()->school_id)
-                ->where('academic_id', getAcademicId())
+               
                 ->count();
 
             $totalHomeworkCompleted = SmHomeworkStudent::select('id')
@@ -97,7 +97,7 @@ class SmHomework extends Model
                 ->where('class_id', $this->class_id)
                 ->where('section_id', $this->section_id)
                 ->where('school_id', auth()->user()->school_id)
-                ->where('academic_id', getAcademicId())
+              
                 ->count();
 
             $totalHomeworkCompleted = SmHomeworkStudent::select('id')

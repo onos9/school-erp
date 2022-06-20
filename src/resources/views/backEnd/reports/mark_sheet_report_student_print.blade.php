@@ -458,7 +458,7 @@
                                             @lang('common.phone'): {{isset(generalSetting()->phone)?generalSetting()->phone:'+8801841412141'}}
                                         </h5>
                                     </div>
-                                    <div class="profile_thumb profile_100" style="background-image: url({{ file_exists(@$studentDetails->student_photo) ? asset($studentDetails->student_photo) : asset('public/uploads/staff/demo/staff.jpg') }})"></div>
+                                    <div class="profile_thumb profile_100" style="background-image: url({{ file_exists(@$studentDetails->studentDetail->student_photo) ? asset($studentDetails->studentDetail->student_photo) : asset('public/uploads/staff/demo/staff.jpg') }})"></div>
                                 
                                 </div>
                             </td>
@@ -472,7 +472,7 @@
         <div class="meritTableBody">
             <!-- middle content  -->
             <div class="student_name_highlight">
-                {{$student_detail->full_name}}
+                {{$student_detail->studentDetail->full_name}}
             </div>
             <table class="table">
                 <tbody>

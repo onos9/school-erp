@@ -261,7 +261,14 @@ class SmApproveLeaveController extends Controller
             $notification->user_id = $staff->id;
             $notification->role_id = $role_id;
             $notification->date = date('Y-m-d');
-            $notification->message = app('translator')->get('leave.leave_status_updated');
+            if($request->approve_status == 'A'){
+                $message = app('translator')->get('leave.leave_request_approved');
+            }else if($request->approve_status == 'C'){
+                $message = app('translator')->get('leave.leave_request_canceled');;
+            } else{
+                $message = app('translator')->get('leave.leave_request_pending');;
+            }
+            $notification->message = $message;
             $notification->school_id = Auth::user()->school_id;
             $notification->academic_id = getAcademicId();
             $notification->save();

@@ -23,10 +23,11 @@
     }
 </style>
 @php
+    $is_registration_permission = false;
     if(moduleStatusCheck('ParentRegistration')){
         $reg_setting = Modules\ParentRegistration\Entities\SmRegistrationSetting::where('school_id', $school->id)->first();
-        $is_registration_permission = $reg_setting ?  $reg_setting->position : null;
-
+        $is_registration_position = $reg_setting ?  $reg_setting->position : null;
+        $is_registration_permission = $reg_setting ?  ($reg_setting->registration_permission == 1) : false;
     }
     $setting  = generalSetting();
     App::setLocale(getUserLanguage());
@@ -36,8 +37,7 @@
 <html lang="{{ app()->getLocale() }}" @if(isset ($ttl_rtl ) && $ttl_rtl ==1) dir="rtl" class="rtl" @endif >
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport"
-          content="Infix is 100+ unique feature enable school management software system. It can manage all type of school, academy and any educational institution"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{asset($setting->favicon)}}" type="image/png"/>
     <title>{{ $setting->site_title ? $setting->site_title :  'Infix Edu ERP' }}</title>
     <meta name="_token" content="{!! csrf_token() !!}"/>
@@ -74,6 +74,10 @@
     <script src="{{asset('public/backEnd/')}}/vendors/js/jquery-3.2.1.min.js">
     </script>
     <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
+    <script>
+        window._locale = '{{ app()->getLocale() }}';
+        window._rtl = {{ userRtlLtl()==1 ? "true" : "false" }};
+    </script>
     @stack('css')
 </head>
 
@@ -253,7 +257,7 @@
                             </li>
                         @endif
 
-                        @if(moduleStatusCheck('ParentRegistration') && isset($is_registration_permission) && $is_registration_permission == 1)
+                        @if(moduleStatusCheck('ParentRegistration') && $is_registration_permission  && $is_registration_permission == 1)
 
                             <li class="nav-item">
                                 <a class="nav-link"
@@ -287,7 +291,7 @@
                             <nav>
                                 <ul>
                                     @if(moduleStatusCheck('ParentRegistration')== TRUE)
-                                        @if(isset($is_registration_permission) && $is_registration_permission==2)
+                                        @if($is_registration_permission  && $is_registration_permission==2)
                                             <li>
                                                 <a href="{{route('parentregistration/registration', $reg_setting->url)}}">
                                                     @lang('student.student_registration')

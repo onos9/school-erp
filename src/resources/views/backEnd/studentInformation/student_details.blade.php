@@ -44,7 +44,7 @@
                                     <select class="niceSelect w-100 bb form-control{{ $errors->has('academic_year') ? ' is-invalid' : '' }}" name="academic_year" id="academic_year">
                                         <option data-display="@lang('common.academic_year') *" value="">@lang('common.academic_year') *</option>
                                         @foreach($sessions as $session)
-                                            <option value="{{$session->id}}" {{isset($academic) && $academic == $session->id? 'selected': ''}}>{{$session->year}}[{{$session->title}}]</option>
+                                            <option value="{{$session->id}}" {{isset($academic_year) && $academic_year == $session->id? 'selected': ''}}>{{$session->year}}[{{$session->title}}]</option>
                                         @endforeach
                                     </select>
                                     <span class="focus-border"></span>
@@ -58,7 +58,7 @@
                             <div class="col-lg-3 sm_mb_20 sm2_mb_20 md_mb_20" id="class-div">
                                 <select class="niceSelect w-100 bb form-control {{ $errors->has('class') ? ' is-invalid' : '' }}" id="classSelectStudent" name="class">
                                     <option data-display="@lang('student.select_class') *" value="">@lang('student.select_class')</option>
-                                    @isset($academic)
+                                    @isset($academic_year)
                                         @foreach($classes as $class)
                                             <option value="{{$class->id}}" {{isset($class_id) && $class_id == $class->id ? 'selected' : ''}}>{{$class->class_name}}</option>
                                         @endforeach
@@ -131,13 +131,11 @@
                             <table id="table_id" class="display data-table school-table" cellspacing="0" width="100%">
                                 <thead>
                                 <tr>
-                                    <th>@lang('student.admission_no')</th>
-                                    <th>@lang('student.roll_no')</th>
-                                    <th>@lang('student.name')</th>
-                                    <th>@lang('student.class')</th>
-                                    <th>@lang('student.section')</th>
+                                    <th>@lang('student.admission_no')</th>                                 
+                                    <th>@lang('student.name')</th>                                   
                                     <th>@lang('student.father_name')</th>
                                     <th>@lang('student.date_of_birth')</th>
+                                    <th>@lang('student.class_sec')</th>
                                     <th>@lang('common.gender')</th>
                                     <th>@lang('common.type')</th>
                                     <th>@lang('common.phone')</th>
@@ -212,17 +210,17 @@
                     pages: "{{generalSetting()->ss_page_load}}" // number of pages to cache
                 } ),
                 columns: [
-                    {data: 'admission_no', name: 'admission_no'},
-                    {data: 'roll_no', name: 'roll_no'},
-                    {data: 'full_name', name: 'full_name'},
-                    {data: 'class.class_name', name: 'class.class_name'},
-                    {data: 'section.section_name', name: 'section.section_name'},
+                    {data: 'admission_no', name: 'admission_no'},                  
+                    {data: 'full_name', name: 'full_name'},                   
                     {data: 'parents.fathers_name', name: 'parents.fathers_name'},
                     {data: 'dob', name: 'dob'},
+                    {data: 'class_sec', name: 'class_sec'},
                     {data: 'gender.base_setup_name', name: 'gender.base_setup_name'},
                     {data: 'category.category_name', name: 'category.category_name'},
-                    {data: 'mobile', name: 'mobile'},
+                    {data: 'mobile', name: 'sm_students.mobile'},
                     {data: 'action', name: 'action', orderable: false, searchable: false},
+                    {data: 'first_name', name: 'first_name', visible : false},
+                    {data: 'last_name', name: 'last_name', visible : false},
                 ],
                 bLengthChange: false,
                 bDestroy: true,

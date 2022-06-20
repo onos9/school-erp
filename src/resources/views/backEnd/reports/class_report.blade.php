@@ -41,7 +41,7 @@
                                 <select class="w-100 bb niceSelect form-control {{ $errors->has('class') ? ' is-invalid' : '' }}" id="select_class" name="class">
                                     <option data-display="@lang('common.select_class') *" value="">@lang('common.select_class') *</option>
                                     @foreach($classes as $class)
-                                    <option value="{{$class->id}}"  {{( old("class") == $class->id ? "selected":"")}}>{{$class->class_name}}</option>
+                                    <option value="{{$class->id}}"  {{ isset($class_id)? ($class_id == $class->id? 'selected':''):''}}>{{$class->class_name}}</option>
                                     @endforeach
                                 </select>
                                 @if ($errors->has('class'))
@@ -53,6 +53,12 @@
                             <div class="col-lg-6 mt-30-md col-md-6" id="select_section_div">
                                 <select class="w-100 bb niceSelect form-control{{ $errors->has('section') ? ' is-invalid' : '' }}" id="select_section" name="section">
                                     <option data-display="@lang('common.select_section') *" value="">@lang('common.select_section') *</option>
+                                    @if(isset($class_id))
+                                        @foreach ($class->classSection as $section)
+                                        <option value="{{ $section->sectionName->id }}" {{ old("section")==$section->sectionName->id ? 'selected' : '' }} >
+                                            {{ $section->sectionName->section_name }}</option>
+                                        @endforeach
+                                    @endif
                                 </select>
                                 <div class="pull-right loader loader_style" id="select_section_loader">
                                     <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
@@ -77,12 +83,13 @@
     </div>
 </section>
 @if(isset($students))
+
 <section class="student-details">
     <div class="container-fluid p-0">
         <div class="row">
             <div class="col-lg-4 no-gutters">
                 <div class="main-title">
-                    <h3 class="mb-30 mt-30">@lang('reports.class_report_for_class') {{@$search_class->class_name}}, {{$section != ""? 'section ('. $section->section_name.')': ''}}</h3>
+                    <h3 class="mb-30 mt-30">@lang('reports.class_report_for_class') {{@$search_class->class_name}}, {{$sectionInfo != ""? 'section ('. $sectionInfo->section_name.')': ''}}</h3>
                 </div>
             </div>
         </div>

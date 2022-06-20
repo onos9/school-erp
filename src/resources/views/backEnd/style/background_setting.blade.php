@@ -57,6 +57,9 @@
                                                 <option data-display="@lang('style.select_position') *" value="">@lang('style.select_position') *</option>
                                                 <option value="1" {{old('style') == 1? 'selected': ''}}>@lang('style.dashboard_background')</option>
                                                 <option value="2" {{old('style') == 2? 'selected': ''}}>@lang('style.login_page_background')</option>
+                                                @if(moduleStatusCheck('Lead')==true)
+                                                <option value="3" {{old('style') == 3? 'selected': ''}}>@lang('lead::lead.lead_form_background')</option>
+                                                @endif
                                             </select>
                                             @if ($errors->has('style'))
                                             <span class="invalid-feedback invalid-select" role="alert">
@@ -99,11 +102,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-
-
-
-
 
                                     <div class="row no-gutters input-right-icon mt-35" id="background-image">
                                         <div class="col">

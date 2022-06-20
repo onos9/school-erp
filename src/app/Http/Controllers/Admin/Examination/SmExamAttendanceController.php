@@ -19,6 +19,7 @@ use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Admin\Examination\SmExamAttendanceSearchRequest;
+use App\Models\StudentRecord;
 
 class SmExamAttendanceController extends Controller
 {
@@ -33,7 +34,7 @@ class SmExamAttendanceController extends Controller
             $exams = SmExamType::get();
 
             if (teacherAccess()) {
-                $teacher_info=SmStaff::where('user_id',Auth::user()->id)->first();
+                $teacher_info=SmStaff::where('user_id', Auth::user()->id)->first();
                 $classes=$teacher_info->classes;
             } else {
                 $classes = SmClass::get();
@@ -48,76 +49,78 @@ class SmExamAttendanceController extends Controller
 
     public function examAttendanceSearch(SmExamAttendanceSearchRequest $request)
     {
-      try{
-        $exam_schedules = SmExamSchedule::query();
-        if($request->class !=null){
-                $exam_schedules-> where('class_id', $request->class);
-        }
-        
-        if($request->section !=null){
-                $exam_schedules->where('section_id', $request->section);
-        }
-                            
-        $exam_schedules=$exam_schedules->where('exam_term_id', $request->exam)
-                        ->where('subject_id', $request->subject)
-                        ->count();
-
-        if ($exam_schedules == 0) {
-            Toastr::error('You have to create exam schedule first', 'Failed');
-            return redirect('exam-attendance-create');
-        }
-        $students = SmStudent::query()->with('class','section');
-
-        if($request->class !=null){
-            $students ->where('class_id', $request->class);
-        }
-
-        if($request->section !=null){
-            $students->where('section_id', $request->section);
-        }
+        try {
+            $exam_schedules = SmExamSchedule::query();
+            if ($request->class !=null) {
+                    $exam_schedules-> where('class_id', $request->class);
+            }
             
-        $students = $students->get();
-        
-        if ($students->count() == 0) {
-            Toastr::error('No Record Found', 'Failed');
-            return redirect('exam-attendance-create');
-        }
+            if ($request->section !=null) {
+                    $exam_schedules->where('section_id', $request->section);
+            }
+                                
+            $exam_schedules=$exam_schedules->where('exam_term_id', $request->exam)
+                            ->where('subject_id', $request->subject)
+                            ->count();
 
-        $exam_attendance = SmExamAttendance::query();
-        if($request->class !=null){ 
-            $exam_attendance->where('class_id', $request->class);
-        }
+            if ($exam_schedules == 0) {
+                Toastr::error('You have to create exam schedule first', 'Failed');
+                return redirect('exam-attendance-create');
+            }
+            $students = StudentRecord::query()->with('class', 'section');
 
-        if($request->section !=null){ 
-            $exam_attendance->where('section_id', $request->section);
-        }
+            if ($request->class !=null) {
+                $students ->where('class_id', $request->class);
+            }
 
-        if($request->subject !=null){ 
-            $exam_attendance->where('subject_id', $request->subject);
-        }
-        $exam_attendance =  $exam_attendance->where('exam_id', $request->exam)->first();
-        $exam_attendance_childs =$exam_attendance != "" ? $exam_attendance->examAttendanceChild: [];
+            if ($request->section !=null) {
+                $students->where('section_id', $request->section);
+            }
+                
+            $students = $students->where('academic_id', getAcademicId())->where('school_id', auth()->user()->school_id)->get();
+            
+            if ($students->count() == 0) {
+                Toastr::error('No Record Found', 'Failed');
+                return redirect('exam-attendance-create');
+            }
 
-        if (teacherAccess()) {
-            $teacher_info=SmStaff::where('user_id',Auth::user()->id)->first();
-            $classes=$teacher_info->classes;
-        } else {
-            $classes = SmClass::get();
-        }
+            $exam_attendance = SmExamAttendance::query();
+            if ($request->class !=null) {
+                $exam_attendance->where('class_id', $request->class);
+            }
 
-        $exams    = SmExamType::get();
-        $subjects = SmSubject::get();
-        $exam_id  = $request->exam;
-        $subject_id = $request->subject;
-        $class_id = $request->class;
-        $section_id =$request->section !=null ? $request->section : null;
-        
-        $subject_info = SmSubject::find($request->subject);            
-        $search_info['class_name'] = SmClass::find($request->class)->class_name;
-        $search_info['section_name'] =  $section_id==null ? 'All Sections' : SmSection::find($request->section)->section_name;
-        $search_info['subject_name'] =  SmSubject::find($request->subject)->subject_name;
-        return view('backEnd.examination.exam_attendance_create', compact('exams', 'classes', 'subjects', 'students', 'exam_id', 'subject_id', 'class_id', 'section_id', 'exam_attendance_childs','search_info'));
-        }catch (\Exception $e) {
+            if ($request->section !=null) {
+                $exam_attendance->where('section_id', $request->section);
+            }
+
+            if ($request->subject !=null) {
+                $exam_attendance->where('subject_id', $request->subject);
+            }
+            $exam_attendance =  $exam_attendance->where('exam_id', $request->exam)->first();
+            $exam_attendance_childs = $exam_attendance != "" ? $exam_attendance->examAttendanceChild: [];
+            
+            if (teacherAccess()) {
+                $teacher_info = SmStaff::where('user_id', Auth::user()->id)->first();
+                $classes = $teacher_info->classes;
+            } else {
+                $classes = SmClass::get();
+            }
+
+            $exams    = SmExamType::get();
+            $subjects = SmSubject::get();
+            $exam_id  = $request->exam;
+            $subject_id = $request->subject;
+            $class_id = $request->class;
+            $section_id =$request->section !=null ? $request->section : null;
+            
+            $subject_info = SmSubject::find($request->subject);
+            $search_info['class_name'] = SmClass::find($request->class)->class_name;
+            $search_info['section_name'] =  $section_id==null ? 'All Sections' : SmSection::find($request->section)->section_name;
+            $search_info['subject_name'] =  SmSubject::find($request->subject)->subject_name;
+
+            return view('backEnd.examination.exam_attendance_create', compact('exams', 'classes', 'subjects', 'students', 'exam_id', 'subject_id', 'class_id', 'section_id', 'exam_attendance_childs', 'search_info'));
+        } catch (\Exception $e) {
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -125,15 +128,16 @@ class SmExamAttendanceController extends Controller
 
     public function examAttendanceStore(Request $request)
     {
+        //  return $request->all();
         try {
             $alreday_assigned  = SmExamAttendance::query();
-            if($request->class_id !=null){ 
+            if ($request->class_id !=null) {
                 $alreday_assigned ->where('class_id', $request->class_id);
             }
-            if($request->section_id !=''){ 
+            if ($request->section_id !='') {
                 $alreday_assigned->where('section_id', $request->section_id);
             }
-            if($request->subject_id !=null){ 
+            if ($request->subject_id !=null) {
                 $alreday_assigned->where('subject_id', $request->subject_id);
             }
             $alreday_assigned=$alreday_assigned->where('exam_id', $request->exam_id)->first();
@@ -141,7 +145,7 @@ class SmExamAttendanceController extends Controller
             DB::beginTransaction();
             DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-            if($request->section_id !=''){
+            if ($request->section_id !='') {
                 if ($alreday_assigned == "") {
                     $exam_attendance = new SmExamAttendance();
                 } else {
@@ -166,24 +170,27 @@ class SmExamAttendanceController extends Controller
                     SmExamAttendanceChild::where('exam_attendance_id', $exam_attendance->id)->delete();
                 }
 
-                foreach ($request->id as $student) {    
+                foreach ($request->attendance as $record_id => $record) {
                     $exam_attendance_child = new SmExamAttendanceChild();
                     $exam_attendance_child->exam_attendance_id = $exam_attendance->id;
-                    $exam_attendance_child->student_id = $student;
-                    $exam_attendance_child->attendance_type = $request->attendance[$student];
+                    $exam_attendance_child->student_id = gv($record, 'student');
+                    $exam_attendance_child->student_record_id = $record_id;
+                    $exam_attendance_child->class_id = gv($record, 'class');
+                    $exam_attendance_child->section_id = gv($record, 'section');
+                    $exam_attendance_child->attendance_type = gv($record, 'attendance_type');
                     $exam_attendance_child->created_at = YearCheck::getYear() . '-' . date('m-d h:i:s');
                     $exam_attendance_child->school_id = Auth::user()->school_id;
                     $exam_attendance_child->academic_id = getAcademicId();
                     $exam_attendance_child->save();
                 }
-            }else{
+            } else {
                 $classSections= SmAssignSubject::where('class_id', $request->class_id)
                                 ->where('subject_id', $request->subject_id)
                                 ->groupBy(['section_id','subject_id'])
                                 ->get();
 
-                foreach($classSections as $section){        
-                    if ($alreday_assigned == "") {                      
+                foreach ($classSections as $section) {
+                    if ($alreday_assigned == "") {
                         $exam_attendance = new SmExamAttendance();
                     } else {
                         $exam_attendance = SmExamAttendance::where('class_id', $request->class_id)
@@ -207,11 +214,16 @@ class SmExamAttendanceController extends Controller
                         SmExamAttendanceChild::where('exam_attendance_id', $exam_attendance->id)->delete();
                     }
 
-                    foreach ($request->id as $student) {    
+                    foreach ($request->attendance as $record_id => $record) {
                         $exam_attendance_child = new SmExamAttendanceChild();
                         $exam_attendance_child->exam_attendance_id = $exam_attendance->id;
-                        $exam_attendance_child->student_id = $student;
-                        $exam_attendance_child->attendance_type = $request->attendance[$student];
+
+                        $exam_attendance_child->student_id = gv($record, 'student');
+                        $exam_attendance_child->student_record_id = $record_id;
+                        $exam_attendance_child->class_id = gv($record, 'class');
+                        $exam_attendance_child->section_id = gv($record, 'section');
+                        $exam_attendance_child->attendance_type = gv($record, 'attendance_type');
+
                         $exam_attendance_child->created_at = YearCheck::getYear() . '-' . date('m-d h:i:s');
                         $exam_attendance_child->school_id = Auth::user()->school_id;
                         $exam_attendance_child->academic_id = getAcademicId();
@@ -223,6 +235,7 @@ class SmExamAttendanceController extends Controller
             Toastr::success('Operation successful', 'Success');
             return redirect('exam-attendance-create');
             } catch (\Exception $e) {
+                dd($e);
             DB::rollback();
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();

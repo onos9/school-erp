@@ -194,7 +194,7 @@
                                         <th>@lang('common.sl')</th>
                                         <th>@lang('student.admission_no')</th>
                                         <th>@lang('student.student_name')</th>
-                                        <th>@lang('student.roll_number')</th>
+                                        <th>@lang('student.id_number')</th>
                                         <th>@lang('student.attendance')</th>
                                         <th>@lang('common.note')</th>
                                     </tr>
@@ -204,34 +204,40 @@
                                     @php $count=1; @endphp
                                    
                                     @foreach($students as $student)
+                                    {{-- student means student record data--}}
                                         <tr>
                                             <td>{{$count++}} </td>
-                                            <td>{{$student->admission_no}}<input type="hidden" name="id[]" value="{{$student->id}}"></td>
-                                            <td>{{$student->first_name.' '.$student->last_name}}</td>
+                                            <td>{{$student->studentDetail->admission_no}}
+                                                <input type="hidden" name="attendance[{{$student->id}}]" value="{{$student->id}}">
+                                                <input type="hidden" name="attendance[{{$student->id}}][student]" value="{{$student->student_id}}">
+                                                <input type="hidden" name="attendance[{{$student->id}}][class]" value="{{$student->class_id}}">
+                                                <input type="hidden" name="attendance[{{$student->id}}][section]" value="{{$student->section_id}}">
+                                            </td>
+                                            <td>{{$student->studentDetail->first_name.' '.$student->studentDetail->last_name}}</td>
                                             <td>{{$student->roll_no}}</td>
                                             <td>
                                                 <div class="d-flex radio-btn-flex">
                                                     <div class="mr-20">
-                                                        <input type="radio" name="attendance[{{$student->id}}]" id="attendanceP{{$student->id}}" value="P" class="common-radio attendanceP subject_attendance_type" {{ $student->DateSubjectWiseAttendances !=null ? ($student->DateSubjectWiseAttendances->attendance_type == "P" ? 'checked' :'') : 'checked' }}>
+                                                        <input type="radio" name="attendance[{{$student->id}}][attendance_type]" id="attendanceP{{$student->id}}" value="P" class="common-radio attendanceP subject_attendance_type" {{ $student->studentDetail->DateSubjectWiseAttendances !=null ? ($student->studentDetail->DateSubjectWiseAttendances->attendance_type == "P" ? 'checked' :'') : 'checked' }}>
                                                         <label for="attendanceP{{$student->id}}">@lang('student.present')</label>
                                                     </div>
                                                     <div class="mr-20">
-                                                        <input type="radio" name="attendance[{{$student->id}}]" id="attendanceL{{$student->id}}" value="L" class="common-radio subject_attendance_type" {{ $student->DateSubjectWiseAttendances !=null ? ($student->DateSubjectWiseAttendances->attendance_type == "L" ? 'checked' :''):''}}>
+                                                        <input type="radio" name="attendance[{{$student->id}}][attendance_type]" id="attendanceL{{$student->id}}" value="L" class="common-radio subject_attendance_type" {{ $student->studentDetail->DateSubjectWiseAttendances !=null ? ($student->studentDetail->DateSubjectWiseAttendances->attendance_type == "L" ? 'checked' :''):''}}>
                                                         <label for="attendanceL{{$student->id}}">@lang('student.late')</label>
                                                     </div>
                                                     <div class="mr-20">
-                                                        <input type="radio" name="attendance[{{$student->id}}]" id="attendanceA{{$student->id}}" value="A" class="common-radio subject_attendance_type" {{$student->DateSubjectWiseAttendances !=null ? ($student->DateSubjectWiseAttendances->attendance_type == "A" ? 'checked' :''):''}}>
+                                                        <input type="radio" name="attendance[{{$student->id}}][attendance_type]" id="attendanceA{{$student->id}}" value="A" class="common-radio subject_attendance_type" {{$student->studentDetail->DateSubjectWiseAttendances !=null ? ($student->studentDetail->DateSubjectWiseAttendances->attendance_type == "A" ? 'checked' :''):''}}>
                                                         <label for="attendanceA{{$student->id}}">@lang('student.absent')</label>
                                                     </div>
                                                     <div>
-                                                        <input type="radio" name="attendance[{{$student->id}}]" id="attendanceH{{$student->id}}" value="F" class="common-radio subject_attendance_type" {{$student->DateSubjectWiseAttendances !=null ? ($student->DateSubjectWiseAttendances->attendance_type == "F" ? 'checked' :'') : ''}}>
+                                                        <input type="radio" name="attendance[{{$student->id}}][attendance_type]" id="attendanceH{{$student->id}}" value="F" class="common-radio subject_attendance_type" {{$student->studentDetail->DateSubjectWiseAttendances !=null ? ($student->studentDetail->DateSubjectWiseAttendances->attendance_type == "F" ? 'checked' :'') : ''}}>
                                                         <label for="attendanceH{{$student->id}}">@lang('student.half_day')</label>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="input-effect">
-                                                    <textarea class="primary-input form-control note_{{$student->id}}" cols="0" rows="2" name="note[{{$student->id}}]">{{$student->DateSubjectWiseAttendances !=null ? $student->DateSubjectWiseAttendances->notes :''}}</textarea>
+                                                    <textarea class="primary-input form-control note_{{$student->id}}" cols="0" rows="2" name="attendance[{{$student->id}}][note]">{{$student->studentDetail->DateSubjectWiseAttendances !=null ? $student->studentDetail->DateSubjectWiseAttendances->notes :''}}</textarea>
                                                     <label>@lang('student.add_note_here')</label>
                                                     <span class="focus-border textarea"></span>
                                                     <span class="invalid-feedback">

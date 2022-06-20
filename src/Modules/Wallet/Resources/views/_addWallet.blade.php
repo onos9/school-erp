@@ -173,9 +173,8 @@
                 <h4 class="modal-title">@lang('wallet::wallet.add_amount')</h4>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
-            {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'wallet.add-wallet-amount', 'method' => 'POST', 'enctype' => 'multipart/form-data','id'=> 'addWalletAmount' ]) }}
-
             <div class="modal-body">
+                {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'wallet.add-wallet-amount', 'method' => 'POST', 'enctype' => 'multipart/form-data','id'=> 'addWalletAmount' ]) }}
                     <div class="row mt-25">
                         <div class="col-lg-12">
                             <div class="input-effect">
@@ -242,6 +241,7 @@
                         </div>
                         <br>
                     </div>
+
                     <div class="AddWalletChequeBank d-none text-center">
                         <code>(JPG, JPEG, PNG, PDF are allowed for upload)</code>
                     </div>
@@ -313,16 +313,17 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="row mt-30">
                         <div class="col-lg-12 text-center">
-                            <button class="primary-btn fix-gr-bg submit addWallet" title="@lang('common.add')">
+                            <button class="primary-btn fix-gr-bg submit addWallet generalPay" title="@lang('common.add')">
                                 <span class="ti-check"></span>@lang('common.add')
                             </button>
                         </div>
                     </div>
+                {{ Form::close() }}
 
-                </div>
-            {{ Form::close() }}
+            </div>
         </div>
     </div>
 </div>
@@ -400,3 +401,5 @@
     </div>
 </div>
 {{-- Refund Request End --}}
+
+

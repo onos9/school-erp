@@ -41,7 +41,7 @@
                                                     @lang('student.student_name')
                                                 </div>
                                                 <div class="value">
-                                                    {{$student_detail->first_name.' '.$student_detail->last_name}}
+                                                   {{$student_detail->first_name.' '.$student_detail->last_name}}
                                                 </div>
                                             </div>
                                         </div>
@@ -58,30 +58,31 @@
                                         <div class="single-meta">
                                             <div class="d-flex justify-content-between">
                                                 <div class="name">
-                                                    @lang('transport.roll_number')
+                                                    @lang('student.class')
                                                 </div>
                                                 <div class="value">
-                                                     {{$student_detail->roll_no}}
+                                                    @if($student_detail->defaultClass!="")
+                                                        {{@$student_detail->defaultClass->class->class_name}}
+                                                        {{-- ({{@$academic_year->year}}) --}}
+                                                    @elseif ($student_detail->studentRecord !="")  
+                                                    {{@$student_detail->studentRecord->class->class_name}}
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="single-meta">
                                             <div class="d-flex justify-content-between">
                                                 <div class="name">
-                                                    @lang('common.class')
+                                                    @lang('student.section')
                                                 </div>
                                                 <div class="value">
-                                                   {{$student_detail->class !=""?$student_detail->class->class_name:""}} ({{$student_detail->session !=""?$student_detail->session->session:""}})
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="single-meta">
-                                            <div class="d-flex justify-content-between">
-                                                <div class="name">
-                                                    @lang('common.section')
-                                                </div>
-                                                <div class="value">
-                                                    {{$student_detail->section !=""?$student_detail->section->section_name:""}}
+                                                    
+                                                    @if($student_detail->defaultClass!="")
+                                                    {{@$student_detail->defaultClass->section->section_name}}
+                                                   
+                                                    @elseif ($student_detail->studentRecord !="")  
+                                                    {{@$student_detail->studentRecord->section->section_name}}
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>

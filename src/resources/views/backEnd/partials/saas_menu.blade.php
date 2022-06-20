@@ -42,8 +42,13 @@
 
     <li>
         <a href="#subMenuStudentRegistration" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-            <span class="flaticon-reading"></span>
-            @lang('student.registration')
+           
+            <div class="nav_icon_small">
+                <span class="flaticon-reading"></span>
+                </div>
+                <div class="nav_title">
+                    @lang('student.registration')
+                </div>
         </a>
         <ul class="collapse list-unstyled" id="subMenuStudentRegistration">
            
@@ -60,9 +65,15 @@
     <li>
         <a href="#subMenuAdministrator" data-toggle="collapse" aria-expanded="false"
             class="dropdown-toggle">
-            <span class="flaticon-analytics"></span>
-            @lang('system_sttings.institution')
             
+           
+            
+            <div class="nav_icon_small">
+                <span class="flaticon-analytics"></span>
+                </div>
+                <div class="nav_title">
+                    @lang('system_sttings.institution')
+                </div>
         </a>
         <ul class="collapse list-unstyled" id="subMenuAdministrator">
             <li>
@@ -74,9 +85,14 @@
     <li>
         <a href="#subMenuSubscription" data-toggle="collapse" aria-expanded="false"
             class="dropdown-toggle">
-            <span class="flaticon-analytics"></span>
-            @lang('common.subscription')
-            
+           
+           
+            <div class="nav_icon_small">
+                <span class="flaticon-analytics"></span>
+                </div>
+                <div class="nav_title">
+                    @lang('common.subscription')
+                </div>
         </a>
         <ul class="collapse list-unstyled" id="subMenuSubscription">
             <li>
@@ -138,8 +154,13 @@
     <li>
     <a href="#subMenuCommunicate" data-toggle="collapse" aria-expanded="false"
         class="dropdown-toggle">
-        <span class="flaticon-email"></span>
-        @lang('communicate.communicate')
+        
+        <div class="nav_icon_small">
+            <span class="flaticon-email"></span>
+            </div>
+            <div class="nav_title">
+                @lang('communicate.communicate')
+            </div>
     </a>
     <ul class="collapse list-unstyled" id="subMenuCommunicate">
         <li>
@@ -172,8 +193,14 @@
     <li>
     <a href="#subMenusystemSettings" data-toggle="collapse" aria-expanded="false"
         class="dropdown-toggle">
-        <span class="flaticon-settings"></span>
-        @lang('system_settings.system_settings')
+       
+       
+        <div class="nav_icon_small">
+            <span class="flaticon-settings"></span>
+            </div>
+            <div class="nav_title">
+                @lang('system_settings.system_settings')
+            </div>
     </a>
     <ul class="collapse list-unstyled" id="subMenusystemSettings">
         
@@ -289,8 +316,14 @@
                     <li>
                         <a href="#subMenusystemStyle" data-toggle="collapse" aria-expanded="false"
                             class="dropdown-toggle">
-                            <span class="flaticon-settings"></span>
-                            @lang('style.style')
+                            
+                            
+                            <div class="nav_icon_small">
+                                <span class="flaticon-settings"></span>
+                                </div>
+                                <div class="nav_title">
+                                    @lang('style.style')
+                                </div>
                         </a>
                         <ul class="collapse list-unstyled" id="subMenusystemStyle">
                                 <li>
@@ -307,8 +340,14 @@
                     <li>
                         <a href="#subMenuApi" data-toggle="collapse" aria-expanded="false"
                             class="dropdown-toggle">
-                            <span class="flaticon-settings"></span>
-                            @lang('virtual_meeting.api_permission')
+                          
+                            
+                            <div class="nav_icon_small">
+                                <span class="flaticon-settings"></span>
+                                </div>
+                                <div class="nav_title">
+                                    @lang('virtual_meeting.api_permission')
+                                </div>
                         </a>
                         <ul class="collapse list-unstyled" id="subMenuApi">
                                 <li>
@@ -360,8 +399,15 @@
     
     <li>
     <a href="#Ticket" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-        <span class="flaticon-settings"></span>
-        @lang('system_settings.ticket_system')
+     
+        
+          
+        <div class="nav_icon_small">
+            <span class="flaticon-settings"></span>
+            </div>
+            <div class="nav_title">
+                @lang('system_settings.ticket_system')
+            </div>
     </a>
     <ul class="collapse list-unstyled" id="Ticket">
         <li><a href="{{ route('ticket-category') }}"> @lang('system_settings.ticket_category')</a></li>

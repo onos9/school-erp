@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Chat\Http\Controllers;
+namespace Modules\Chat\Http\Controllers\Api;
 
 use App\Models\User;
 use App\ApiBaseMethod;
@@ -55,6 +55,7 @@ class GroupChatController extends Controller
         $validation = \Validator::make($request->all(), [
             'name' => 'required',
             'users' => 'required',
+           
         ]);
 
         if ($validation->fails()) {
@@ -83,7 +84,10 @@ class GroupChatController extends Controller
                 'added_by' => auth()->id(),
                 'role' => 3
             ]);
-            User::find($user)->notify(new GroupCreationNotification($group));
+            $user = User::find($user);
+            if ($user) {
+                $user->notify(new GroupCreationNotification($group));
+            }
         }
 
         return response()->json(['success'=>'Group Created!']);
@@ -456,7 +460,7 @@ class GroupChatController extends Controller
             'conversation.reply',
             'conversation.forwardFrom',
             'removeMessages.user',
-            'user',
+            'user','user.activeStatus'
         );
 
 

@@ -18,44 +18,47 @@
     <div class="container-fluid p-0">
        
         <div class="row">
+            <div class="col-lg-12 student-details up_admin_visitor">
+                <ul class="nav nav-tabs tabs_scroll_nav ml-0" role="tablist">
 
-            <div class="col-lg-12">
-                <div class="row">
-                    <div class="col-lg-4 no-gutters">
-                        <div class="main-title">
-                            <h3 class="mb-0">@lang('academics.subject_list')</h3>
+                @foreach($records as $key => $record) 
+                    <li class="nav-item">
+                        <a class="nav-link @if($key== 0) active @endif " href="#tab{{$key}}" role="tab" data-toggle="tab">{{$record->class->class_name}} ({{$record->section->section_name}}) </a>
+                    </li>
+                    @endforeach
+
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content mt-40">
+                    @foreach($records as $key => $record) 
+                        <div role="tabpanel" class="tab-pane fade  @if($key== 0) active show @endif" id="tab{{$key}}">
+                            <table id="table_id" class="display school-table" cellspacing="0" width="100%">
+
+                                <thead>
+                                    <tr>
+                                        <th>@lang('common.subject')</th>
+                                        <th>@lang('common.teacher')</th>
+                                        <th>@lang('academics.subject_type')</th>
+                                    </tr>
+                                </thead>
+    
+                                <tbody>
+                                    @foreach($record->AssignSubject as $assignSubject)
+                                    <tr>
+                                        <td>{{@$assignSubject->subject!=""?@$assignSubject->subject->subject_name:""}}</td>
+                                        <td>{{@$assignSubject->teacher!=""?@$assignSubject->teacher->full_name:""}}</td>
+                                        <td>
+                                            @if(!empty(@$assignSubject->subject))
+                                            {{@$assignSubject->subject->subject_type == "T"? 'Theory': 'Practical'}}
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            
                         </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-lg-12">
-
-                        <table id="table_id" class="display school-table" cellspacing="0" width="100%">
-
-                            <thead>
-                                <tr>
-                                    <th>@lang('common.subject')</th>
-                                    <th>@lang('common.teacher')</th>
-                                    <th>@lang('academics.subject_type')</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @foreach($assignSubjects as $assignSubject)
-                                <tr>
-                                    <td>{{@$assignSubject->subject!=""?@$assignSubject->subject->subject_name:""}}</td>
-                                    <td>{{@$assignSubject->teacher!=""?@$assignSubject->teacher->full_name:""}}</td>
-                                    <td>
-                                        @if(!empty(@$assignSubject->subject))
-                                        {{@$assignSubject->subject->subject_type == "T"? 'Theory': 'Practical'}}
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>

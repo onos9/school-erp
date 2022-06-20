@@ -14,6 +14,7 @@ return[
     'delete_exam'=>'Delete Exam',
     'all_select'=>'All Select',
     'save_marks'=>'Save Marks',
+    'submit_marks'=>'Save Marks',
     'add_exam_type'=> 'Add Exam Type',
     'exam_schedule'=> 'Exam Schedule',
     'marks_register'=> 'Marks Register',
@@ -332,4 +333,6 @@ return[
     'exam_notification'=>'Exam notification',
     'teacher'=>'Teacher',
     'room'=>'Room',
+    'minimum_percentage'=>'Minimum Percentage',
+    'a_new_exam_created' => 'A new exam created'
 ];

@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\Admin\Accounts\SmFineReportSearchRequest;
-
+use App\Models\StudentRecord;
 
 class SmFeesController extends Controller
 {
@@ -43,7 +43,7 @@ class SmFeesController extends Controller
  
 
 
-    public function feesGenerateModal(Request $request, $amount, $student_id, $type,$master,$assign_id)
+    public function feesGenerateModal(Request $request, $amount, $student_id, $type,$master,$assign_id, $record_id)
     {
         try {
             $amount = $amount;
@@ -55,18 +55,10 @@ class SmFeesController extends Controller
                     ->get();
 
             $discounts = SmFeesAssignDiscount::where('student_id', $student_id)
+                        ->where('record_id', $record_id)
                         ->where('fees_type_id', $fees_type_id)
                         ->where('school_id',Auth::user()->school_id)
                         ->first(); 
-            
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['amount'] = $amount;
-                $data['discounts'] = $discounts;
-                $data['fees_type_id'] = $fees_type_id;
-                $data['student_id'] = $student_id;
-                return ApiBaseMethod::sendResponse($data, null);
-            }
 
             $data['bank_info'] = SmPaymentGatewaySetting::where('gateway_name', 'Bank')
                                 ->where('school_id', Auth::user()->school_id)
@@ -84,7 +76,7 @@ class SmFeesController extends Controller
                                     ->where('school_id', Auth::user()->school_id)
                                     ->first();
 
-            return view('backEnd.feesCollection.fees_generate_modal', compact('amount','assign_id','master', 'discounts', 'fees_type_id', 'student_id', 'data', 'method','banks'));
+            return view('backEnd.feesCollection.fees_generate_modal', compact('amount','assign_id','master', 'discounts', 'fees_type_id', 'student_id', 'data', 'method','banks','record_id'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -158,6 +150,7 @@ class SmFeesController extends Controller
             $fees_payment->fine_title = $request->fine_title;
             $fees_payment->school_id = Auth::user()->school_id;
             $fees_payment->slip = $fileName;
+            $fees_payment->record_id = $request->record_id;
             $fees_payment->academic_id = getAcademicid();
             $result = $fees_payment->save();
 
@@ -216,22 +209,30 @@ class SmFeesController extends Controller
                 //     $discount_assign->save();
                 // }
            
-            $fees_assign=SmFeesAssign::where('fees_master_id',$request->master_id)->where('student_id',$request->student_id)->first();
+            $fees_assign = SmFeesAssign::where('fees_master_id',$request->master_id)
+                        ->where('student_id',$request->student_id)
+                        ->where('record_id',$request->record_id)
+                        ->where('school_id',Auth::user()->school_id)
+                        ->first();
+
             $fees_assign->fees_amount-=floatval($request->amount);
             $fees_assign->save();
+
             if (!empty($request->fine)) {
-                $fees_assign=SmFeesAssign::where('fees_master_id',$request->master_id)->where('student_id',$request->student_id)->first();
+                $fees_assign = SmFeesAssign::where('fees_master_id',$request->master_id)
+                            ->where('student_id',$request->student_id)
+                            ->where('record_id',$request->record_id)
+                            ->where('school_id',Auth::user()->school_id)
+                            ->first();
                 $fees_assign->fees_amount+=$request->fine;
                 $fees_assign->save();
             }
-            
-            
             if ($result) {
                 Toastr::success('Operation successful', 'Success');
-                return Redirect::route('fees_collect_student_wise', array('id' => $request->student_id));
+                return Redirect::route('fees_collect_student_wise', array('id' => $fees_assign->recordDetail->id));
             } else {
                 Toastr::error('Operation Failed', 'Failed');
-                return Redirect::route('fees_collect_student_wise', array('id' => $request->student_id));
+                return Redirect::route('fees_collect_student_wise', array('id' => $fees_assign->recordDetail->id));
             }
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
@@ -239,27 +240,20 @@ class SmFeesController extends Controller
         }
     }
     
-
-
-   
-
     public function feesPaymentDelete(Request $request)
     {
         try {
-                $assignFee=SmFeesAssign::find($request->assign_id);
-
-                if($assignFee){
-                    $newAmount=$assignFee->fees_amount+$request->amount;
-                    $assignFee->fees_amount=$newAmount;
-                    $assignFee->save();
-                }
-                if (checkAdmin()) {
-                   
-                    $result = SmFeesPayment::destroy($request->id);
-                }else{
-                   
-                    $result = SmFeesPayment::where('active_status',1)->where('id',$request->id)->where('school_id',Auth::user()->school_id)->delete();
-                }
+            $assignFee=SmFeesAssign::find($request->assign_id);
+            if($assignFee){
+                $newAmount=$assignFee->fees_amount+$request->amount;
+                $assignFee->fees_amount=$newAmount;
+                $assignFee->save();
+            }
+            if (checkAdmin()) {
+                $result = SmFeesPayment::destroy($request->id);
+            }else{
+                $result = SmFeesPayment::where('active_status',1)->where('id',$request->id)->where('school_id',Auth::user()->school_id)->delete();
+            }
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 if ($result) {
                     return ApiBaseMethod::sendResponse(null, 'Fees payment has been deleted  successfully');
@@ -275,46 +269,59 @@ class SmFeesController extends Controller
                     return redirect()->back();
                 }
             }
-        } catch (\Exception $e) {
-           
+        }catch(\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
     }
 
-
     public function searchFeesDue(Request $request)
     {
         try {
-            $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
-            $fees_masters = SmFeesMaster::select('fees_group_id')->where('active_status', 1)->distinct('fees_group_id')->where('school_id',Auth::user()->school_id)->where('academic_id', getAcademicId())->get();
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['classes'] = $classes->toArray();
-                $data['fees_masters'] = $fees_masters->toArray();
-                return ApiBaseMethod::sendResponse($data, null);
-            }
+            $classes = SmClass::where('active_status', 1)
+                        ->where('academic_id', getAcademicId())
+                        ->where('school_id',Auth::user()->school_id)
+                        ->get();
 
-            //
-            $students = SmStudent::where('active_status', 1)->where('school_id',Auth::user()->school_id)->where('academic_id', getAcademicId())->get();
+            $fees_masters = SmFeesMaster::select('fees_group_id')
+                            ->where('active_status', 1)
+                            ->distinct('fees_group_id')
+                            ->where('school_id',Auth::user()->school_id)
+                            ->where('academic_id', getAcademicId())
+                            ->get();
+
+            $students = StudentRecord::where('school_id',Auth::user()->school_id)
+                        ->where('academic_id', getAcademicId())
+                        ->get();
+
             $fees_dues = [];
             foreach ($students as $student) {
                 $fees_master = SmFeesMaster::select('id', 'amount','date')->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->first();
-
-
-
                 $total_amount = @$fees_master->amount;
+                $fees_assign = SmFeesAssign::where('student_id', $student->student_id)
+                            ->where('record_id', $student->id)
+                            ->where('fees_master_id', @$fees_master->id)
+                            ->where('school_id',Auth::user()->school_id)
+                            ->where('academic_id', getAcademicId())
+                            ->first();
 
-                $fees_assign = SmFeesAssign::where('student_id', $student->id)->where('fees_master_id', @$fees_master->id)
-                    ->where('school_id',Auth::user()->school_id)->where('academic_id', getAcademicId())->first();
-                $discount_amount = SmFeesAssign::where('student_id', $student->id)->where('academic_id', getAcademicId())->where('fees_master_id', @$fees_master->id)->sum('applied_discount');
-                $amount = SmFeesPayment::where('active_status',1)->where('student_id', $student->id)->where('academic_id', getAcademicId())->sum('amount');
+                $discount_amount = SmFeesAssign::where('student_id', $student->student_id)
+                                ->where('record_id', $student->id)
+                                ->where('academic_id', getAcademicId())
+                                ->where('fees_master_id', @$fees_master->id)
+                                ->where('school_id',Auth::user()->school_id)
+                                ->sum('applied_discount');
+
+                $amount = SmFeesPayment::where('active_status',1)
+                        ->where('student_id', $student->student_id)
+                        ->where('record_id', $student->id)
+                        ->where('academic_id', getAcademicId())
+                        ->sum('amount');
 
                 $paid = $discount_amount + $amount;
 
                 if ($fees_assign != "") {
                     if ($total_amount > $paid) {
-
                         $due_date= strtotime($fees_master->date);
                         $now =strtotime(date('Y-m-d'));
                         if ($due_date > $now ) {
@@ -324,7 +331,6 @@ class SmFeesController extends Controller
                     }
                 }
             }
-            //
             return view('backEnd.feesCollection.search_fees_due', compact('classes', 'fees_masters','fees_dues'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
@@ -350,54 +356,79 @@ class SmFeesController extends Controller
         }
         try {
             $fees_group = explode('-', $request->fees_group);
-            // $fees_master = SmFeesMaster::select('id', 'amount')->where('fees_group_id', $fees_group[0])->where('fees_type_id', $fees_group[1])->where('school_id',Auth::user()->school_id)->first();
-            $fees_master = SmFeesMaster::select('id', 'amount')->where('fees_group_id', $fees_group[0])->where('fees_type_id', $fees_group[1])->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->first();
-                if($request->section == ""){
-                    $students = SmStudent::where('class_id', $request->class)->where('school_id',Auth::user()->school_id)->where('academic_id', getAcademicId())->get();
-                }else{
-                    $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->where('school_id',Auth::user()->school_id)->where('academic_id', getAcademicId())->get();
-                }
+            $fees_master = SmFeesMaster::select('id', 'amount')
+                        ->where('fees_group_id', $fees_group[0])
+                        ->where('fees_type_id', $fees_group[1])
+                        ->where('academic_id', getAcademicId())
+                        ->where('school_id',Auth::user()->school_id)
+                        ->first();
 
+            if($request->section == ""){
+                $students = StudentRecord::where('class_id', $request->class)
+                            ->where('school_id',Auth::user()->school_id)
+                            ->where('academic_id', getAcademicId())
+                            ->get();
+            }else{
+                $students = StudentRecord::where('class_id', $request->class)
+                            ->where('section_id', $request->section)
+                            ->where('school_id',Auth::user()->school_id)
+                            ->where('academic_id', getAcademicId())
+                            ->get();
+            }
 
-           
             $fees_dues = [];
             foreach ($students as $student) {
-                   $fees_master = SmFeesMaster::select('id', 'amount','date')->where('fees_group_id', $fees_group[0])->where('fees_type_id', $fees_group[1])->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->first();
-                    $total_amount = $fees_master->amount;
+                $fees_master = SmFeesMaster::select('id', 'amount','date')
+                            ->where('fees_group_id', $fees_group[0])
+                            ->where('fees_type_id', $fees_group[1])
+                            ->where('academic_id', getAcademicId())
+                            ->where('school_id',Auth::user()->school_id)
+                            ->first();
+                $total_amount = $fees_master->amount;
               
-                $fees_assign = SmFeesAssign::where('student_id', $student->id)->where('fees_master_id', $fees_master->id)->where('school_id',Auth::user()->school_id)->where('academic_id', getAcademicId())->first();
-                $discount_amount = SmFeesAssign::where('student_id', $student->id)->where('academic_id', getAcademicId())->where('fees_master_id', $fees_master->id)->sum('applied_discount');
-                $amount = SmFeesPayment::where('active_status',1)->where('student_id', $student->id)->where('academic_id', getAcademicId())->where('fees_type_id', $fees_group[1])->sum('amount');
+                $fees_assign = SmFeesAssign::where('student_id', $student->student_id)
+                            ->where('record_id', $student->id)
+                            ->where('fees_master_id', $fees_master->id)
+                            ->where('school_id',Auth::user()->school_id)
+                            ->where('academic_id', getAcademicId())
+                            ->first();
+
+                $discount_amount = SmFeesAssign::where('student_id', $student->student_id)
+                                ->where('record_id', $student->id)
+                                ->where('academic_id', getAcademicId())
+                                ->where('fees_master_id', $fees_master->id)
+                                ->where('school_id',Auth::user()->school_id)
+                                ->sum('applied_discount');
+
+                $amount = SmFeesPayment::where('active_status',1)
+                        ->where('student_id', $student->student_id)
+                        ->where('record_id', $student->id)
+                        ->where('academic_id', getAcademicId())
+                        ->where('fees_type_id', $fees_group[1])
+                        ->sum('amount');
 
                 $paid = $discount_amount + $amount;
-
                 if ($fees_assign != "") {
                     if ($total_amount > $paid) {
-
-                        // $due_date= strtotime($fees_master->date);
-                        // $now =strtotime(date('Y-m-d'));
-                        // if ($due_date > $now ) {
-                        //    continue;
-                        // }
                         $fees_dues[] = $fees_assign;
                     }
                 }
             }
-            $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
-            $fees_masters = SmFeesMaster::select('fees_group_id')->where('active_status', 1)->distinct('fees_group_id')->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
+            $classes = SmClass::where('active_status', 1)
+                    ->where('academic_id', getAcademicId())
+                    ->where('school_id',Auth::user()->school_id)
+                    ->get();
+
+            $fees_masters = SmFeesMaster::select('fees_group_id')
+                            ->where('active_status', 1)
+                            ->distinct('fees_group_id')
+                            ->where('academic_id', getAcademicId())
+                            ->where('school_id',Auth::user()->school_id)
+                            ->get();
 
             $class_id = $request->class;
             $fees_group_id = $fees_group[1];
 
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['classes'] = $classes->toArray();
-                $data['fees_masters'] = $fees_masters;
-                $data['fees_dues'] = $fees_dues;
-                $data['class_id'] = $class_id;
-                $data['fees_group_id'] = $fees_group_id;
-                return ApiBaseMethod::sendResponse($data, null);
-            }
             return view('backEnd.feesCollection.search_fees_due', compact('classes', 'fees_masters', 'fees_dues', 'class_id', 'fees_group_id'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
@@ -706,13 +737,18 @@ class SmFeesController extends Controller
         try {
             set_time_limit(2700);
             $groups = explode("-", $id);
-            $student = SmStudent::find($s_id);
+            $student = StudentRecord::find($s_id);
             foreach ($groups as $group) {
                 $fees_assigneds[] = SmFeesAssign::find($group);
             }
-            $parent = DB::table('sm_parents')->where('id', $student->parent_id)->where('school_id',Auth::user()->school_id)->first();
+            $parent = SmParent::where('id', $student->studentDetail->parent_id)
+                    ->where('school_id',Auth::user()->school_id)
+                    ->first();
 
-            $unapplied_discount_amount = SmFeesAssignDiscount::where('student_id',$s_id)->sum('unapplied_amount');
+            $unapplied_discount_amount = SmFeesAssignDiscount::where('student_id',$student->student_id)
+                                        ->where('record_id',$student->id)
+                                        ->where('school_id',Auth::user()->school_id)
+                                        ->sum('unapplied_amount');
             return view('backEnd.feesCollection.fees_payment_invoice_print')->with(['fees_assigneds' => $fees_assigneds, 'student' => $student,'unapplied_discount_amount'=>$unapplied_discount_amount, 'parent' => $parent]);
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');

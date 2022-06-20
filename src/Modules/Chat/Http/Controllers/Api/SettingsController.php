@@ -34,7 +34,23 @@ class SettingsController extends Controller
 
     public function chatPermission()
     {
-        return view('chat::edu.permission');
+       $permission_settings =[
+            'chat_can_upload_file' =>app('general_settings')->get('chat_can_upload_file'),
+            'chat_file_limit' => app('general_settings')->get('chat_file_limit'),
+            'chat_can_make_group' => app('general_settings')->get('chat_can_make_group'),
+            'chat_staff_or_teacher_can_ban_student' => app('general_settings')->get('chat_staff_or_teacher_can_ban_student'),
+            'chat_teacher_can_pin_top_message' => app('general_settings')->get('chat_teacher_can_pin_top_message'),
+        ];
+        $invitation_settings = [
+            'chat_invitation_requirement' =>  app('general_settings')->get('chat_invitation_requirement'),
+        ];
+        $chat_settings = [
+            'chat_can_teacher_chat_with_parents' =>  app('general_settings')->get('chat_can_teacher_chat_with_parents'),
+            'chat_can_student_chat_with_admin_account' =>  app('general_settings')->get('chat_can_student_chat_with_admin_account'),
+            'chat_admin_can_chat_without_invitation' =>  app('general_settings')->get('chat_admin_can_chat_without_invitation'),
+            'chat_open' =>  app('general_settings')->get('chat_open'),
+        ];
+         return  response()->json(compact('permission_settings', 'invitation_settings', 'chat_settings'));
     }
 
     public function chatPermissionStore(Request $request)

@@ -18,6 +18,12 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StudentAttendanceImport;
 use App\Http\Requests\Admin\StudentInfo\SmStudentAttendanceSearchRequest;
+use App\Models\StudentRecord;
+use App\Notifications\StudentAttendanceSetNotification;
+use App\SmNotification;
+use App\User;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class SmStudentAttendanceController extends Controller
 {
@@ -54,13 +60,27 @@ class SmStudentAttendanceController extends Controller
         try {
             $date = $request->attendance_date;
             if (teacherAccess()) {
-                $teacher_info=SmStaff::where('user_id',auth()->user()->id)->first();
+                $teacher_info=SmStaff::where('user_id', auth()->user()->id)->first();
                 $classes = $teacher_info->classes;
             } else {
                 $classes = SmClass::get();
             }
-            $students = SmStudent::with('DateWiseAttendances')->where('class_id', $request->class)->where('section_id', $request->section)
-            ->get(['id','admission_no','first_name','last_name','roll_no']);
+
+
+            $students = StudentRecord::with(['studentDetail' => function($q){
+                return $q->where('active_status', 1);
+            } , 'studentDetail.DateWiseAttendances'])->when($request->class, function ($query) use ($request) {
+                $query->where('class_id', $request->class);
+            })->whereHas('studentDetail', function($q){
+                return $q->where('active_status', 1);
+            })
+            ->when($request->section, function ($query) use ($request) {
+                $query->where('section_id', $request->section);
+            })
+            ->where('academic_id', getAcademicId())
+            ->where('school_id', Auth::user()->school_id)
+                ->where('is_promote', 0)
+            ->get();
 
             if ($students->isEmpty()) {
                 Toastr::error('No Result Found', 'Failed');
@@ -68,8 +88,8 @@ class SmStudentAttendanceController extends Controller
             }
 
        
-            $attendance_type= $students[0]['DateWiseAttendances'] != null  ? $students[0]['DateWiseAttendances']['attendance_type']:'';
-        
+            $attendance_type= $students[0]['studentDetail']['DateWiseAttendances'] != null  ? $students[0]['studentDetail']['DateWiseAttendances']['attendance_type']:'';
+           
             $class_id = $request->class;
             $section_id = $request->section;
             $search_info['class_name'] = SmClass::find($request->class)->class_name;
@@ -77,8 +97,9 @@ class SmStudentAttendanceController extends Controller
             $search_info['date'] = $request->attendance_date;
             $sections = SmClassSection::with('sectionName')->where('class_id', $request->class)->get();
 
-            return view('backEnd.studentInformation.student_attendance', compact('classes','sections','class_id','section_id','date','students', 'attendance_type', 'search_info'));
+            return view('backEnd.studentInformation.student_attendance', compact('classes', 'sections', 'class_id', 'section_id', 'date', 'students', 'attendance_type', 'search_info'));
         } catch (\Exception $e) {
+            
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -90,9 +111,17 @@ class SmStudentAttendanceController extends Controller
 
     
         try {
-            foreach ($request->id as $student) {
-                $attendance = SmStudentAttendance::where('student_id', $student)->where('attendance_date', date('Y-m-d', strtotime($request->date)))
-                    ->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->first();
+            //  return $request->all();
+            foreach ($request->attendance as $record_id => $student) {
+                
+                $attendance = SmStudentAttendance::where('student_id', gv($student, 'student'))
+                    ->where('attendance_date', date('Y-m-d', strtotime($request->date)))
+                    ->where('academic_id', getAcademicId())
+                    ->where('class_id', gv($student, 'class'))
+                    ->where('section_id', gv($student, 'section'))
+                    ->where('student_record_id', $record_id)
+                    ->where('academic_id', getAcademicId())
+                    ->where('school_id', Auth::user()->school_id)->first();
 
                 if ($attendance) {
                     $attendance->delete();
@@ -100,17 +129,45 @@ class SmStudentAttendanceController extends Controller
 
 
                 $attendance = new SmStudentAttendance();
-                $attendance->student_id = $student;
+                $attendance->student_record_id = $record_id;
+                $attendance->student_id = gv($student, 'student');
+                $attendance->class_id = gv($student, 'class');
+                $attendance->section_id = gv($student, 'section');
                 if (isset($request->mark_holiday)) {
                     $attendance->attendance_type = "H";
                 } else {
-                    $attendance->attendance_type = $request->attendance[$student];
-                    $attendance->notes = $request->note[$student];
+                    $attendance->attendance_type = gv($student, 'attendance_type');
+                    $attendance->notes = gv($student, 'note');
                 }
                 $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
                 $attendance->school_id = Auth::user()->school_id;
                 $attendance->academic_id = getAcademicId();
                 $attendance->save();
+                if(gv($student, 'student')){
+
+                    $student = SmStudent::find(gv($student, 'student'));
+                    if($student){
+                        $notification = new SmNotification();
+                        // $notification->user_id = $leave_request_data->id;
+                        $notification->user_id = $student->user_id;
+                        $notification->role_id = 3;
+                        $notification->date = date('Y-m-d');
+                        $notification->message = app('translator')->get('student.attendace_set_for_as', ['date' => date('Y-m-d'), 'status' => $attendance->attendance_type]);
+                        $notification->school_id = Auth::user()->school_id;
+                        $notification->academic_id = getAcademicId();
+                        $notification->save();
+            
+                        try{
+                            $user=User::find($notification->user_id);
+                            Notification::send($user, new StudentAttendanceSetNotification($notification));
+                        }
+                        catch (\Exception $e) {
+                            Log::info($e->getMessage());
+                        }
+                    }
+                    
+                }
+                
             }
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
@@ -119,6 +176,7 @@ class SmStudentAttendanceController extends Controller
             Toastr::success('Operation successful', 'Success');
             return redirect('student-attendance');
         } catch (\Exception $e) {
+            
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -127,37 +185,42 @@ class SmStudentAttendanceController extends Controller
 
     public function studentAttendanceHoliday(Request $request)
     {
-        $students = SmStudent::where('class_id', $request->class_id)->where('section_id', $request->section_id)
-               ->get();
+        $studentRecords = StudentRecord::where('class_id', $request->class_id)
+                                    ->where('section_id', $request->section_id)
+                                    ->where('academic_id', getAcademicId())
+                                    ->where('school_id', Auth::user()->school_id)
+                                    ->get();
 
-                if ($students->isEmpty()) {
-                    Toastr::error('No Result Found', 'Failed');
-                    return redirect('student-attendance');
-                }
-                foreach ($students as $student) {
+        if ($studentRecords->isEmpty()) {
+            Toastr::error('No Result Found', 'Failed');
+            return redirect('student-attendance');
+        }
+        foreach ($studentRecords as $record) {
 
-                    $attendance = SmStudentAttendance::where('student_id', $student->id)
-                        ->where('attendance_date', date('Y-m-d', strtotime($request->attendance_date)))                        
-                        ->first();
-                        if (!empty($attendance)) {
-                            $attendance->delete();
-                        }
-                        if($request->purpose == "mark"){
-                            $attendance = new SmStudentAttendance();
-                            $attendance->attendance_type= "H";
-                            $attendance->notes= "Holiday";
-                            $attendance->attendance_date = date('Y-m-d', strtotime($request->attendance_date));
-                            $attendance->student_id = $student->id;
-                            $attendance->academic_id = getAcademicId();
-                            $attendance->school_id = Auth::user()->school_id;
-                            $attendance->save();
-                        }
-                    
-                }
-      
-            
-            Toastr::success('Operation successful', 'Success');
-            return redirect()->back();
+            $attendance = SmStudentAttendance::where('student_id', $record->student_id)
+                        ->where('attendance_date', date('Y-m-d', strtotime($request->attendance_date)))
+                        ->where('class_id', $request->class_id)->where('section_id', $request->section_id)
+                        ->where('academic_id', getAcademicId())
+                        ->where('student_record_id', $record->id)
+                        ->where('school_id', Auth::user()->school_id)
+                        ->delete();
+                        
+            if ($request->purpose == "mark") {
+                $attendance = new SmStudentAttendance();
+                $attendance->attendance_type= "H";
+                $attendance->notes= "Holiday";
+                $attendance->attendance_date = date('Y-m-d', strtotime($request->attendance_date));
+                $attendance->student_id = $record->student_id;
+                $attendance->student_record_id = $record->id;
+                $attendance->class_id = $record->class_id;
+                $attendance->section_id = $record->section_id;
+                $attendance->academic_id = getAcademicId();
+                $attendance->school_id = Auth::user()->school_id;
+                $attendance->save();
+            }
+        }
+        Toastr::success('Operation successful', 'Success');
+        return redirect()->back();
     }
 
     public function studentAttendanceImport()
@@ -277,5 +340,13 @@ class SmStudentAttendanceController extends Controller
                 return redirect()->back();
             }
         
+    }
+    public static function activeStudent()
+    {
+        $active_students = SmStudent::where('active_status', 1)
+        ->where('academic_id', getAcademicId())
+        ->where('school_id', Auth::user()->school_id)
+        ->get();
+        return $active_students;
     }
 }

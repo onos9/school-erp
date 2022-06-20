@@ -7,19 +7,31 @@
                 $('.addWalletBank').removeClass('d-none');
                 $('.addWallet').removeClass('d-none');
                 $('.stripeInfo').addClass('d-none');
+                $('.razorPay').addClass('d-none');
+                $('.generalPay').removeClass('d-none');
             }else if(paymentValue == "Cheque"){
                 $('.AddWalletChequeBank').removeClass('d-none');
                 $('.addWalletBank').addClass('d-none');
                 $('.addWallet').removeClass('d-none');
                 $('.stripeInfo').addClass('d-none');
+                $('.razorPay').addClass('d-none');
+                $('.generalPay').removeClass('d-none');
             }else if(paymentValue == "Stripe"){
                 $('.AddWalletChequeBank').addClass('d-none');
                 $('.addWalletBank').addClass('d-none');
                 $('.stripeInfo').removeClass('d-none');
+                $('.razorPay').addClass('d-none');
+                $('.generalPay').removeClass('d-none');
+            }else if(paymentValue == "RazorPay"){
+                $('.AddWalletChequeBank').addClass('d-none');
+                $('.addWalletBank').addClass('d-none');
+                $('.stripeInfo').addClass('d-none');
             }else{
                 $('.AddWalletChequeBank').addClass('d-none');
                 $('.addWalletBank').addClass('d-none');
                 $('.stripeInfo').addClass('d-none');
+                $('.razorPay').addClass('d-none');
+                $('.generalPay').removeClass('d-none');
             }
         });
     });
@@ -27,6 +39,9 @@
 // Add Wallet Amount
     let form = $('#addWalletAmount');
     form.on('submit', function(e) {
+        if($("#addWalletPaymentMethod").val() == 'RazorPay'){
+            return;
+        }
         e.preventDefault();
         $('.addWallet').attr("disabled","disabled");
         const submit_url = form.attr('action');

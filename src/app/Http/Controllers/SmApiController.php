@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\InfixModuleManager;
 use App\Role;
-use App\Scopes\StatusAcademicSchoolScope;
 use App\User;
 use App\SmBook;
 use App\SmExam;
@@ -95,6 +95,7 @@ use App\SmStudentPromotion;
 use App\SmHrPayrollGenerate;
 use App\SmStudentAttendance;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use App\SmAssignClassTeacher;
 use App\SmFeesAssignDiscount;
 use App\SmTemporaryMeritlist;
@@ -115,6 +116,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Response;
+use App\Scopes\StatusAcademicSchoolScope;
 use Illuminate\Support\Facades\Validator;
 use App\Notifications\HomeworkNotification;
 use Illuminate\Support\Facades\Notification;
@@ -170,113 +172,27 @@ class SmApiController extends Controller
 
     public function AttendanceSync(Request $request)
     {
-        Log::info($request);
-        $val =  $request->input();
-        foreach ($val as $data) {
-            $lastest_data = DB::table('device_log')->insert($data);
-        }
-
-        //  return ApiBaseMethod::sendResponse($lastest_data, null);
-
-        try {
-            $sms_template = DB::table('sms_templates')->find(1);
-            $attendance_setting = InfixBioSetting::find(1);
-
-            $lastest_data = DB::table('device_log')->where('is_attendance', 0)->get();
-
-            foreach ($lastest_data as $device_log) {
-                $user_table = DB::table('users')->find($device_log->userid);
-                if ($user_table) {
-                    if ($user_table->role_id == 2) {
-                        $sm_students = DB::table('sm_students')->where('user_id', $device_log->userid)->first();
-                        $to_mobile = $sm_students->mobile;
-
-                        if ($sm_students) {
-                            DB::table('device_log')->where('userid', $device_log->userid)->update(array('role_id' => $sm_students->role_id, 'class_id' => $sm_students->class_id, 'section_id' => $sm_students->section_id, 'profile_id' => $sm_students->id));
-                        }
-                        $attendance = SmStudentAttendance::where('student_id', $sm_students->id)->where('attendance_date', date('Y-m-d', strtotime($device_log->checktime)))->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->first();
-                        if ($attendance == "") {
-                            $attendance = new SmStudentAttendance();
-                        }
-                        $attendance->student_id         = $sm_students->id;
-                        $attendance_start_time = $attendance_setting->start_time;
-                        $d_start_time = date('H:s', strtotime($device_log->checktime));
-                        if ($attendance_start_time >= $d_start_time) {
-                            $attendance->attendance_type    = 'P';
-
-
-                        } elseif ($attendance_start_time <= $d_start_time &&  $attendance_setting->late_time >= $d_start_time && isset($sm_students->id) && isset($sms_template->late_sms)) {
-                            $attendance->attendance_type    = 'LP';
-
-
-                        } elseif ($attendance_setting->late_time <= $d_start_time &&  $attendance_setting->absent <= $d_start_time && isset($sm_students->id) && isset($sms_template->absent)) {
-                            $attendance->attendance_type    = 'A';
-
-
-                        } elseif ($attendance_setting->early_checkout >= $d_start_time &&  $attendance_setting->end_time <= $d_start_time && isset($sm_students->id) && isset($sms_template->er_checkout)) {
-                            $attendance->attendance_type    = 'EL';
-
-
-                        } elseif ($attendance_setting->end_time <= $d_start_time && isset($sm_students->id) && isset($sms_template->st_checkout)) {
-                            $attendance->attendance_type    = 'P';
-
-                        }
-                        $attendance->attendance_date              = date('Y-m-d H:i:s', strtotime($device_log->checktime));
-                        $attendance->notes              = 'Biometric Student Atendance';
-                        $attendance->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-                        $attendance->save();
-                    } else {
-                        $sm_staff = SmStaff::where('user_id', $device_log->userid)->first();
-
-                        if ($sm_staff) {
-                            DB::table('device_log')->where('userid', $device_log->userid)->update(array('role_id' => $sm_staff->role_id, 'profile_id' => $sm_staff->id));
-                        }
-                        $attendance = SmStaffAttendence::where('staff_id', $sm_staff->id)->where('attendence_date', date('Y-m-d', strtotime($device_log->checktime)))->first();
-                        if ($attendance == "") {
-                            $attendance = new SmStaffAttendence();
-                        }
-                        $attendance->staff_id           = $sm_staff->id;
-                        $attendance_start_time = $attendance_setting->start_time;
-                        $d_start_time = date('H:s', strtotime($device_log->checktime));
-
-                        if ($attendance_start_time >= $d_start_time) {
-                            $attendance->attendence_type    = 'P';
-                            if ($attendance_setting->start_time_sms == 1) {
-                            }
-                        } elseif ($attendance_start_time <= $d_start_time &&  $attendance_setting->late_time >= $d_start_time) {
-
-                            $attendance->attendence_type    = 'LP';
-                            if ($attendance_setting->late_time_sms == 1) {
-                            }
-                        } elseif ($attendance_setting->late_time <= $d_start_time &&  $attendance_setting->absent <= $d_start_time) {
-                            $attendance->attendence_type    = 'A';
-                            if ($attendance_setting->absent_sms == 1) {
-                            }
-                        } elseif ($attendance_setting->early_checkout >= $d_start_time &&  $attendance_setting->end_time <= $d_start_time) {
-                            $attendance->attendence_type    = 'EL';
-                            if ($attendance_setting->early_checkout_sms == 1) {
-                            }
-                        } elseif ($attendance_setting->end_time <= $d_start_time) {
-                            $attendance->attendence_type    = 'P';
-                            if ($attendance_setting->end_time_sms == 1) {
-                            }
-                        }
-                        $attendance->attendence_date              = date('Y-m-d H:i:s', strtotime($device_log->checktime));
-                        $attendance->notes              = 'Biometric Staff Atendance';
-                        $attendance->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-                        $attendance->save();
-                    }
-                }
+        if (function_exists('processAttendance')) {
+            $datas = $request->get('data', []);
+            $insert_data = [];
+            foreach ($datas as $data) {
+                $insert_data[] = [
+                    'school_id' => $request->school_id,
+                    'userid' => $data['user_id'],
+                    'checktime' => $data['date_time'],
+                    'device_ip' => $data['machine_ip'],
+                ];
             }
+            DB::table('device_log')->insert($insert_data);
 
-            $lastest_data = DB::table('device_log')->where('cloud_upload', 0)->update(['cloud_upload' => 1]);
-            $lastest_data = DB::table('device_log')->select('id', 'userid', 'terminalid', 'name', 'checktime', 'cloud_upload', 'area_id', 'device_ip')->where('cloud_upload', 1)->get();
-            return $lastest_data;
-        } catch (\Exception $e) {
-            Log::info($e->getMessage());
-            return response()->json('lol', 400);
-            return ApiBaseMethod::sendError('Something went wrong, please try again');
+            try {
+                processAttendance($request->school_id);
+            } catch (\Exception $e) {
+                Log::info($e->getMessage());
+                return response()->json($e->getMessage(), 400);
+            }
         }
+
     }
 
 
@@ -1093,185 +1009,7 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendResponse($roles, null);
         }
     }
-    public function library_member_store(Request $request)
-    {
-        $input = $request->all();
-        // return $input;
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            if ($request->member_type == "") {
-                $validator = Validator::make($input, [
-                    'member_type' => "required",
-                    'created_by' => "required",
-                    'member_ud_id' => "required|unique:sm_library_members,member_ud_id"
-                ]);
-            } elseif ($request->member_type == "2") {
 
-                $validator = Validator::make($input, [
-                    'member_type' => "required",
-                    'student' => "required",
-                    'created_by' => "required",
-                    'member_ud_id' => "required|unique:sm_library_members,member_ud_id"
-                ]);
-            } else {
-                $validator = Validator::make($input, [
-                    'member_type' => "required",
-                    'staff' => "required",
-                    'created_by' => "required",
-                    'member_ud_id' => "required|unique:sm_library_members,member_ud_id"
-                ]);
-            }
-        }
-        $student_staff_id = '';
-        if ($request->student <> 0) {
-            $student_staff_id = $request->student;
-            $isData = SmLibraryMember::where('student_staff_id', '=', $student_staff_id)->where('active_status', '=', 1)->first();
-            if (!empty($isData)) {
-                if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                    return ApiBaseMethod::sendError('This Member is already added in our library.');
-                }
-            }
-        }
-        if ($request->staff <> 0) {
-            $student_staff_id = $request->staff;
-            $isData = SmLibraryMember::where('student_staff_id', '=', $student_staff_id)->where('active_status', '=', 1)->first();
-            if (!empty($isData)) {
-                if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                    return ApiBaseMethod::sendError('This Member is already added in our library.');
-                }
-            }
-        }
-
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-        }
-
-
-        $user = Auth()->user();
-
-        if ($user) {
-            $user_id = $user->id;
-        } else {
-            $user_id = $request->created_by;
-        }
-
-        $isExist_staff_id = SmLibraryMember::where('student_staff_id', '=', $student_staff_id)->first();
-        if (!empty($isExist_staff_id)) {
-            $members = SmLibraryMember::where('student_staff_id', '=', $student_staff_id)->first();
-            $members->active_status = 1;
-            $results = $members->update();
-            return ApiBaseMethod::sendResponse(null, 'New Member has been added successfully');
-        } else {
-            $members = new SmLibraryMember();
-            $members->member_type = $request->member_type;
-            $members->student_staff_id = $student_staff_id;
-            $members->member_ud_id = $request->member_ud_id;
-            $members->created_by = $user_id;
-            $members->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-            $results = $members->save();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($results) {
-                    return ApiBaseMethod::sendResponse(null, 'New Member has been added successfully');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            }
-        }
-    }
-    public function saas_library_member_store(Request $request)
-    {
-        $input = $request->all();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            if ($request->member_type == "") {
-                $validator = Validator::make($input, [
-                    'member_type' => "required",
-                    'created_by' => "required",
-                    'member_ud_id' => "required|unique:sm_library_members,member_ud_id",
-                    'school_id' => "required",
-                ]);
-            } elseif ($request->member_type == "2") {
-
-                $validator = Validator::make($input, [
-                    'member_type' => "required",
-                    'student' => "required",
-                    'created_by' => "required",
-                    'member_ud_id' => "required|unique:sm_library_members,member_ud_id",
-                    'school_id' => "required",
-                ]);
-            } else {
-                $validator = Validator::make($input, [
-                    'member_type' => "required",
-                    'staff' => "required",
-                    'created_by' => "required",
-                    'member_ud_id' => "required|unique:sm_library_members,member_ud_id",
-                    'school_id' => "required",
-                ]);
-            }
-        }
-        $student_staff_id = '';
-        if ($request->student <> 0) {
-            $student_staff_id = $request->student;
-            $isData = SmLibraryMember::where('student_staff_id', '=', $student_staff_id)->where('active_status', '=', 1)->where('school_id', '=', $request->school_id)->first();
-            if (!empty($isData)) {
-                if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                    return ApiBaseMethod::sendError('This Member is already added in our library.');
-                }
-            }
-        }
-        if ($request->staff <> 0) {
-            $student_staff_id = $request->staff;
-            $isData = SmLibraryMember::where('student_staff_id', '=', $student_staff_id)->where('active_status', '=', 1)->where('school_id', '=', $request->school_id)->first();
-            if (!empty($isData)) {
-                if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                    return ApiBaseMethod::sendError('This Member is already added in our library.');
-                }
-            }
-        }
-
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-        }
-
-
-        $user = Auth()->user();
-
-        if ($user) {
-            $created_by = $user->id;
-        } else {
-            $created_by = $request->created_by;
-        }
-
-        $isExist_staff_id = SmLibraryMember::where('student_staff_id', '=', $student_staff_id)->where('school_id', '=', $request->school_id)->first();
-        if (!empty($isExist_staff_id)) {
-            $members = SmLibraryMember::where('student_staff_id', '=', $student_staff_id)->where('school_id', '=', $request->school_id)->first();
-            $members->active_status = 1;
-            $results = $members->update();
-            return ApiBaseMethod::sendResponse(null, 'New Member has been added successfully');
-        } else {
-            $members = new SmLibraryMember();
-            $members->member_type = $request->member_type;
-            $members->student_staff_id = $student_staff_id;
-            $members->member_ud_id = $request->member_ud_id;
-            $members->school_id = $request->school_id;
-            $members->created_by = $created_by;
-            $members->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-            $results = $members->save();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($results) {
-                    return ApiBaseMethod::sendResponse(null, 'New Member has been added successfully');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            }
-        }
-    }
     public function feesMasterStore(Request $request)
     {
         $input = $request->all();
@@ -1422,296 +1160,7 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendError('Operation Failed.', $validator->errors());
         }
     }
-    public function saas_feesMasterUpdate(Request $request, $school_id)
-    {
-        $input = $request->all();
-        if ($request->fees_group == "" || $request->fees_group != 1 && $request->fees_group != 2) {
 
-
-            $validator = Validator::make($input, [
-                'fees_group' => "required",
-                'fees_type' => "required",
-                'date' => "required",
-                'amount' => "required"
-            ]);
-        } else {
-            $validator = Validator::make($input, [
-                'fees_group' => "required",
-                'fees_type' => "required",
-                'date' => "required"
-            ]);
-        }
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-        }
-
-        $combination = SmFeesMaster::where('fees_group_id', $request->fees_group)->where('fees_type_id', $request->fees_type)->where('school_id',$school_id)->count();
-
-        if ($combination == 0) {
-            $fees_master = SmFeesMaster::where('school_id',$school_id)->find($request->id);
-            $fees_master->fees_group_id = $request->fees_group;
-            $fees_master->fees_type_id = $request->fees_type;
-            $fees_master->date = date('Y-m-d', strtotime($request->date));
-            if ($request->fees_group != 1 && $request->fees_group != 2) {
-                $fees_master->amount = $request->amount;
-            } else {
-                $fees_master->amount = NULL;
-            }
-            $fees_master->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-            $result = $fees_master->save();
-            if ($result) {
-                if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                    return ApiBaseMethod::sendResponse(null, 'Fees Master updated successfully');
-                }
-            } else {
-                return ApiBaseMethod::sendError('Operation Failed.', $validator->errors());
-            }
-        } else {
-            return ApiBaseMethod::sendError('Operation Failed.', $validator->errors());
-        }
-    }
-    public function NewExamSetup(Request $request)
-    {
-
-        $input = $request->all();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $validator = Validator::make($input, [
-                'class_ids' => 'required',
-                'subjects_ids' => 'required|array',
-                'exams_types' => 'required|array',
-                'exam_marks' => "required|min:0"
-            ]);
-        }
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-
-
-        DB::beginTransaction();
-
-        try {
-
-            $sections = SmClassSection::where('class_id', $request->class_ids)->get();
-
-
-            $exist_check = SmExam::where('class_id', '=', $request->class_ids)->count();
-
-            if ($exist_check == 0) {
-
-
-                foreach ($request->exams_types as $exam_type_id) {
-
-                    foreach ($sections as $section) {
-
-
-                        $subject_for_sections = SmAssignSubject::where('class_id', $request->class_ids)->where('section_id', $section->section_id)->get();
-
-
-                        $eligible_subjects = [];
-
-                        foreach ($subject_for_sections as $subject_for_section) {
-                            $eligible_subjects[] = $subject_for_section->subject_id;
-                        }
-
-
-                        foreach ($request->subjects_ids as $subject_id) {
-
-                            if (in_array($subject_id, $eligible_subjects)) {
-                                $exam = new SmExam();
-                                $exam->exam_type_id = $exam_type_id;
-                                $exam->class_id = $request->class_ids;
-                                $exam->section_id = $section->section_id;
-                                $exam->subject_id = $subject_id;
-                                $exam->exam_mark = $request->exam_marks;
-                                $exam->created_at = YearCheck::getYear() . '-' . date('m-d h:i:s');
-                                $exam->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-                                $exam->save();
-
-                                $exam->toArray();
-
-                                $exam_term_id = $exam->id;
-
-                                $length = count($request->exam_title);
-
-                                for ($i = 0; $i < $length; $i++) {
-
-                                    $ex_title = $request->exam_title[$i];
-                                    $ex_mark = $request->exam_mark[$i];
-
-                                    $newSetupExam = new SmExamSetup();
-                                    $newSetupExam->exam_id = $exam->id;
-                                    $newSetupExam->class_id = $request->class_ids;
-                                    $newSetupExam->section_id = $section->section_id;
-                                    $newSetupExam->subject_id = $subject_id;
-                                    $newSetupExam->exam_term_id = $exam_type_id;
-                                    $newSetupExam->exam_title = $ex_title;
-                                    $newSetupExam->exam_mark = $ex_mark;
-                                    $newSetupExam->created_at = YearCheck::getYear() . '-' . date('m-d h:i:s');
-                                    $newSetupExam->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-                                    $result = $newSetupExam->save();
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                return ApiBaseMethod::sendResponse(null, 'Exam setup exist');
-            }
-            DB::commit();
-
-            return ApiBaseMethod::sendResponse(null, 'Exam setup done');
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Operation Failed.', $validator->errors());
-        }
-    }
-    public function saas_NewExamSetup(Request $request, $school_id)
-    {
-
-        $input = $request->all();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $validator = Validator::make($input, [
-                'class_ids' => 'required',
-                'subjects_ids' => 'required|array',
-                'exams_types' => 'required|array',
-                'exam_marks' => "required|min:0"
-            ]);
-        }
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-
-
-        DB::beginTransaction();
-
-        try {
-
-            $sections = SmClassSection::where('class_id', $request->class_ids)->where('school_id',$school_id)->get();
-
-
-            $exist_check = SmExam::where('class_id', '=', $request->class_ids)->where('school_id',$school_id)->count();
-
-            if ($exist_check == 0) {
-
-
-                foreach ($request->exams_types as $exam_type_id) {
-
-                    foreach ($sections as $section) {
-
-
-                        $subject_for_sections = SmAssignSubject::where('class_id', $request->class_ids)->where('section_id', $section->section_id)->where('school_id',$school_id)->get();
-
-
-                        $eligible_subjects = [];
-
-                        foreach ($subject_for_sections as $subject_for_section) {
-                            $eligible_subjects[] = $subject_for_section->subject_id;
-                        }
-
-
-                        foreach ($request->subjects_ids as $subject_id) {
-
-                            if (in_array($subject_id, $eligible_subjects)) {
-                                $exam = new SmExam();
-                                $exam->exam_type_id = $exam_type_id;
-                                $exam->class_id = $request->class_ids;
-                                $exam->section_id = $section->section_id;
-                                $exam->subject_id = $subject_id;
-                                $exam->exam_mark = $request->exam_marks;
-                                $exam->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-                                $exam->created_at = YearCheck::getYear() . '-' . date('m-d h:i:s');
-
-                                $exam->save();
-
-                                $exam->toArray();
-
-                                $exam_term_id = $exam->id;
-
-                                $length = count($request->exam_title);
-
-                                for ($i = 0; $i < $length; $i++) {
-
-                                    $ex_title = $request->exam_title[$i];
-                                    $ex_mark = $request->exam_mark[$i];
-
-                                    $newSetupExam = new SmExamSetup();
-                                    $newSetupExam->exam_id = $exam->id;
-                                    $newSetupExam->class_id = $request->class_ids;
-                                    $newSetupExam->section_id = $section->section_id;
-                                    $newSetupExam->subject_id = $subject_id;
-                                    $newSetupExam->exam_term_id = $exam_type_id;
-                                    $newSetupExam->exam_title = $ex_title;
-                                    $newSetupExam->exam_mark = $ex_mark;
-                                    $newSetupExam->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-                                    $newSetupExam->created_at = YearCheck::getYear() . '-' . date('m-d h:i:s');
-                                    $result = $newSetupExam->save();
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                return ApiBaseMethod::sendResponse(null, 'Exam setup exist');
-            }
-            DB::commit();
-
-            return ApiBaseMethod::sendResponse(null, 'Exam setup done');
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Operation Failed.', $validator->errors());
-        }
-    }
-    public function NewExamSchedule(Request $request)
-    {
-
-        if ($request->assigned_id == "") {
-            $check_date = SmExamSchedule::where('class_id', $request->class_id)->where('section_id', $request->section_id)->where('exam_term_id', $request->exam_term_id)->where('date', date('Y-m-d', strtotime($request->date)))->where('exam_period_id', $request->exam_period_id)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->get();
-        } else {
-            $check_date = SmExamSchedule::where('id', '!=', $request->assigned_id)->where('class_id', $request->class_id)->where('section_id', $request->section_id)->where('exam_term_id', $request->exam_term_id)->where('date', date('Y-m-d', strtotime($request->date)))->where('exam_period_id', $request->exam_period_id)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->get();
-        }
-
-        $holiday_check = SmHoliday::where('from_date', '<=', date('Y-m-d', strtotime($request->date)))->where('to_date', '>=', date('Y-m-d', strtotime($request->date)))->first();
-
-        if ($holiday_check != "") {
-            $from_date = date('jS M, Y', strtotime($holiday_check->from_date));
-            $to_date = date('jS M, Y', strtotime($holiday_check->to_date));
-        } else {
-            $from_date = '';
-            $to_date = '';
-        }
-    }
-    public function saas_NewExamSchedule(Request $request, $school_id)
-    {
-
-
-        if ($request->assigned_id == "") {
-            $check_date = SmExamSchedule::where('class_id', $request->class_id)->where('section_id', $request->section_id)->where('exam_term_id', $request->exam_term_id)->where('date', date('Y-m-d', strtotime($request->date)))->where('exam_period_id', $request->exam_period_id)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
-        } else {
-            $check_date = SmExamSchedule::where('id', '!=', $request->assigned_id)->where('class_id', $request->class_id)->where('section_id', $request->section_id)->where('exam_term_id', $request->exam_term_id)->where('date', date('Y-m-d', strtotime($request->date)))->where('exam_period_id', $request->exam_period_id)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
-        }
-
-        $holiday_check = SmHoliday::where('from_date', '<=', date('Y-m-d', strtotime($request->date)))->where('to_date', '>=', date('Y-m-d', strtotime($request->date)))->where('school_id',$school_id)->first();
-
-        if ($holiday_check != "") {
-            $from_date = date('jS M, Y', strtotime($holiday_check->from_date));
-            $to_date = date('jS M, Y', strtotime($holiday_check->to_date));
-        } else {
-            $from_date = '';
-            $to_date = '';
-        }
-    }
     public function DemoUser(Request $request)
     {
         try {
@@ -1925,19 +1374,29 @@ class SmApiController extends Controller
 
         try {
             $user = User::where('school_id', $request->school_id)->where('email', $request->email)->first();
+            if(!$user) {
+                $user = User::where('school_id', $request->school_id)->where('username', $request->email)->first();
+            }
+
+            if(!$user) {
+                $user = User::where('school_id', $request->school_id)->where('phone_number', $request->email)->first();
+            }
             if ($user != "") {
                 if (Hash::check($request->password, $user->password)) {
 
                     $data = [];
 
+                    $accessToken = $user->createToken('AuthToken')->accessToken;
+                    $token = $accessToken;
+                    $data['accessToken'] = 'Bearer ' . $token;
+
                     $data['user'] = $user->toArray();
                     $role_id = $user->role_id;
                     if ($role_id == 2) {
 
-                        $data['userDetails'] = DB::table('sm_students')->select('sm_students.*', 'sm_parents.*', 'sm_classes.*', 'sm_sections.*')
+
+                        $data['userDetails'] = DB::table('sm_students')->select('sm_students.*','sm_students.user_id as student_user_id', 'sm_students.id as s_id', 'sm_parents.*','sm_parents.user_id as parent_user_id')
                             ->join('sm_parents', 'sm_parents.id', '=', 'sm_students.parent_id')
-                            ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                            ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
                             ->where('sm_students.user_id', $user->id)
                             ->first();
 
@@ -1958,7 +1417,7 @@ class SmApiController extends Controller
                             ->join('sm_staffs', 'sm_staffs.id', '=', 'sm_vehicles.driver_id')
                             ->where('sm_students.user_id', $user->id)
                             ->first();
-                        $data['system_settings'] = DB::table('sm_general_settings')->get();
+                        $data['system_settings'] = DB::table('sm_general_settings')->where('school_id', $user->school_id)->first();
                         $data['TTL_RTL_status'] = '1=RTL,2=TTL';
                     } else if ($role_id == 3) {
                         $data['userDetails'] = SmParent::where('user_id', $user->id)->first();
@@ -2004,21 +1463,58 @@ class SmApiController extends Controller
         }
 
         try {
-            $user = User::where('email', $request->email)->first();
+            $users = User::where('email', $request->email)->get();
+
+            if(!$users->count()) {
+                $users = User::where('username', $request->email)->get();
+            }
+
+            if(!$users->count()) {
+                $users = User::where('phone_number', $request->email)->get();
+            }
+
+            $user = null;
+
+            if($users->count() > 1){
+                $match_user = collect();
+                foreach($users as $user){
+                    if (Hash::check($request->password, $user->password)) {
+                        $match_user->add($user);
+                    }
+                }
+
+
+                if($match_user && count($match_user) > 1){
+                    $school_ids = $match_user->pluck('school_id')->unique();
+                    $schools = SmSchool::whereIn('id', $school_ids)->pluck('school_name', 'id')->toArray();
+                    $response_schools = [];
+                    foreach($schools as $id => $name){
+                        $response_schools[] = [
+                            'id' => $id, 'name' => $name];
+                    }
+                    $data = ['multiple_school' => true, 'schools' => $response_schools];
+
+                    return ApiBaseMethod::sendResponse($data, 'Please Select a school first');
+                } else{
+                    $user = $match_user->first();
+                }
+            } else{
+                $user = $users->first();
+            }
+
             if ($user != "") {
                 if (Hash::check($request->password, $user->password)) {
 
                     $data = [];
+                    $data['multiple_school'] = false;
                     $notifications = SmNotification::where('user_id',$user->id)->where('is_read',0)->count();
                     $data['user'] = $user->toArray();
                     $data['unread_notifications'] = @$notifications;
                     $role_id = $user->role_id;
                     if ($role_id == 2) {
 
-                        $data['userDetails'] = DB::table('sm_students')->select('sm_students.*', 'sm_parents.*', 'sm_classes.*', 'sm_sections.*')
+                        $data['userDetails'] = DB::table('sm_students')->select('sm_students.*','sm_students.user_id as student_user_id', 'sm_students.id as s_id', 'sm_parents.*','sm_parents.user_id as parent_user_id')
                             ->join('sm_parents', 'sm_parents.id', '=', 'sm_students.parent_id')
-                            ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                            ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
                             ->where('sm_students.user_id', $user->id)
                             ->first();
 
@@ -2039,7 +1535,7 @@ class SmApiController extends Controller
                             ->join('sm_staffs', 'sm_staffs.id', '=', 'sm_vehicles.driver_id')
                             ->where('sm_students.user_id', $user->id)
                             ->first();
-                        $data['system_settings'] = DB::table('sm_general_settings')->get();
+                        $data['system_settings'] = DB::table('sm_general_settings')->first();
                         $data['TTL_RTL_status'] = '1=RTL,2=TTL';
                     } else if ($role_id == 3) {
                         $data['userDetails'] = SmParent::where('user_id', $user->id)->first();
@@ -2047,7 +1543,7 @@ class SmApiController extends Controller
                         $data['userDetails'] = SmStaff::where('user_id', $user->id)->first();
                     }
 
-                    $old_token=DB::table('oauth_access_tokens')->where('user_id',$user->id)->delete();
+                    // $old_token=DB::table('oauth_access_tokens')->where('user_id',$user->id)->delete();
 
                     $accessToken=$user->createToken('AuthToken')->accessToken;
                     $token= $accessToken;
@@ -4053,7 +3549,7 @@ class SmApiController extends Controller
 
             $siblings = SmStudent::where('parent_id', $student_detail->parent_id)
                 ->where('active_status', 1)
-                ->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())
+
                 ->where('id', '!=', $student_detail->id)
                 ->get();
 
@@ -4105,7 +3601,7 @@ class SmApiController extends Controller
 
             $siblings = SmStudent::where('parent_id', $student_detail->parent_id)
                 ->where('active_status', 1)
-                ->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())
+
                 ->where('id', '!=', $student_detail->id)
                 ->where('school_id',$school_id)
                 ->get();
@@ -5626,7 +5122,7 @@ class SmApiController extends Controller
             $uploadContents = new SmTeacherUploadContent();
             $uploadContents->content_title = $request->content_title;
             $uploadContents->content_type = $request->content_type;
-
+            $uploadContents->source_url = $request->input('source_url');
             foreach ($request->available_for as $value) {
                 if ($value == 'admin') {
                     $uploadContents->available_for_admin = 1;
@@ -6848,9 +6344,9 @@ class SmApiController extends Controller
     {
 
         try {
-            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
-            $genders = SmBaseSetup::where('active_status', '=', '1')->where('base_group_id', '=', '1')->where('school_id',$school_id)->get();
-            $categories = SmStudentCategory::where('school_id',$school_id)->get();
+            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
+            $genders = SmBaseSetup::where('active_status', '=', '1')->where('base_group_id', '=', '1')->where('school_id', $school_id)->get();
+            $categories = SmStudentCategory::where('school_id', $school_id)->get();
             $fees_group_id = $request->fees_group_id;
 
             $students = SmStudent::query();
@@ -6873,14 +6369,14 @@ class SmApiController extends Controller
             if ($request->fees_group_id == 2) {
                 $students->where('room_id', '!=', '');
             }
-            $students = $students->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
+            $students = $students->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
 
-            $fees_masters = SmFeesMaster::where('fees_group_id', $request->fees_group_id)->where('school_id',$school_id)->get();
+            $fees_masters = SmFeesMaster::where('fees_group_id', $request->fees_group_id)->where('school_id', $school_id)->get();
 
             $pre_assigned = [];
             foreach ($students as $student) {
                 foreach ($fees_masters as $fees_master) {
-                    $assigned_student = SmFeesAssign::select('student_id')->where('student_id', $student->id)->where('fees_master_id', $fees_master->id)->where('school_id',$school_id)->first();
+                    $assigned_student = SmFeesAssign::select('student_id')->where('student_id', $student->id)->where('fees_master_id', $fees_master->id)->where('school_id', $school_id)->first();
 
                     if ($assigned_student != "") {
                         if (!in_array($assigned_student->student_id, $pre_assigned)) {
@@ -6894,7 +6390,7 @@ class SmApiController extends Controller
             $category_id = $request->category;
             $gender_id = $request->gender;
 
-            $fees_assign_groups = SmFeesMaster::where('fees_group_id', $request->fees_group_id)->where('school_id',$school_id)->get();
+            $fees_assign_groups = SmFeesMaster::where('fees_group_id', $request->fees_group_id)->where('school_id', $school_id)->get();
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 $data = [];
@@ -6911,293 +6407,7 @@ class SmApiController extends Controller
                 return ApiBaseMethod::sendResponse($data, null);
             }
             return view('backEnd.feesCollection.fees_assign', compact('classes', 'categories', 'genders', 'students', 'fees_assign_groups', 'fees_group_id', 'pre_assigned', 'class_id', 'category_id', 'gender_id'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function fees_group_index(Request $request)
-    {
-
-        try {
-            $fees_groups = SmFeesGroup::get();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendResponse($fees_groups, null);
-            }
-
-            return view('backEnd.feesCollection.fees_group', compact('fees_groups'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_fees_group_index(Request $request,$school_id)
-    {
-
-        try {
-            $fees_groups = SmFeesGroup::where('school_id',$school_id)->get();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendResponse($fees_groups, null);
-            }
-
-            return view('backEnd.feesCollection.fees_group', compact('fees_groups'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function fees_group_store(Request $request)
-    {
-        $input = $request->all();
-        $validator = Validator::make($input, [
-            'name' => "required|unique:sm_fees_groups|max:200"
-        ]);
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        try {
-            $visitor = new SmFeesGroup();
-            $visitor->name = $request->name;
-            $visitor->description = $request->description;
-            $result = $visitor->save();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($result) {
-                    return ApiBaseMethod::sendResponse(null, 'Fees Group has been created successfully.');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($result) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect()->back();
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_fees_group_store(Request $request,$school_id)
-    {
-        $input = $request->all();
-        $validator = Validator::make($input, [
-            'name' => "required|unique:sm_fees_groups|max:200"
-        ]);
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        try {
-            $visitor = new SmFeesGroup();
-            $visitor->name = $request->name;
-            $visitor->description = $request->description;
-            $visitor->school_id = $school_id;
-            $result = $visitor->save();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($result) {
-                    return ApiBaseMethod::sendResponse(null, 'Fees Group has been created successfully.');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($result) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect()->back();
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function fees_group_edit(Request $request, $id)
-    {
-
-        try {
-            $fees_group = SmFeesGroup::find($id);
-            $fees_groups = SmFeesGroup::get();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['fees_group'] = $fees_group->toArray();
-                $data['fees_groups'] = $fees_groups->toArray();
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-            return view('backEnd.feesCollection.fees_group', compact('fees_group', 'fees_groups'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_fees_group_edit(Request $request,$school_id, $id)
-    {
-
-        try {
-            $fees_group = SmFeesGroup::where('school_id',$school_id)->find($id);
-            $fees_groups = SmFeesGroup::where('school_id',$school_id)->get();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['fees_group'] = $fees_group->toArray();
-                $data['fees_groups'] = $fees_groups->toArray();
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-            return view('backEnd.feesCollection.fees_group', compact('fees_group', 'fees_groups'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function fees_group_update(Request $request)
-    {
-        $input = $request->all();
-        $validator = Validator::make($input, [
-            'name' => "required|max:200|unique:sm_fees_groups,name," . $request->id,
-
-        ]);
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-
-        try {
-            $visitor = SmFeesGroup::find($request->id);
-            $visitor->name = $request->name;
-            $visitor->description = $request->description;
-            $result = $visitor->save();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($result) {
-                    return ApiBaseMethod::sendResponse(null, 'Fees Group has been updated successfully.');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($result) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect('fees-group');
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_fees_group_update(Request $request,$school_id)
-    {
-        $input = $request->all();
-        $validator = Validator::make($input, [
-            'name' => "required|max:200"
-
-        ]);
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-
-        try {
-            $visitor = SmFeesGroup::where('school_id',$request->school_id)->find($request->id);
-            $visitor->name = $request->name;
-            $visitor->description = $request->description;
-            $visitor->school_id = $school_id;
-            $result = $visitor->save();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($result) {
-                    return ApiBaseMethod::sendResponse(null, 'Fees Group has been updated successfully.');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($result) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect('fees-group');
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function fees_group_delete(Request $request)
-    {
-
-        try {
-            $fees_group = SmFeesGroup::destroy($request->id);
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($fees_group) {
-                    return ApiBaseMethod::sendResponse(null, 'Fees Group has been deleted successfully.');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($fees_group) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect('fees-group');
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect('fees-group');
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_fees_group_delete(Request $request, $school_id)
-    {
-
-        try {
-            $fees_group = SmFeesGroup::where('school_id',$school_id)->where('id',$request->id)->delete();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($fees_group) {
-                    return ApiBaseMethod::sendResponse(null, 'Fees Group has been deleted successfully.');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($fees_group) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect('fees-group');
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect('fees-group');
-                }
-            }
-        } catch (\Exception $e) {
+        } catch (\Exception$e) {
             return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
@@ -9467,14 +8677,13 @@ class SmApiController extends Controller
     {
 
         try {
-            $roles = InfixRole::where('active_status', '=', '1')
-                ->where(function ($q) {
-                    $q->where('school_id', Auth::user()->school_id)->orWhere('type', 'System');
+            $roles = InfixRole::where('active_status', 1)
+                ->where(function ($q) use($school_id){
+                    $q->where('school_id', $school_id)->orWhere('type', 'System');
                 })
                 ->select('id', 'name', 'type')
                 ->where('id', '!=', 2)
                 ->where('id', '!=', 3)
-                ->where('school_id',$school_id)
                 ->get();
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
@@ -12652,104 +11861,7 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
-    public function class_Routine(Request $request, $id = null)
-    {
 
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $user_id = $id;
-        } else {
-            $user = Auth::user();
-
-            if ($user) {
-                $user_id = $user->id;
-            } else {
-                $user_id = $request->user_id;
-            }
-        }
-
-        $student_detail = SmStudent::where('user_id', $user_id)->first();
-
-        $class_id = $student_detail->class_id;
-        $section_id = $student_detail->section_id;
-
-        $sm_weekends = SmWeekend::where('school_id', $student_detail->school_id)->orderBy('order', 'ASC')->where('active_status', 1)->get();
-        $class_times = SmClassTime::where('type', 'class')->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['student_detail'] = $student_detail->toArray();
-
-            $weekenD = SmWeekend::where('school_id', $student_detail->school_id)->get();
-            foreach ($weekenD as $row) {
-                $data[$row->name] = DB::table('sm_class_routine_updates')
-                    ->orderBy('sm_class_times.start_time', 'asc')
-                    ->select('sm_class_times.period', 'sm_class_times.start_time', 'sm_class_times.end_time', 'sm_subjects.subject_name', 'sm_class_rooms.room_no')
-                    ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_routine_updates.class_id')
-                    ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_routine_updates.section_id')
-                    ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_class_routine_updates.class_period_id')
-                    ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_class_routine_updates.subject_id')
-                    ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_class_routine_updates.room_id')
-
-                    ->where([
-                        ['sm_class_routine_updates.class_id', $class_id], ['sm_class_routine_updates.section_id', $section_id], ['sm_class_routine_updates.day', $row->id],
-                    ])->where('sm_class_routine_updates.academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->get();
-            }
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-
-        return ApiBaseMethod::sendError('Error.', null);
-    }
-    public function saas_class_Routine(Request $request,$school_id, $id = null)
-    {
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $user_id = $id;
-        } else {
-            $user = Auth::user();
-
-            if ($user) {
-                $user_id = $user->id;
-            } else {
-                $user_id = $request->user_id;
-            }
-        }
-
-        $student_detail = SmStudent::where('user_id', $user_id)->where('school_id',$school_id)->first();
-
-        $class_id = $student_detail->class_id;
-        $section_id = $student_detail->section_id;
-
-        $sm_weekends = SmWeekend::orderBy('order', 'ASC')->where('active_status', 1)->where('academic_id', SmAcademicYear::API_ACADEMIC_YEAR($school_id))->where('school_id',$student_detail->school_id)->get();
-        $class_times = SmClassTime::where('type', 'class')->where('academic_id', SmAcademicYear::API_ACADEMIC_YEAR($school_id))->where('school_id',$school_id)->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['student_detail'] = $student_detail->toArray();
-
-
-            $weekenD = SmWeekend::where('school_id',$student_detail->school_id)->get();
-            foreach ($weekenD as $row) {
-                $data[$row->name] = DB::table('sm_class_routine_updates')
-                    ->select('sm_class_times.period', 'sm_class_times.start_time', 'sm_class_times.end_time', 'sm_subjects.subject_name', 'sm_class_rooms.room_no')
-                    ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_routine_updates.class_id')
-                    ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_routine_updates.section_id')
-                    ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_class_routine_updates.class_period_id')
-                    ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_class_routine_updates.subject_id')
-                    ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_class_routine_updates.room_id')
-
-                    ->where([
-                        ['sm_class_routine_updates.class_id', $class_id], ['sm_class_routine_updates.section_id', $section_id], ['sm_class_routine_updates.day', $row->id],
-                    ])->where('sm_class_routine_updates.academic_id', SmAcademicYear::API_ACADEMIC_YEAR($school_id))
-                    ->where('sm_class_routine_updates.school_id',$school_id)
-                    ->get();
-            }
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-
-        return view('backEnd.studentPanel.class_routine', compact('class_times', 'class_id', 'section_id', 'sm_weekends'));
-    }
 
 
     public function noticeList(Request $request)
@@ -13376,437 +12488,7 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
-    public function saveBookData(Request $request)
-    {
-        $input = $request->all();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $validator = Validator::make($input, [
-                'book_title' => "required|max:200",
-                'book_category_id' => "required",
-                'user_id' => "required",
-                'quantity' => "sometimes|nullable|integer|min:0",
-                'book_price' => "sometimes|nullable|integer|min:0",
-                'school_id' => "required",
-            ]);
-        } else {
-            $validator = Validator::make($input, [
-                'book_title' => "required|max:200",
-                'book_category_id' => "required",
-                'quantity' => "sometimes|nullable|integer|min:0",
-                'book_price' => "sometimes|nullable|integer|min:0",
-                'school_id' => "required",
-            ]);
-        }
 
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-
-        try {
-
-            $user = Auth()->user();
-
-            if ($user) {
-                $user_id = $user->id;
-            } else {
-                $user_id = $request->user_id;
-            }
-
-            $books = new SmBook();
-            $books->book_title = $request->book_title;
-            $books->book_category_id = $request->book_category_id;
-            $books->book_number = $request->book_number;
-            $books->isbn_no = $request->isbn_no;
-            $books->publisher_name = $request->publisher_name;
-            $books->author_name = $request->author_name;
-            $books->school_id = $request->school_id;
-            if (@$request->subject) {
-                $books->subject_id = $request->subject;
-            }
-            $books->rack_number = $request->rack_number;
-            if (@$request->quantity != "") {
-                $books->quantity = $request->quantity;
-            }
-            if (@$request->book_price != "") {
-                $books->book_price = $request->book_price;
-            }
-            $books->details = $request->details;
-            $books->post_date = date('Y-m-d');
-            $books->created_by = $user_id;
-
-            $results = $books->save();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($results) {
-                    return ApiBaseMethod::sendResponse(null, 'New Book has been added successfully.');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($results) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect('book-list');
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_saveBookData (Request $request)
-    {
-        $input = $request->all();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $validator = Validator::make($input, [
-                'book_title' => "required|max:200",
-                'book_category_id' => "required",
-                'user_id' => "required",
-                'quantity' => "sometimes|nullable|integer|min:0",
-                'book_price' => "sometimes|nullable|integer|min:0",
-                'school_id' => "required",
-            ]);
-        } else {
-            $validator = Validator::make($input, [
-                'book_title' => "required|max:200",
-                'book_category_id' => "required",
-                'quantity' => "sometimes|nullable|integer|min:0",
-                'book_price' => "sometimes|nullable|integer|min:0",
-                'school_id' => "required",
-            ]);
-        }
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-
-        try {
-
-            $user = Auth()->user();
-
-            if ($user) {
-                $user_id = $user->id;
-            } else {
-                $user_id = $request->user_id;
-            }
-
-            $books = new SmBook();
-            $books->book_title = $request->book_title;
-            $books->book_category_id = $request->book_category_id;
-            $books->book_number = $request->book_number;
-            $books->isbn_no = $request->isbn_no;
-            $books->publisher_name = $request->publisher_name;
-            $books->author_name = $request->author_name;
-            $books->school_id = $request->school_id;
-            if (@$request->subject) {
-                $books->subject_id = $request->subject;
-            }
-            $books->rack_number = $request->rack_number;
-            if (@$request->quantity != "") {
-                $books->quantity = $request->quantity;
-            }
-            if (@$request->book_price != "") {
-                $books->book_price = $request->book_price;
-            }
-            $books->details = $request->details;
-            $books->post_date = date('Y-m-d');
-            $books->created_by = $user_id;
-
-            $results = $books->save();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($results) {
-                    return ApiBaseMethod::sendResponse(null, 'New Book has been added successfully.');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($results) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect('book-list');
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function editBook(Request $request, $id)
-    {
-
-
-        try {
-            $editData = SmBook::find($id);
-            $categories = SmBookCategory::all();
-            $subjects = SmSubject::all();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['editData'] = $editData->toArray();
-                $data['categories'] = $categories->toArray();
-                $data['subjects'] = $subjects->toArray();
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-
-            return view('backEnd.library.addBook', compact('editData', 'categories', 'subjects'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_editBook(Request $request,$school_id, $id)
-    {
-
-
-        try {
-            $editData = SmBook::where('school_id',$school_id)->find($id);
-            $categories = SmBookCategory::where('school_id',$school_id)->get();
-            $subjects = SmSubject::where('school_id',$school_id)->get();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['editData'] = $editData->toArray();
-                $data['categories'] = $categories->toArray();
-                $data['subjects'] = $subjects->toArray();
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-
-            return view('backEnd.library.addBook', compact('editData', 'categories', 'subjects'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function updateBookData(Request $request, $id)
-    {
-
-
-        $input = $request->all();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $validator = Validator::make($input, [
-                'book_title' => "required",
-                'book_category_id' => "required",
-                'user_id' => "required",
-                'quantity' => "sometimes|nullable|integer|min:0",
-                'book_price' => "sometimes|nullable|integer|min:0"
-            ]);
-        } else {
-            $validator = Validator::make($input, [
-                'book_title' => "required",
-                'quantity' => "sometimes|nullable|integer|min:0",
-                'book_category_id' => "required",
-                'book_price' => "sometimes|nullable|integer|min:0"
-            ]);
-        }
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        try {
-
-            $user = Auth()->user();
-
-            if ($user) {
-                $user_id = $user->id;
-            } else {
-                $user_id = $request->user_id;
-            }
-
-            $books = SmBook::find($id);
-            $books->book_title = $request->book_title;
-            $books->book_category_id = $request->book_category_id;
-            $books->book_number = $request->book_number;
-            $books->isbn_no = $request->isbn_no;
-            $books->publisher_name = $request->publisher_name;
-            $books->author_name = $request->author_name;
-            if (@$request->subject) {
-                $books->subject_id = $request->subject;
-            }
-            $books->rack_number = $request->rack_number;
-            if (@$request->quantity != "") {
-                $books->quantity = $request->quantity;
-            }
-            if (@$request->book_price != "") {
-                $books->book_price = $request->book_price;
-            }
-            $books->details = $request->details;
-            $books->post_date = date('Y-m-d');
-            $books->updated_by = $user_id;
-            $results = $books->update();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($results) {
-                    return ApiBaseMethod::sendResponse(null, 'Book Data has been updated successfully');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($results) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect('book-list');
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_updateBookData(Request $request, $id)
-    {
-
-
-        $input = $request->all();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $validator = Validator::make($input, [
-                'book_title' => "required",
-                'book_category_id' => "required",
-                'user_id' => "required",
-                'quantity' => "sometimes|nullable|integer|min:0",
-                'book_price' => "sometimes|nullable|integer|min:0",
-                'school_id' => "required"
-            ]);
-        } else {
-            $validator = Validator::make($input, [
-                'book_title' => "required",
-                'quantity' => "sometimes|nullable|integer|min:0",
-                'book_category_id' => "required",
-                'book_price' => "sometimes|nullable|integer|min:0",
-                'school_id' => "required"
-            ]);
-        }
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        try {
-
-            $user = Auth()->user();
-
-            if ($user) {
-                $user_id = $user->id;
-            } else {
-                $user_id = $request->user_id;
-            }
-
-            $books = SmBook::where('school_id',$school_id)->find($id);
-            $books->book_title = $request->book_title;
-            $books->book_category_id = $request->book_category_id;
-            $books->book_number = $request->book_number;
-            $books->isbn_no = $request->isbn_no;
-            $books->publisher_name = $request->publisher_name;
-            $books->author_name = $request->author_name;
-            if (@$request->subject) {
-                $books->subject_id = $request->subject;
-            }
-            $books->rack_number = $request->rack_number;
-            if (@$request->quantity != "") {
-                $books->quantity = $request->quantity;
-            }
-            if (@$request->book_price != "") {
-                $books->book_price = $request->book_price;
-            }
-            $books->details = $request->details;
-            $books->school_id = $request->school_id;
-            $books->post_date = date('Y-m-d');
-            $books->updated_by = $user_id;
-            $results = $books->update();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                if ($results) {
-                    return ApiBaseMethod::sendResponse(null, 'Book Data has been updated successfully');
-                } else {
-                    return ApiBaseMethod::sendError('Something went wrong, please try again.');
-                }
-            } else {
-                if ($results) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect('book-list');
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function deleteBookView(Request $request, $id)
-    {
-
-        try {
-            $title = "Are you sure to detete this Book?";
-            $url = url('delete-book/' . $id);
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendResponse($id, null);
-            }
-            return view('backEnd.modal.delete', compact('id', 'title', 'url'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_deleteBookView(Request $request,$school_id, $id)
-    {
-
-        try {
-            $title = "Are you sure to detete this Book?";
-            $url = url('school/'.$school_id.'/'.'delete-book/' . $id);
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendResponse($id, null);
-            }
-            return view('backEnd.modal.delete', compact('id', 'title', 'url'));
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function deleteBook(Request $request,$school_id, $id)
-    {
-
-        try {
-            $tables = \App\tableList::getTableList('book_id',$id);
-            try {
-                $result = SmBook::where('school_id',$school_id)->destroy($id);
-                if ($result) {
-                    Toastr::success('Operation successful', 'Success');
-                    return redirect()->back();
-                } else {
-                    Toastr::error('Operation Failed', 'Failed');
-                    return redirect()->back();
-                }
-            } catch (\Illuminate\Database\QueryException $e) {
-
-                $msg = 'This data already used in  : ' . $tables . ' Please remove those data first';
-                Toastr::error('This item already used', 'Failed');
-                return redirect()->back();
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
     public function memberList(Request $request)
     {
 
@@ -16873,18 +15555,23 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
-    public function generalSettingsView(Request $request)
+    public function generalSettingsView(Request $request, $school_id)
     {
-
         try {
-            $editData = SmGeneralSettings::find(1);
-            $session = SmGeneralSettings::join('sm_academic_years', 'sm_academic_years.id', '=', 'sm_general_settings.session_id')->find(1);
+            $editData = SmGeneralSettings::where('school_id', $school_id)->first();
+            $modules = InfixModuleManager::select('name')->get();
+            foreach ($modules as $module) {
+                $all_modules[] = $module->name;
+            }
+            session()->put('all_module', $all_modules);
+            foreach ($modules as $module) {
+                $editData->{$module->name} = moduleStatusCheck($module->name);
+            }
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
 
                 return ApiBaseMethod::sendResponse($editData, null);
             }
-            return view('backEnd.systemSettings.generalSettingsView', compact('editData', 'session'));
         } catch (\Exception $e) {
             return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
@@ -17532,135 +16219,7 @@ class SmApiController extends Controller
 
         return view('backEnd.studentPanel.my_profile', compact('driver', 'academic_year', 'student_detail', 'fees_assigneds', 'fees_discounts', 'exams', 'documents', 'timelines', 'siblings', 'grades'));
     }
-    public function studentMyAttendanceSearchAPI(Request $request, $id = null)
-    {
 
-        $input = $request->all();
-
-        $validator = Validator::make($input, [
-            'month' => "required",
-            'year' => "required",
-        ]);
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $student_detail = SmStudent::where('user_id', $id)->first();
-
-        $year = $request->year;
-        $month = $request->month;
-        if ($month < 10) {
-            $month = '0' . $month;
-        }
-        $current_day = date('d');
-
-        $days = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
-        $days2 = '';
-        if ($month != 1) {
-            $days2 = cal_days_in_month(CAL_GREGORIAN, $month - 1, $request->year);
-        } else {
-            $days2 = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
-        }
-
-
-
-
-        $previous_month = $month - 1;
-        $previous_date = $year . '-' . $previous_month . '-' . $days2;
-
-
-
-        $previousMonthDetails['date'] = $previous_date;
-        $previousMonthDetails['day'] = $days2;
-        $previousMonthDetails['week_name'] = date('D', strtotime($previous_date));
-
-
-        $attendances = SmStudentAttendance::where('student_id', $student_detail->id)
-            ->where('attendance_date', 'like', '%' . $request->year . '-' . $month . '%')
-            ->select('attendance_type', 'attendance_date')
-            ->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data['attendances'] = $attendances;
-            $data['previousMonthDetails'] = $previousMonthDetails;
-            $data['days'] = $days;
-            $data['year'] = $year;
-            $data['month'] = $month;
-            $data['current_day'] = $current_day;
-            $data['status'] = 'Present: P, Late: L, Absent: A, Holiday: H, Half Day: F';
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-
-        return view('backEnd.studentPanel.student_attendance', compact('attendances', 'days', 'year', 'month', 'current_day'));
-    }
-    public function saas_studentMyAttendanceSearchAPI(Request $request,$school_id, $id = null)
-    {
-
-        $input = $request->all();
-
-        $validator = Validator::make($input, [
-            'month' => "required",
-            'year' => "required",
-        ]);
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $student_detail = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
-
-        $year = $request->year;
-        $month = $request->month;
-        if ($month < 10) {
-            $month = '0' . $month;
-        }
-        $current_day = date('d');
-
-        $days = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
-        $days2 = '';
-        if ($month != 1) {
-            $days2 = cal_days_in_month(CAL_GREGORIAN, $month - 1, $request->year);
-        } else {
-            $days2 = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
-        }
-
-
-        $previous_month = $month - 1;
-        $previous_date = $year . '-' . $previous_month . '-' . $days2;
-
-
-
-        $previousMonthDetails['date'] = $previous_date;
-        $previousMonthDetails['day'] = $days2;
-        $previousMonthDetails['week_name'] = date('D', strtotime($previous_date));
-
-
-        $attendances = SmStudentAttendance::where('student_id', $student_detail->id)
-            ->where('attendance_date', 'like', '%' . $request->year . '-' . $month . '%')
-            ->select('attendance_type', 'attendance_date')
-            ->where('school_id',$school_id)
-            ->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data['attendances'] = $attendances;
-            $data['previousMonthDetails'] = $previousMonthDetails;
-            $data['days'] = $days;
-            $data['year'] = $year;
-            $data['month'] = $month;
-            $data['current_day'] = $current_day;
-            $data['status'] = 'Present: P, Late: L, Absent: A, Holiday: H, Half Day: F';
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-        //Test
-        return view('backEnd.studentPanel.student_attendance', compact('attendances', 'days', 'year', 'month', 'current_day'));
-    }
     public function studentNoticeboard(Request $request)
     {
         $data = [];
@@ -17691,16 +16250,17 @@ class SmApiController extends Controller
         }
         return view('backEnd.studentPanel.studentNoticeboard', compact('allNotices'));
     }
-    public function studentSubjectApi(Request $request, $id)
+    public function studentSubjectApi(Request $request, $id, $record_id)
     {
 
         $student = SmStudent::where('user_id', $id)->first();
+        $record = StudentRecord::where('id', $record_id)->where('student_id', $student->id)->first();
         $assignSubjects = DB::table('sm_assign_subjects')
             ->leftjoin('sm_subjects', 'sm_subjects.id', '=', 'sm_assign_subjects.subject_id')
             ->leftjoin('sm_staffs', 'sm_staffs.id', '=', 'sm_assign_subjects.teacher_id')
             ->select('sm_subjects.subject_name', 'sm_subjects.subject_code', 'sm_subjects.subject_type', 'sm_staffs.full_name as teacher_name')
-            ->where('sm_assign_subjects.class_id', '=', $student->class_id)
-            ->where('sm_assign_subjects.section_id', '=', $student->section_id)
+            ->where('sm_assign_subjects.class_id', '=', $record->class_id)
+            ->where('sm_assign_subjects.section_id', '=', $record->section_id)
             ->where('sm_assign_subjects.academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->get();
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
             $data = [];
@@ -17708,16 +16268,18 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendResponse($data, null);
         }
     }
-    public function saas_studentSubjectApi(Request $request,$school_id, $id)
+    public function saas_studentSubjectApi(Request $request,$school_id, $id, $record_id)
     {
 
+
         $student = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
+        $record = StudentRecord::where('id', $record_id)->where('student_id', $student->id)->first();
         $assignSubjects = DB::table('sm_assign_subjects')
             ->leftjoin('sm_subjects', 'sm_subjects.id', '=', 'sm_assign_subjects.subject_id')
             ->leftjoin('sm_staffs', 'sm_staffs.id', '=', 'sm_assign_subjects.teacher_id')
             ->select('sm_subjects.subject_name', 'sm_subjects.subject_code', 'sm_subjects.subject_type', 'sm_staffs.full_name as teacher_name')
-            ->where('sm_assign_subjects.class_id', '=', @$student->class_id)
-            ->where('sm_assign_subjects.section_id', '=', @$student->section_id)
+            ->where('sm_assign_subjects.class_id', '=', @$record->class_id)
+            ->where('sm_assign_subjects.section_id', '=', @$record->section_id)
             ->where('sm_assign_subjects.academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('sm_assign_subjects.school_id',$school_id)->get();
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
             $data = [];
@@ -17760,201 +16322,7 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendResponse($data, null);
         }
     }
-    public function studentTeacherApi(Request $request, $id)
-    {
 
-        $student = SmStudent::where('user_id', $id)->first();
-
-        $assignTeacher = DB::table('sm_assign_subjects')
-            ->leftjoin('sm_subjects', 'sm_subjects.id', '=', 'sm_assign_subjects.subject_id')
-            ->leftjoin('sm_staffs', 'sm_staffs.id', '=', 'sm_assign_subjects.teacher_id')
-
-            ->distinct()
-            ->select('sm_staffs.full_name', 'sm_staffs.email', 'sm_staffs.mobile')
-            ->where('sm_assign_subjects.class_id', '=', $student->class_id)
-            ->where('sm_assign_subjects.section_id', '=', $student->section_id)
-            ->get();
-
-        $class_teacher = DB::table('sm_class_teachers')
-            ->join('sm_assign_class_teachers', 'sm_assign_class_teachers.id', '=', 'sm_class_teachers.assign_class_teacher_id')
-            ->join('sm_staffs', 'sm_class_teachers.teacher_id', '=', 'sm_staffs.id')
-            ->where('sm_assign_class_teachers.class_id', '=', $student->class_id)
-            ->where('sm_assign_class_teachers.section_id', '=', $student->section_id)
-            ->where('sm_assign_class_teachers.active_status', '=', 1)
-            ->select('full_name')
-            ->first();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['teacher_list'] = $assignTeacher->toArray();
-            $data['class_teacher'] = $class_teacher;
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function saas_studentTeacherApi(Request $request,$school_id, $id)
-    {
-
-        $student = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
-
-        $assignTeacher = DB::table('sm_assign_subjects')
-            ->leftjoin('sm_subjects', 'sm_subjects.id', '=', 'sm_assign_subjects.subject_id')
-            ->leftjoin('sm_staffs', 'sm_staffs.id', '=', 'sm_assign_subjects.teacher_id')
-            ->distinct()
-            ->select('sm_staffs.full_name', 'sm_staffs.email', 'sm_staffs.mobile')
-            ->where('sm_assign_subjects.class_id', '=', @$student->class_id)
-            ->where('sm_assign_subjects.section_id', '=', @$student->section_id)
-            ->get();
-
-        $class_teacher = DB::table('sm_class_teachers')
-            ->join('sm_assign_class_teachers', 'sm_assign_class_teachers.id', '=', 'sm_class_teachers.assign_class_teacher_id')
-            ->join('sm_staffs', 'sm_class_teachers.teacher_id', '=', 'sm_staffs.id')
-            ->where('sm_assign_class_teachers.class_id', '=', @$student->class_id)
-            ->where('sm_assign_class_teachers.section_id', '=', @$student->section_id)
-            ->where('sm_assign_class_teachers.active_status', '=', 1)
-            ->select('full_name')
-            ->first();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['teacher_list'] = $assignTeacher->toArray();
-            $data['class_teacher'] = $class_teacher;
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-
-
-    /**
-     *studentAssignmentApi
-     * @response {
-     *"success": true,
-     *"data": {
-     *    "student_detail": {
-     *    "id": 2,
-     *    "full_name": "Genevieve Wiggins",
-     *    "admission_no": 898,
-     *    "email": "wybefo@mailinator.com",
-     *    "mobile": "+1 (906) 497-2761",
-     *    "class_id": 42,
-     *    "section_id": 1
-     *    },
-     *    "uploadContents": [
-     *    {
-     *        "content_title": "Assignment",
-     *        "upload_date": "2021-04-05",
-     *        "description": "Hello",
-     *        "upload_file": "public/uploads/upload_contents/5b5ec23c13ae51891c941d0d00b5d011.jpg"
-     *    }
-     *    ]
-     *},
-
-     */
-    public function studentAssignmentApi(Request $request, $id)
-    {
-
-        $student_detail = SmStudent::where('user_id', $id)->first(['id','full_name','admission_no','email','mobile','class_id','section_id']);
-        $uploadContents = SmTeacherUploadContent::where('content_type', 'as')
-            ->select('content_title', 'upload_date', 'description', 'upload_file')
-            ->where(function ($query) use ($student_detail) {
-                $query->where('available_for_all_classes', 1)
-                    ->orWhere([['class', $student_detail->class_id], ['section', $student_detail->section_id]]);
-            })->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['student_detail'] = $student_detail->toArray();
-            $data['uploadContents'] = $uploadContents->toArray();
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-
-
-    /**
-     *studentSyllabusApi
-     * @response {
-     *"success": true,
-     *"data": {
-     *    "student_detail": {
-     *    "id": 2,
-     *    "full_name": "Genevieve Wiggins",
-     *    "admission_no": 898,
-     *    "email": "wybefo@mailinator.com",
-     *    "mobile": "+1 (906) 497-2761",
-     *    "class_id": 42,
-     *    "section_id": 1
-     *    },
-     *    "uploadContents": [
-     *    {
-     *        "content_title": "Syllabus",
-     *        "upload_date": "2021-04-05",
-     *        "description": "Hello",
-     *        "upload_file": "public/uploads/upload_contents/5b5ec23c13ae51891c941d0d00b5d011.jpg"
-     *    }
-     *    ]
-     *},
-
-     */
-    public function studentSyllabusApi(Request $request, $id)
-    {
-
-        $student_detail = SmStudent::where('user_id', $id)->first(['id','full_name','admission_no','email','mobile','class_id','section_id']);
-        $uploadContents = SmTeacherUploadContent::where('content_type', 'sy')
-            ->select('content_title', 'upload_date', 'description', 'upload_file')
-            ->where(function ($query) use ($student_detail) {
-                $query->where('available_for_all_classes', 1)
-                    ->orWhere([['class', $student_detail->class_id], ['section', $student_detail->section_id]]);
-            })->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['student_detail'] = $student_detail->toArray();
-            $data['uploadContents'] = $uploadContents->toArray();
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-
-    /**
-     *studentOtherDownloadsApi
-     * @response {
-     *"success": true,
-     *"data": {
-     *    "student_detail": {
-     *    "id": 2,
-     *    "full_name": "Genevieve Wiggins",
-     *    "admission_no": 898,
-     *    "email": "wybefo@mailinator.com",
-     *    "mobile": "+1 (906) 497-2761",
-     *    "class_id": 42,
-     *    "section_id": 1
-     *    },
-     *    "uploadContents": [
-     *    {
-     *        "content_title": "Other Download",
-     *        "upload_date": "2021-04-05",
-     *        "description": "Hello",
-     *        "upload_file": "public/uploads/upload_contents/5b5ec23c13ae51891c941d0d00b5d011.jpg"
-     *    }
-     *    ]
-     *},
-
-     */
-    public function studentOtherDownloadsApi(Request $request, $id)
-    {
-
-        $student_detail = SmStudent::where('user_id', $id)->first(['id','full_name','admission_no','email','mobile','class_id','section_id']);
-        $uploadContents = SmTeacherUploadContent::where('content_type', 'ot')
-            ->select('content_title', 'upload_date', 'description', 'upload_file')
-            ->where(function ($query) use ($student_detail) {
-                $query->where('available_for_all_classes', 1)
-                    ->orWhere([['class', $student_detail->class_id], ['section', $student_detail->section_id]]);
-            })->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['student_detail'] = $student_detail->toArray();
-            $data['uploadContents'] = $uploadContents->toArray();
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
 
     /**
      * myNotification
@@ -18336,7 +16704,7 @@ class SmApiController extends Controller
 
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
 
-            $student_detail = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
+            $student_detail = SmStudent::where('user_id', $id)->where('school_id', $school_id)->first();
 
 
             $exam_schedule = DB::table('sm_exam_schedules')
@@ -18395,283 +16763,9 @@ class SmApiController extends Controller
         }
     }
 
-    public function studentOnlineExamApi(Request $request, $id)
-    {
-
-        try{
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-                $data = [];
-
-                $student = SmStudent::where('user_id', $id)->first();
-                $time_zone_setup=SmGeneralSettings::join('sm_time_zones','sm_time_zones.id','=','sm_general_settings.time_zone_id')
-                    ->where('school_id',$student->school_id)->first();
-                date_default_timezone_set($time_zone_setup->time_zone);
-                $now = date('g:i:s');
-                $today = date('Y-m-d');
-
-
-                $online_exams = SmOnlineExam::where('active_status', 1)
-                    ->where('academic_id', SmAcademicYear::API_ACADEMIC_YEAR($student->school_id))
-                    ->where('status', 1)->where('class_id', $student->class_id)
-                    ->where('section_id', $student->section_id)
-                    ->where('school_id', $student->school_id)
-                    ->get();
-
-                foreach ($online_exams as $online_exam) {
-                    $startTime = strtotime($online_exam->date . ' ' . $online_exam->start_time);
-                    $endTime = strtotime($online_exam->date . ' ' . $online_exam->end_time);
-                    $s = SmOnlineExam::find($online_exam->id);
-
-                    $now =  strtotime("now");
-                    if ($startTime <= $now && $now <= $endTime) {
-                        $s->is_running  = 1;
-                        $s->is_closed   = 0;
-                        $s->is_waiting  = 0;
-                    } elseif ($startTime >= $now && $now <= $endTime) {
-                        $s->is_waiting  = 1;
-                        $s->is_running  = 0;
-                        $s->is_closed   = 0;
-                    } elseif ($now >= $endTime) {
-                        $s->is_closed   = 1;
-                        $s->is_running  = 0;
-                        $s->is_waiting  = 0;
-                    }
-                    $s->save();
-
-                    Log::info($s);
-                }
-
-                $online_exams = SmOnlineExam::where('sm_online_exams.active_status', 1)
-                    ->where('sm_online_exams.academic_id', SmAcademicYear::API_ACADEMIC_YEAR($student->school_id))
-                    ->join('sm_subjects','sm_subjects.id','=','sm_online_exams.subject_id')
-
-                    ->where('class_id', $student->class_id)
-                    ->where('section_id', $student->section_id)
-                    ->where('sm_online_exams.school_id', $student->school_id)
-                    ->select('sm_online_exams.id as exam_id', 'sm_online_exams.title as exam_title', 'sm_subjects.subject_name', 'sm_online_exams.date', 'sm_online_exams.status as onlineExamStatus', 'sm_online_exams.is_taken as onlineExamTakeStatus','is_running','is_waiting','is_closed')
-                    ->get();
-                $examStatus = '0 = Pending , 1 Published';
-                $examTakenStatus = '0 = Take Exam , 1 = Alreday Submitted';
-                $data['online_exams'] = $online_exams->toArray();
-                $data['online_exams_status'] = $examStatus;
-                $data['onlineExamTakenStatus'] = $examTakenStatus;
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-        }catch(Exception $e){
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-
-    public function saas_studentOnlineExamApi(Request $request,$school_id, $id)
-    {
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::withOutGlobalScope(StatusAcademicSchoolScope::class)->where('user_id', $id)->first();
-            $time_zone_setup=SmGeneralSettings::join('sm_time_zones','sm_time_zones.id','=','sm_general_settings.time_zone_id')
-                ->where('school_id',$student->school_id)->first();
-            date_default_timezone_set($time_zone_setup->time_zone);
-            $now = date('g:i:s');
-            $today = date('Y-m-d');
-
-
-            $online_exams = SmOnlineExam::withOutGlobalScope(StatusAcademicSchoolScope::class)->where('active_status', 1)
-                ->where('academic_id', SmAcademicYear::API_ACADEMIC_YEAR($student->school_id))
-                ->where('status', 1)->where('class_id', $student->class_id)
-                ->where('section_id', $student->section_id)
-                ->where('school_id', $student->school_id)
-                ->get();
-
-            foreach ($online_exams as $online_exam) {
-                $startTime = strtotime($online_exam->date . ' ' . $online_exam->start_time);
-                $endTime = strtotime($online_exam->date . ' ' . $online_exam->end_time);
-                $s = SmOnlineExam::find($online_exam->id);
-
-                $now =  strtotime("now");
-                if ($startTime <= $now && $now <= $endTime) {
-                    $s->is_running  = 1;
-                    $s->is_closed   = 0;
-                    $s->is_waiting  = 0;
-                } elseif ($startTime >= $now && $now <= $endTime) {
-                    $s->is_waiting  = 1;
-                    $s->is_running  = 0;
-                    $s->is_closed   = 0;
-                } elseif ($now >= $endTime) {
-                    $s->is_closed   = 1;
-                    $s->is_running  = 0;
-                    $s->is_waiting  = 0;
-                }
-                $s->save();
-
-                Log::info($s);
-            }
-
-            $online_exams = SmOnlineExam::withOutGlobalScope(StatusAcademicSchoolScope::class)->where('sm_online_exams.active_status', 1)
-                ->where('sm_online_exams.academic_id', SmAcademicYear::API_ACADEMIC_YEAR($student->school_id))
-                ->join('sm_subjects','sm_subjects.id','=','sm_online_exams.subject_id')
-
-                ->where('class_id', $student->class_id)
-                ->where('section_id', $student->section_id)
-                ->where('sm_online_exams.school_id', $student->school_id)
-                ->select('sm_online_exams.id as exam_id', 'sm_online_exams.title as exam_title', 'sm_subjects.subject_name', 'sm_online_exams.date', 'sm_online_exams.status as onlineExamStatus', 'sm_online_exams.is_taken as onlineExamTakeStatus','is_running','is_waiting','is_closed')
-                ->get();
-            $examStatus = '0 = Pending , 1 Published';
-            $examTakenStatus = '0 = Take Exam , 1 = Alreday Submitted';
-            $data['online_exams'] = $online_exams->toArray();
-            $data['online_exams_status'] = $examStatus;
-            $data['onlineExamTakenStatus'] = $examTakenStatus;
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function chooseExamApi(Request $request, $id)
-    {
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::where('user_id', $id)->first();
-
-            $student_exams = DB::table('sm_online_exams')
-                ->where('class_id', $student->class_id)
-                ->where('section_id', $student->section_id)
-                ->where('school_id', $student->school_id)
-                ->select('sm_online_exams.title as exam_name', 'id as exam_id')
-                ->get();
-            return ApiBaseMethod::sendResponse($student_exams, null);
-        }
-    }
-    public function saas_chooseExamApi(Request $request,$school_id, $id)
-    {
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
-
-            $student_exams = DB::table('sm_online_exams')
-                ->where('class_id', @$student->class_id)
-                ->where('section_id', @$student->section_id)
-                ->where('school_id', @$student->school_id)
-                ->select('sm_online_exams.title as exam_name', 'id as exam_id')
-                ->where('school_id',$school_id)
-                ->get();
-            return ApiBaseMethod::sendResponse($student_exams, null);
-        }
-    }
-    public function examResultApi(Request $request, $id, $exam_id)
-    {
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $student = SmStudent::where('user_id', $id)->first();
-
-            $student_exams = DB::table('sm_online_exams')
-                ->where('class_id', $student->class_id)
-                ->where('section_id', $student->section_id)
-                ->where('school_id', $student->school_id)
-                ->select('sm_online_exams.title as exam_name', 'sm_online_exams.id as exam_id')
-                ->get();
 
 
 
-            $exam_result = DB::table('sm_student_take_online_exams')
-                ->join('sm_online_exams', 'sm_online_exams.id', '=', 'online_exam_id')
-                ->join('sm_subjects', 'sm_online_exams.subject_id', '=', 'sm_subjects.id')
-                ->where('sm_student_take_online_exams.student_id', $student->id)
-                ->where('sm_student_take_online_exams.school_id', $student->school_id)
-                ->where('sm_online_exams.id', $exam_id)
-                ->where('sm_online_exams.status', '=', 1)
-                ->select(
-                    'sm_online_exams.title as exam_name',
-                    'sm_online_exams.id as exam_id',
-                    'sm_subjects.subject_name',
-                    'sm_student_take_online_exams.total_marks as obtained_marks',
-                    'sm_online_exams.percentage as pass_mark_percentage',
-                    'sm_student_take_online_exams.total_marks'
-                )
-                ->get();
-            $gradeArray = [];
-            foreach ($exam_result  as $row) {
-
-                $mark = floor($row->obtained_marks);
-                $grades = DB::table('sm_marks_grades')
-                    ->where('percent_from', '<=', $mark)
-                    ->where('percent_upto', '>=', $mark)
-                    ->select('grade_name')
-                    ->first();
-                $gradeArray[] = array(
-                    "grade" => $grades->grade_name,
-                    "exam_id" => $row->exam_id,
-                    "total_marks" => $row->total_marks,
-                    "subject_name" => $row->subject_name,
-                    "obtained_marks" => $row->obtained_marks,
-                    "pass_mark" => $row->pass_mark_percentage,
-                    "exam_name" => $row->exam_name
-                );
-            }
-
-            $data['student_exams'] = $student_exams->toArray();
-            $data['exam_result'] = $gradeArray;
-
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function saas_examResultApi(Request $request,$school_id, $id, $exam_id)
-    {
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $student = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
-
-            $student_exams = DB::table('sm_online_exams')
-                ->where('class_id', @$student->class_id)
-                ->where('section_id', @$student->section_id)
-                ->where('school_id', @$student->school_id)
-                ->select('sm_online_exams.title as exam_name', 'sm_online_exams.id as exam_id')
-                ->where('school_id',$school_id)->get();
-
-
-
-            $exam_result = DB::table('sm_student_take_online_exams')
-                ->join('sm_online_exams', 'sm_online_exams.id', '=', 'online_exam_id')
-                ->join('sm_subjects', 'sm_online_exams.subject_id', '=', 'sm_subjects.id')
-                ->where('sm_student_take_online_exams.student_id', @$student->id)
-                ->where('sm_student_take_online_exams.school_id', @$student->school_id)
-                ->where('sm_online_exams.id', $exam_id)
-                ->where('sm_online_exams.status', '=', 1)
-                ->select(
-                    'sm_online_exams.title as exam_name',
-                    'sm_online_exams.id as exam_id',
-                    'sm_subjects.subject_name',
-                    'sm_student_take_online_exams.total_marks as obtained_marks',
-                    'sm_online_exams.percentage as pass_mark_percentage',
-                    'sm_student_take_online_exams.total_marks'
-                )
-                ->where('sm_student_take_online_exams.school_id',$school_id)->get();
-            $gradeArray = [];
-            foreach ($exam_result  as $row) {
-
-                $mark = floor($row->obtained_marks);
-                $grades = DB::table('sm_marks_grades')
-                    ->where('percent_from', '<=', $mark)
-                    ->where('percent_upto', '>=', $mark)
-                    ->select('grade_name')
-                    ->where('school_id',$school_id)->first();
-                $gradeArray[] = array(
-                    "grade" => $grades->grade_name,
-                    "exam_id" => $row->exam_id,
-                    "total_marks" => $row->total_marks,
-                    "subject_name" => $row->subject_name,
-                    "obtained_marks" => $row->obtained_marks,
-                    "pass_mark" => $row->pass_mark_percentage,
-                    "exam_name" => $row->exam_name
-                );
-            }
-
-            $data['student_exams'] = @$student_exams->toArray();
-            $data['exam_result'] = $gradeArray;
-
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
     public function getGrades(Request $request, $marks)
     {
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
@@ -18748,155 +16842,7 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
-    public function examListApi(Request $request, $id)
-    {
 
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::where('user_id', $id)->first();
-
-
-            $exam_List = DB::table('sm_exam_types')
-                ->join('sm_exams', 'sm_exams.exam_type_id', '=', 'sm_exam_types.id')
-                ->where('sm_exams.class_id', '=', $student->class_id)
-                ->where('sm_exams.section_id', '=', $student->section_id)
-                ->distinct()
-                ->select('sm_exam_types.id as exam_id', 'sm_exam_types.title as exam_name')
-                ->get();
-
-            return ApiBaseMethod::sendResponse($exam_List, null);
-        }
-    }
-    public function saas_examListApi(Request $request, $school_id, $id)
-    {
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
-
-            $exam_List = DB::table('sm_exam_types')
-                ->join('sm_exams', 'sm_exams.exam_type_id', '=', 'sm_exam_types.id')
-                ->where('sm_exams.class_id', '=', @$student->class_id)
-                ->where('sm_exams.section_id', '=', @$student->section_id)
-                ->distinct()
-                ->select('sm_exam_types.id as exam_id', 'sm_exam_types.title as exam_name')
-                ->get();
-
-            return ApiBaseMethod::sendResponse($exam_List, null);
-        }
-    }
-    public function examScheduleApi(Request $request, $id, $exam_id)
-    {
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::where('user_id', $id)->first();
-
-
-            $exam_schedule = DB::table('sm_exam_schedules')
-                ->join('sm_exam_types', 'sm_exam_types.id', '=', 'sm_exam_schedules.exam_term_id')
-
-                ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_exam_schedules.subject_id')
-                ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_exam_schedules.room_id')
-                ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_exam_schedules.exam_period_id')
-
-                ->where('sm_exam_schedules.exam_term_id', '=', $exam_id)
-                ->where('sm_exam_schedules.school_id', '=', $student->school_id)
-                ->where('sm_exam_schedules.class_id', '=', $student->class_id)
-                ->where('sm_exam_schedules.section_id', '=', $student->section_id)
-
-                ->where('sm_exam_schedules.active_status', '=', 1)
-
-                ->select('sm_exam_types.id', 'sm_exam_types.title as exam_name', 'sm_subjects.subject_name', 'date', 'sm_class_rooms.room_no', 'sm_class_times.start_time', 'sm_class_times.end_time')
-
-                ->get();
-
-            return ApiBaseMethod::sendResponse($exam_schedule, null);
-        }
-    }
-    public function saas_examScheduleApi(Request $request,$school_id, $id, $exam_id)
-    {
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
-
-
-            $exam_schedule = DB::table('sm_exam_schedules')
-                ->join('sm_exam_types', 'sm_exam_types.id', '=', 'sm_exam_schedules.exam_term_id')
-
-                ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_exam_schedules.subject_id')
-                ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_exam_schedules.room_id')
-                ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_exam_schedules.exam_period_id')
-
-                ->where('sm_exam_schedules.exam_term_id', '=', $exam_id)
-                ->where('sm_exam_schedules.school_id', '=', @$student->school_id)
-                ->where('sm_exam_schedules.class_id', '=', @$student->class_id)
-                ->where('sm_exam_schedules.section_id', '=', @$student->section_id)
-
-                ->where('sm_exam_schedules.active_status', '=', 1)
-
-                ->select('sm_exam_types.id', 'sm_exam_types.title as exam_name', 'sm_subjects.subject_name', 'date', 'sm_class_rooms.room_no', 'sm_class_times.start_time', 'sm_class_times.end_time')
-
-                ->where('sm_exam_schedules.school_id',$school_id)->get();
-
-            return ApiBaseMethod::sendResponse($exam_schedule, null);
-        }
-    }
-    public function examResult_Api(Request $request, $id, $exam_id)
-    {
-        $data = [];
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::where('user_id', $id)->first();
-
-
-            $exam_result = DB::table('sm_result_stores')
-                ->join('sm_exam_types', 'sm_exam_types.id', '=', 'sm_result_stores.exam_type_id')
-                ->join('sm_exams', 'sm_exams.id', '=', 'sm_exam_types.id')
-                ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_result_stores.subject_id')
-                ->where('sm_exams.id', '=', $exam_id)
-                ->where('sm_result_stores.school_id', '=', $student->school_id)
-                ->where('sm_result_stores.class_id', '=', $student->class_id)
-                ->where('sm_result_stores.section_id', '=', $student->section_id)
-                ->where('sm_result_stores.student_id', '=', $student->id)
-                ->select('sm_exams.id', 'sm_exam_types.title as exam_name', 'sm_subjects.subject_name', 'sm_result_stores.total_marks as obtained_marks', 'sm_exams.exam_mark as total_marks', 'sm_result_stores.total_gpa_grade as grade')
-                ->get();
-
-            $data['exam_result'] = $exam_result->toArray();
-            $data['pass_marks'] = 0;
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function saas_examResult_Api(Request $request,$school_id, $id, $exam_id)
-    {
-        $data = [];
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-            $student = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first();
-
-
-            $exam_result = DB::table('sm_result_stores')
-                ->join('sm_exam_types', 'sm_exam_types.id', '=', 'sm_result_stores.exam_type_id')
-                ->join('sm_exams', 'sm_exams.id', '=', 'sm_exam_types.id')
-                ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_result_stores.subject_id')
-                ->where('sm_exams.id', '=', $exam_id)
-                ->where('sm_result_stores.school_id', '=', @$student->school_id)
-                ->where('sm_result_stores.class_id', '=', @$student->class_id)
-                ->where('sm_result_stores.section_id', '=', @$student->section_id)
-                ->where('sm_result_stores.student_id', '=', @$student->id)
-                ->select('sm_exams.id', 'sm_exam_types.title as exam_name', 'sm_subjects.subject_name', 'sm_result_stores.total_marks as obtained_marks', 'sm_exams.exam_mark as total_marks', 'sm_result_stores.total_gpa_grade as grade')
-                ->where('sm_result_stores.school_id',$school_id)->get();
-
-            $data['exam_result'] = @$exam_result->toArray();
-            $data['pass_marks'] = 0;
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
     public function updatePassowrdStoreApi(Request $request)
     {
 
@@ -18959,49 +16905,7 @@ class SmApiController extends Controller
             }
         }
     }
-    public function childListApi(Request $request, $id)
-    {
 
-        $parent = SmParent::where('user_id', $id)->first();
-        $student_info = DB::table('sm_students')
-            ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-            ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-
-            ->where('sm_students.parent_id', '=', $parent->id)
-
-
-            ->select('sm_students.user_id', 'student_photo', 'sm_students.full_name as student_name', 'class_name', 'section_name', 'roll_no')
-
-            ->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-
-            return ApiBaseMethod::sendResponse($student_info, null);
-        }
-    }
-    public function saas_childListApi(Request $request,$school_id, $id)
-    {
-
-        $parent = SmParent::where('user_id', $id)->where('school_id',$school_id)->first();
-        $student_info = DB::table('sm_students')
-            ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-            ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-
-
-            ->where('sm_students.parent_id', '=', @$parent->id)
-
-
-            ->select('sm_students.user_id', 'student_photo', 'sm_students.full_name as student_name', 'class_name', 'section_name', 'roll_no')
-
-            ->where('sm_students.school_id',$school_id)->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-
-            return ApiBaseMethod::sendResponse($student_info, null);
-        }
-    }
     public function childProfileApi(Request $request, $id)
     {
         $student_detail = SmStudent::where('id', $id)->first();
@@ -19417,97 +17321,7 @@ class SmApiController extends Controller
         }
 
     }
-    public function childInfo(Request $request, $user_id)
-    {
 
-        try {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-                $user = SmStudent::where('user_id', $user_id)->first();
-                $data = [];
-
-                $data['user'] = $user->toArray();
-
-                $data['userDetails'] = DB::table('sm_students')->select('sm_students.*', 'sm_parents.*', 'sm_classes.*', 'sm_sections.*')
-                    ->join('sm_parents', 'sm_parents.id', '=', 'sm_students.parent_id')
-                    ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                    ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                    ->where('sm_students.id', $user->id)
-                    ->first();
-
-                $data['religion'] = DB::table('sm_students')->select('sm_base_setups.base_setup_name as name')
-                    ->join('sm_base_setups', 'sm_base_setups.id', '=', 'sm_students.religion_id')
-                    ->where('sm_students.id', $user->id)
-                    ->first();
-
-                $data['blood_group'] = DB::table('sm_students')->select('sm_base_setups.base_setup_name as name')
-                    ->join('sm_base_setups', 'sm_base_setups.id', '=', 'sm_students.bloodgroup_id')
-                    ->where('sm_students.id', $user->id)
-                    ->first();
-
-
-                $data['transport'] = DB::table('sm_students')
-                    ->select('sm_vehicles.vehicle_no', 'sm_vehicles.vehicle_model', 'sm_staffs.full_name as driver_name', 'sm_vehicles.note')
-                    ->join('sm_vehicles', 'sm_vehicles.id', '=', 'sm_students.vechile_id')
-                    ->join('sm_staffs', 'sm_staffs.id', '=', 'sm_students.vechile_id')
-                    ->where('sm_students.id', $user->id)
-                    ->first();
-
-
-
-
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_childInfo(Request $request,$school_id, $user_id)
-    {
-
-        try {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-
-
-                $user = SmStudent::where('user_id', $user_id)->where('school_id',$school_id)->first();
-                $data = [];
-
-                $data['user'] = @$user->toArray();
-
-                $data['userDetails'] = DB::table('sm_students')->select('sm_students.*', 'sm_parents.*', 'sm_classes.*', 'sm_sections.*')
-                    ->join('sm_parents', 'sm_parents.id', '=', 'sm_students.parent_id')
-                    ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                    ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                    ->where('sm_students.id', $user->id)
-                    ->where('sm_students.school_id',$school_id)->first();
-
-                $data['religion'] = DB::table('sm_students')->select('sm_base_setups.base_setup_name as name')
-                    ->join('sm_base_setups', 'sm_base_setups.id', '=', 'sm_students.religion_id')
-                    ->where('sm_students.id', $user->id)
-                    ->where('sm_students.school_id',$school_id)->first();
-
-                $data['blood_group'] = DB::table('sm_students')->select('sm_base_setups.base_setup_name as name')
-                    ->join('sm_base_setups', 'sm_base_setups.id', '=', 'sm_students.bloodgroup_id')
-                    ->where('sm_students.id', $user->id)
-                    ->where('sm_students.school_id',$school_id)->first();
-
-
-                $data['transport'] = DB::table('sm_students')
-                    ->select('sm_vehicles.vehicle_no', 'sm_vehicles.vehicle_model', 'sm_staffs.full_name as driver_name', 'sm_vehicles.note')
-                    ->join('sm_vehicles', 'sm_vehicles.id', '=', 'sm_students.vechile_id')
-                    ->join('sm_staffs', 'sm_staffs.id', '=', 'sm_students.vechile_id')
-                    ->where('sm_students.id', $user->id)
-                    ->where('sm_students.school_id',$school_id)->first();
-
-
-
-
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
     public function aboutApi(request $request)
     {
 
@@ -19538,256 +17352,9 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendResponse($about, null);
         }
     }
-    public function searchStudent(Request $request)
-    {
-
-
-        $class_id = $request->class;
-        $section_id = $request->section;
-        $name = $request->name;
-        $roll_no = $request->roll_no;
 
 
 
-        $students = '';
-        $msg = '';
-
-        if (!empty($request->class) && !empty($request->section)) {
-            $students = DB::table('sm_students')
-                ->select('sm_students.id', 'student_photo', 'full_name', 'roll_no', 'class_name', 'section_name', 'user_id')
-                ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                ->where('sm_students.class_id', $request->class)
-                ->where('sm_students.section_id', $request->section)
-                ->get();
-            $msg = "Student Found";
-        } elseif (!empty($request->class)) {
-            $students = DB::table('sm_students')
-                ->select('sm_students.id', 'student_photo', 'full_name', 'roll_no', 'class_name', 'section_name', 'user_id')
-                ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                ->where('sm_students.class_id', $class_id)
-
-                ->get();
-            $msg = "Student Found";
-        } elseif ($request->name != "") {
-            $students = DB::table('sm_students')
-                ->select('sm_students.id', 'student_photo', 'full_name', 'roll_no', 'class_name', 'section_name', 'user_id')
-                ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                ->where('sm_students.full_name', 'like', '%' . $request->name . '%')
-                ->get();
-            $msg = "Student Found";
-        } elseif ($request->roll_no != "") {
-            $students = DB::table('sm_students')
-                ->select('sm_students.id', 'student_photo', 'full_name', 'roll_no', 'class_name', 'section_name', 'user_id')
-                ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                ->where('sm_students.roll_no', $request->roll_no )
-                ->get();
-            $msg = "Student Found";
-        } else {
-
-            $msg = "Student Not Found";
-        }
-
-
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['students'] = $students;
-
-            return ApiBaseMethod::sendResponse($data, $msg);
-        }
-    }
-    public function saas_searchStudent(Request $request,$school_id)
-    {
-
-
-        $class_id = $request->class;
-        $section_id = $request->section;
-        $name = $request->name;
-        $roll_no = $request->roll_no;
-
-
-
-        $students = '';
-        $msg = '';
-
-        if (!empty($request->class) && !empty($request->section)) {
-            $students = DB::table('sm_students')
-                ->select('sm_students.id', 'student_photo', 'full_name', 'roll_no', 'class_name', 'section_name', 'user_id')
-                ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                ->where('sm_students.class_id', $request->class)
-                ->where('sm_students.section_id', $request->section)
-                ->where('sm_students.school_id',$school_id)->get();
-            $msg = "Student Found";
-        } elseif (!empty($request->class)) {
-            $students = DB::table('sm_students')
-                ->select('sm_students.id', 'student_photo', 'full_name', 'roll_no', 'class_name', 'section_name', 'user_id')
-                ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                ->where('sm_students.class_id', $class_id)
-
-                ->where('sm_students.school_id',$school_id)->get();
-            $msg = "Student Found";
-        } elseif ($request->name != "") {
-            $students = DB::table('sm_students')
-                ->select('sm_students.id', 'student_photo', 'full_name', 'roll_no', 'class_name', 'section_name', 'user_id')
-                ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                ->where('full_name', 'like', '%' . $request->name . '%')
-                ->where('sm_students.school_id',$school_id)->first();
-            $msg = "Student Found";
-        } elseif ($request->roll_no != "") {
-            $students = DB::table('sm_students')
-                ->select('sm_students.id', 'student_photo', 'full_name', 'roll_no', 'class_name', 'section_name', 'user_id')
-                ->join('sm_sections', 'sm_sections.id', '=', 'sm_students.section_id')
-                ->join('sm_classes', 'sm_classes.id', '=', 'sm_students.class_id')
-                ->where('roll_no', 'like', '%' . $request->roll_no . '%')
-                ->where('sm_students.school_id',$school_id)->first();
-            $msg = "Student Found";
-        } else {
-
-            $msg = "Student Not Found";
-        }
-
-
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['students'] = $students;
-
-            return ApiBaseMethod::sendResponse($data, $msg);
-        }
-    }
-    public function myRoutine(Request $request, $id)
-    {
-        $teacher = DB::table('sm_staffs')
-            ->where('user_id', '=', $id)
-            ->first();
-        $teacher_id = $teacher->id;
-
-        $sm_weekends = SmWeekend::orderBy('order', 'ASC')->where('active_status', 1)->get();
-        $class_times = SmClassTime::where('type', 'class')->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $weekenD = SmWeekend::where('school_id', $teacher->school_id)->get();
-            foreach ($weekenD as $row) {
-                $data[$row->name] = DB::table('sm_class_routine_updates')
-                    ->select('class_id', 'class_name', 'section_id', 'section_name', 'sm_class_times.period', 'sm_class_times.start_time', 'sm_class_times.end_time', 'sm_subjects.subject_name', 'sm_class_rooms.room_no')
-                    ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_routine_updates.class_id')
-                    ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_routine_updates.section_id')
-                    ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_class_routine_updates.class_period_id')
-                    ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_class_routine_updates.subject_id')
-                    ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_class_routine_updates.room_id')
-
-                    ->where([
-                        ['sm_class_routine_updates.teacher_id', $teacher_id], ['sm_class_routine_updates.day', $row->id],
-                    ])->get();
-            }
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function saas_myRoutine(Request $request,$school_id, $id)
-    {
-        $teacher = DB::table('sm_staffs')
-            ->where('user_id', '=', $id)
-            ->first();
-        $teacher_id = $teacher->id;
-
-        $sm_weekends = SmWeekend::orderBy('order', 'ASC')->where('active_status', 1)->get();
-        $class_times = SmClassTime::where('type', 'class')->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $weekenD = SmWeekend::where('school_id', $teacher->school_id)->get();
-            foreach ($weekenD as $row) {
-                $data[$row->name] = DB::table('sm_class_routine_updates')
-                    ->select('class_id', 'class_name', 'section_id', 'section_name', 'sm_class_times.period', 'sm_class_times.start_time', 'sm_class_times.end_time', 'sm_subjects.subject_name', 'sm_class_rooms.room_no')
-                    ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_routine_updates.class_id')
-                    ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_routine_updates.section_id')
-                    ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_class_routine_updates.class_period_id')
-                    ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_class_routine_updates.subject_id')
-                    ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_class_routine_updates.room_id')
-
-                    ->where([
-                        ['sm_class_routine_updates.teacher_id', $teacher_id], ['sm_class_routine_updates.day', $row->id],
-                    ])->get();
-            }
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function sectionRoutine(Request $request, $id, $class, $section)
-    {
-        $teacher = DB::table('sm_staffs')
-            ->where('user_id', '=', $id)
-            ->first();
-        $teacher_id = $teacher->id;
-
-        $sm_weekends = SmWeekend::where('school_id', $teacher->school_id)->orderBy('order', 'ASC')->where('active_status', 1)->get();
-        $class_times = SmClassTime::where('type', 'class')->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $weekenD = SmWeekend::where('school_id', $teacher->school_id)->get();
-            foreach ($weekenD as $row) {
-                $data[$row->name] = DB::table('sm_class_routine_updates')
-                    ->select('sm_class_times.period', 'sm_class_times.start_time', 'sm_class_times.end_time', 'sm_subjects.subject_name', 'sm_class_rooms.room_no')
-                    ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_routine_updates.class_id')
-                    ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_routine_updates.section_id')
-                    ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_class_routine_updates.class_period_id')
-                    ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_class_routine_updates.subject_id')
-                    ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_class_routine_updates.room_id')
-
-                    ->where([
-                        ['sm_class_routine_updates.teacher_id', $teacher_id],
-                        ['sm_class_routine_updates.class_id', $class],
-                        ['sm_class_routine_updates.section_id', $section],
-                        ['sm_class_routine_updates.day', $row->id],
-                    ])->get();
-            }
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function saas_sectionRoutine(Request $request,$school_id, $id, $class, $section)
-    {
-        $teacher = DB::table('sm_staffs')
-            ->where('user_id', '=', $id)
-            ->where('school_id',$school_id)->first();
-        $teacher_id = @$teacher->id;
-
-        $sm_weekends = SmWeekend::where('school_id', Auth::user()->school_id)->orderBy('order', 'ASC')->where('active_status', 1)->get();
-        $class_times = SmClassTime::where('type', 'class')->where('school_id',$school_id)->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $weekenD = SmWeekend::where('school_id', Auth::user()->school_id)->get();
-            foreach ($weekenD as $row) {
-                $data[$row->name] = DB::table('sm_class_routine_updates')
-                    ->select('sm_class_times.period', 'sm_class_times.start_time', 'sm_class_times.end_time', 'sm_subjects.subject_name', 'sm_class_rooms.room_no')
-                    ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_routine_updates.class_id')
-                    ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_routine_updates.section_id')
-                    ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_class_routine_updates.class_period_id')
-                    ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_class_routine_updates.subject_id')
-                    ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_class_routine_updates.room_id')
-
-                    ->where([
-                        ['sm_class_routine_updates.teacher_id', $teacher_id],
-                        ['sm_class_routine_updates.class_id', $class],
-                        ['sm_class_routine_updates.section_id', $section],
-                        ['sm_class_routine_updates.day', $row->id],
-                    ])->where('sm_class_routine_updates.school_id',$school_id)->get();
-            }
-
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
     public function classSection(Request $request, $id)
     {
 
@@ -19966,10 +17533,10 @@ class SmApiController extends Controller
         $teacher_id = $teacher->id;
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
             $data = [];
-            if ($teacher->role_id==1) {
+            if ($teacher->role_id==1 || $teacher->role_id==5) {
                 $teacher_classes = DB::table('sm_classes')
                     ->where('active_status', 1)
-                    ->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())
+                    ->where('academic_id', SmAcademicYear::API_ACADEMIC_YEAR($school_id))
                     ->where('school_id',$teacher->school_id )
                     ->select('id as class_id', 'class_name')
                     ->get();
@@ -19980,7 +17547,7 @@ class SmApiController extends Controller
                     ->distinct('class_id')
                     ->select('class_id', 'class_name')
                     ->where('teacher_id', $teacher_id)
-                    ->where('sm_classes.academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())
+                    ->where('sm_classes.academic_id', SmAcademicYear::API_ACADEMIC_YEAR($school_id))
                     ->get();
             }
             $data['teacher_classes'] = $teacher_classes->toArray();
@@ -20064,7 +17631,7 @@ class SmApiController extends Controller
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
             $data = [];
 
-            if ($teacher->role_id==1) {
+            if ($teacher->role_id==1 || $teacher->role_id==5) {
                 $teacher_classes = DB::table('sm_class_sections')
                     ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_sections.class_id')
                     ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_sections.section_id')
@@ -20088,146 +17655,7 @@ class SmApiController extends Controller
         }
     }
 
-    public function teacherMyAttendanceSearchAPI(Request $request, $id = null)
-    {
 
-        $input = $request->all();
-
-        $validator = Validator::make($input, [
-            'month' => "required",
-            'year' => "required",
-        ]);
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-
-        try {
-            $teacher = SmStaff::where('user_id', $id)->first();
-
-            $year = $request->year;
-            $month = $request->month;
-            if ($month < 10) {
-                $month = '0' . $month;
-            }
-            $current_day = date('d');
-
-            $days = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
-            $days2 = '';
-            if ($month != 1) {
-                $days2 = cal_days_in_month(CAL_GREGORIAN, $month - 1, $request->year);
-            } else {
-                $days2 = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
-            }
-            if ($month != 1) {
-                $previous_month = $month - 1;
-                $previous_date = $year . '-' . $previous_month . '-' . $days2;
-            } else {
-                $previous_month = 12;
-                $previous_date = $year - 1 . '-' . $previous_month . '-' . $days2;
-            }
-
-
-
-
-            $previousMonthDetails['date'] = $previous_date;
-            $previousMonthDetails['day'] = $days2;
-            $previousMonthDetails['week_name'] = date('D', strtotime($previous_date));
-
-
-            $attendances = SmStaffAttendence::where('staff_id', $teacher->id)
-                ->where('attendence_date', 'like', '%' . $request->year . '-' . $month . '%')
-                ->select('attendence_type as attendance_type', 'attendence_date as attendance_date')
-                ->get();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data['attendances'] = $attendances;
-                $data['previousMonthDetails'] = $previousMonthDetails;
-                $data['days'] = $days;
-                $data['year'] = $year;
-                $data['month'] = $month;
-                $data['current_day'] = $current_day;
-                $data['status'] = 'Present: P, Late: L, Absent: A, Holiday: H, Half Day: F';
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
-    public function saas_teacherMyAttendanceSearchAPI(Request $request,$school_id, $id = null)
-    {
-
-        $input = $request->all();
-
-        $validator = Validator::make($input, [
-            'month' => "required",
-            'year' => "required",
-        ]);
-
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-
-        try {
-            $teacher = SmStaff::where('user_id', $id)->where('school_id',$school_id)->first();
-
-            $year = $request->year;
-            $month = $request->month;
-            if ($month < 10) {
-                $month = '0' . $month;
-            }
-            $current_day = date('d');
-
-            $days = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
-            $days2 = '';
-            if ($month != 1) {
-                $days2 = cal_days_in_month(CAL_GREGORIAN, $month - 1, $request->year);
-            } else {
-                $days2 = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
-            }
-            if ($month != 1) {
-                $previous_month = $month - 1;
-                $previous_date = $year . '-' . $previous_month . '-' . $days2;
-            } else {
-                $previous_month = 12;
-                $previous_date = $year - 1 . '-' . $previous_month . '-' . $days2;
-            }
-
-
-
-
-            $previousMonthDetails['date'] = $previous_date;
-            $previousMonthDetails['day'] = $days2;
-            $previousMonthDetails['week_name'] = date('D', strtotime($previous_date));
-
-
-            $attendances = SmStaffAttendence::where('staff_id', $teacher->id)
-                ->where('attendence_date', 'like', '%' . $request->year . '-' . $month . '%')
-                ->select('attendence_type as attendance_type', 'attendence_date as attendance_date')
-                ->where('school_id',$school_id)->get();
-
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data['attendances'] = $attendances;
-                $data['previousMonthDetails'] = $previousMonthDetails;
-                $data['days'] = $days;
-                $data['year'] = $year;
-                $data['month'] = $month;
-                $data['current_day'] = $current_day;
-                $data['status'] = 'Present: P, Late: L, Absent: A, Holiday: H, Half Day: F';
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-        } catch (\Exception $e) {
-            return ApiBaseMethod::sendError('Error.', $e->getMessage());
-        }
-    }
     public function leaveTypeList(Request $request)
     {
         try {
@@ -20449,7 +17877,8 @@ class SmApiController extends Controller
         $uploadContents = new SmTeacherUploadContent();
         $uploadContents->content_title = $request->input('content_title');
         $uploadContents->content_type = $request->input('content_type');
-
+        $uploadContents->source_url = $request->input('source_url');
+        $uploadContents->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
 
 
         if ($request->input('available_for') == 'admin') {
@@ -20517,7 +17946,10 @@ class SmApiController extends Controller
                     $notification->message = $purpose . ' '.app('translator')->get('common.updated');
                     $notification->save();
                     $user=User::find($notification->user_id);
-                    Notification::send($user, new StudyMeterialCreatedNotification($notification));
+                    if($user){
+                        Notification::send($user, new StudyMeterialCreatedNotification($notification));
+                    }
+                    
                 }
             } else {
                 $students = SmStudent::select('id')->where('class_id', $request->input('class'))->where('section_id', $request->input('section'))->get();
@@ -20531,7 +17963,10 @@ class SmApiController extends Controller
                     $notification->message = $purpose . ' '.app('translator')->get('common.updated');
                     $notification->save();
                     $user=User::find($notification->user_id);
-                    Notification::send($user, new StudyMeterialCreatedNotification($notification));
+                    if($user){
+                        Notification::send($user, new StudyMeterialCreatedNotification($notification));
+                    }
+                    
                 }
             }
         }
@@ -20588,7 +18023,7 @@ class SmApiController extends Controller
         $uploadContents = new SmTeacherUploadContent();
         $uploadContents->content_title = $request->input('content_title');
         $uploadContents->content_type = $request->input('content_type');
-
+        $uploadContents->source_url = $request->input('source_url');
 
 
         if ($request->input('available_for') == 'admin') {
@@ -20677,48 +18112,8 @@ class SmApiController extends Controller
             return ApiBaseMethod::sendResponse($data, null);
         }
     }
-    public function contentList(Request $request)
-    {
-        $content_list = DB::table('sm_teacher_upload_contents')
-            ->where('available_for_admin', '<>', 0)
-            ->get();
-        $type = "as assignment, st study material, sy sullabus, ot others download";
-        $data = [];
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data['content_list'] = $content_list->toArray();
-            $data['type'] = $type;
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function saas_contentList(Request $request, $school_id)
-    {
-        $content_list = DB::table('sm_teacher_upload_contents')
-            ->where('available_for_admin', '<>', 0)
-            ->where('school_id',$school_id)->get();
-        $type = "as assignment, st study material, sy sullabus, ot others download";
-        $data = [];
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data['content_list'] = $content_list->toArray();
-            $data['type'] = $type;
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function deleteContent(Request $request, $id)
-    {
-        $content = DB::table('sm_teacher_upload_contents')->where('id', $id)->delete();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = '';
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
-    public function saas_deleteContent(Request $request,$school_id, $id)
-    {
-        $content = DB::table('sm_teacher_upload_contents')->where('id', $id)->where('school_id',$school_id)->delete();
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = '';
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
+
+
     public function pendingLeave(Request $request)
     {
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
@@ -21230,63 +18625,6 @@ class SmApiController extends Controller
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 $data = '';
                 return ApiBaseMethod::sendError($data);
-            }
-        }
-    }
-    public function HomeWorkNotification(Request $request)
-    {
-        try {
-            $students = SmStudent::where('class_id', $request->class_id)->where('section_id', $request->section_id)->get();
-
-            foreach ($students as $student) {
-                $user = User::where('id', $student->id)->first();
-
-                if ($user->notificationToken != '') {
-
-                    //echo 'Infix Edu';
-                    define('API_ACCESS_KEY', 'AAAAFyQhhks:APA91bGJqDLCpuPgjodspo7Wvp1S4yl3jYwzzSxet_sYQH9Q6t13CtdB_EiwD6xlVhNBa6RcHQbBKCHJ2vE452bMAbmdABsdPriJy_Pr9YvaM90yEeOCQ6VF7JEQ501Prhnu_2bGCPNp');
-                    //   $registrationIds = ;
-                    #prep the bundle
-                    $msg = array(
-                        'body'     => $_REQUEST['body'],
-                        'title'    => $_REQUEST['title'],
-
-                    );
-                    $fields = array(
-                        'to'        => $user->notificationToken,
-                        'notification'    => $msg
-                    );
-
-
-                    $headers = array(
-                        'Authorization: key=' . API_ACCESS_KEY,
-                        'Content-Type: application/json'
-                    );
-                    #Send Reponse To FireBase Server
-                    $ch = curl_init();
-                    curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-                    curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
-                    $result = curl_exec($ch);
-                    echo $result;
-                    curl_close($ch);
-                }
-            }
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = '';
-                return ApiBaseMethod::sendResponse($data, null);
-            } else {
-                if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                    $e = '';
-                    return ApiBaseMethod::sendError($e);
-                }
-            }
-        } catch (\Exception $e) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError($e);
             }
         }
     }

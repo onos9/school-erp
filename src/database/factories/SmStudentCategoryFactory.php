@@ -20,11 +20,21 @@ class SmStudentCategoryFactory extends Factory
      *
      * @return array
      */
+    public $category = [
+        'Normal',
+        'Obsessive Compulsive Disorder',
+        'Attention Deficit Hyperactivity Disorder (ADHD)',
+        'Oppositional Defiant Disorder (ODD)',
+        'Anxiety Disorder',
+        'Conduct Disorders',
+    ];
+
     public $i=0;
+
     public function definition()
     {
         return [
-            'category_name'=> $this->faker->colorName .$this->i++,
+            'category_name'=>  $this->category[$this->i++] ?? $this->faker->word,
         ];
     }
 }

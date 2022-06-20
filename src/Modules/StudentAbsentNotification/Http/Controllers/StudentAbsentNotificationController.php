@@ -42,8 +42,6 @@ class StudentAbsentNotificationController extends Controller
             $setup->active_status=$request->active_status;
             $setup->school_id=Auth::user()->school_id;
             $setup->save();
-            
-
             Toastr::success('Operation successful', 'Success');
             return redirect()->back();
          } catch (\Exception $e) {
@@ -94,7 +92,7 @@ class StudentAbsentNotificationController extends Controller
     public function delete($id)
     {
         try {
-            $setup=AbsentNotificationTimeSetup::find($id)->delete();
+            $setup =AbsentNotificationTimeSetup::find($id)->delete();
             Toastr::success('Operation successful', 'Success');
             return redirect('studentabsentnotification');
          } catch (\Exception $e) {

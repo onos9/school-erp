@@ -402,7 +402,29 @@
                                         </div>
                                     </div>
                                 </div>
-                               
+                                <div class="single-meta">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-6">
+                                            <div class="name">
+                                                @lang('student.multiple_roll_number')
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6">
+                                            <div class="value text-left">
+                                                @if(isset($editData))
+                                                    @if (@$editData->multiple_roll != "" && @$editData->multiple_roll == 1)
+                                                        {{ __('common.enable') }}
+                                                    @else
+                                                    
+                                                        {{ __('common.disable') }}
+                                                    @endif
+                                                {{-- {{@$editData->promotionSetting != ""? @$editData->promotionSetting == 1:""}} --}}
+                                                {{-- {{$editData->promotionSetting}} --}}
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="single-meta">
                                     <div class="row">
                                         <div class="col-lg-6 col-md-6">
@@ -413,10 +435,10 @@
                                         <div class="col-lg-6 col-md-6">
                                             <div class="value text-left">
                                                 @if(isset($editData))
-                                                    @if (@$editData->promotionSetting != "" && @$editData->promotionSetting == 1)
-                                                        Enable
+                                                    @if (!@$editData->promotionSetting)
+                                                    {{ __('common.enable') }}
                                                     @else
-                                                        Disable
+                                                    {{ __('common.disable') }}
                                                     @endif
                                                 {{-- {{@$editData->promotionSetting != ""? @$editData->promotionSetting == 1:""}} --}}
                                                 {{-- {{$editData->promotionSetting}} --}}
@@ -447,6 +469,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                @if(moduleStatusCheck('Fees'))
 
                                 <div class="single-meta">
                                     <div class="row">
@@ -466,6 +489,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                @endif
 
                                 <div class="single-meta">
                                     <div class="row">

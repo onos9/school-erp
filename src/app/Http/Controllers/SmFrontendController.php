@@ -90,6 +90,9 @@ class SmFrontendController extends Controller
          
 
             if ($setting->website_btn == 0) {
+                if(auth()->check()){
+                    return redirect('dashboard');
+                }
                 return redirect('login');
             } else {
 
@@ -109,6 +112,7 @@ class SmFrontendController extends Controller
             
 
         } catch (\Exception $e) {
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

@@ -138,30 +138,30 @@
                                     </thead>
 
                                     <tbody>
-                                        @foreach ($students as $student)
+                                        @foreach ($students as $record)
                                             <tr>
                                                 <td>
-                                                    <input type="checkbox" id="student.{{ @$student->id }}"
+                                                    <input type="checkbox" id="student.{{ @$record->id }}"
                                                         class="common-checkbox generate-certificate-print"
-                                                        name="student_checked[]" value="{{ @$student->id }}">
-                                                    <label for="student.{{ @$student->id }}"></label>
+                                                        name="student_checked[]" value="{{ @$record->id }}">
+                                                    <label for="student.{{ @$record->id }}"></label>
                                                 </td>
-                                                <td>{{ @$student->admission_no }}</td>
-                                                <td>{{ @$student->full_name }}</td>
-                                                <td>{{ @$student->class != '' ? @$student->class->class_name : '' }}
-                                                    ({{ @$student->section != '' ? @$student->section->section_name : '' }})
+                                                <td>{{ @$record->student->admission_no }}</td>
+                                                <td>{{ @$record->student->full_name }}</td>
+                                                <td>{{ @$record->class != '' ? @$record->class->class_name : '' }}
+                                                    ({{ @$record->section != '' ? @$record->section->section_name : '' }})
                                                 </td>
 
-                                                <td>{{ @$student->parents != '' ? @$student->parents->fathers_name : '' }}
+                                                <td>{{ @$record->student->parents != '' ? @$record->student->parents->fathers_name : '' }}
                                                 </td>
                                                 <td>
 
-                                                    {{ @$student->date_of_birth != '' ? dateConvert(@$student->date_of_birth) : '' }}
+                                                    {{ @$record->student->date_of_birth != '' ? dateConvert(@$record->student->date_of_birth) : '' }}
 
                                                 </td>
-                                                <td>{{ @$student->gender != '' ? @$student->gender->base_setup_name : '' }}
+                                                <td>{{ @$record->student->gender != '' ? @$record->student->gender->base_setup_name : '' }}
                                                 </td>
-                                                <td>{{ @$student->mobile }}</td>
+                                                <td>{{ @$record->student->mobile }}</td>
 
                                             </tr>
                                         @endforeach

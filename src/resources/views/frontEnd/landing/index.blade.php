@@ -109,7 +109,9 @@
                             <p>Managing various administrative tasks in one place is now quite easy and time
                                 savior with this INFIX and Give your valued time to your institute that will
                                 increase next generation productivity for our society.</p>
+                            @if(!moduleStatusCheck('Saas'))
                             <a  class="btn_1" target="_blank" href="mailto:support@spondonit.com?subject=Request for saas school demo!&body=This is only a test!"> <i class="ti-email"></i> For Saas Demo</a>
+                            @endif
                             <a href="{{url('/login')}}" class="btn_2" target="_blank"> <i class="ti-package"></i> Try Live Demo</a>
                         </div>
                     </div>

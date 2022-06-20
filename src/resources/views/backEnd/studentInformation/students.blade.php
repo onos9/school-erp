@@ -52,13 +52,15 @@
         {{-- <table id="table_id" class="table table-bordered data-table"> --}}
             <thead>
                 <tr>
-                    <th>@lang('student.admission_no')</th>
-                    <th>@lang('student.roll_no')</th>
-                    <th>@lang('common.name')</th>
-                    <th>@lang('common.class')</th>
-                    <th>@lang('common.section')</th>
-                    <th>@lang('student.father_name')</th>
-                    <th>@lang('common.date_of_birth')</th>
+                    <th>@lang('student.admission_no')</th>                                 
+                    <th>@lang('student.name')</th>      
+                    @if(generalSetting()->multiple_roll==0)
+                    <th>@lang('student.id_number')</th>
+                    @else
+                     <th>@lang('student.father_name')</th>
+                    @endif
+                    <th>@lang('student.date_of_birth')</th>
+                    <th>@lang('student.class_sec')</th>
                     <th>@lang('common.gender')</th>
                     <th>@lang('common.type')</th>
                     <th>@lang('common.phone')</th>
@@ -84,19 +86,23 @@ $(document).ready(function() {
                         pages: 2 // number of pages to cache
                         
                     } ),
-                  columns: [
-                      {data: 'admission_no', name: 'admission_no'},
-                      {data: 'roll_no', name: 'roll_no'},
-                      {data: 'full_name', name: 'full_name'},
-                      {data: 'class.class_name', name: 'class.class_name'},
-                      {data: 'section.section_name', name: 'section.section_name'},
-                      {data: 'parents.fathers_name', name: 'parents.fathers_name'},
-                      {data: 'date_of_birth', name: 'date_of_birth'},
-                      {data: 'gender.base_setup_name', name: 'gender.base_setup_name'},
-                      {data: 'category.category_name', name: 'category.category_name'},
-                      {data: 'mobile', name: 'mobile'},
-                      {data: 'action', name: 'action', orderable: false, searchable: false},
-                      ],
+                    columns: [
+                            {data: 'admission_no', name: 'admission_no'},                  
+                            {data: 'full_name', name: 'full_name'},       
+                            @if(generalSetting()->multiple_roll==0)
+                            {data: 'roll_no', name: 'roll_no'},
+                            @else
+                            {data: 'parents.fathers_name', name: 'parents.fathers_name'},
+                            @endif
+                            
+                            {data: 'dob', name: 'dob'},
+                            {data: 'class_sec', name: 'class_sec'},
+                            {data: 'gender.base_setup_name', name: 'gender.base_setup_name'},
+                            {data: 'category.category_name', name: 'category.category_name'},
+                            {data: 'mobile', name: 'sm_students.mobile', orderable: false, searchable: false},
+                            {data: 'action', name: 'action', orderable: false, searchable: false},
+                            {data: 'first_name', name: 'first_name', hideable: true, searchable: false},
+                        ],
                     bLengthChange: false,
                     bDestroy: true,
                     language: {

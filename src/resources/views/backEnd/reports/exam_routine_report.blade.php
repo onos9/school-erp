@@ -89,7 +89,7 @@
             </div>
         </div>
     </section>
-    @if(isset($exam_schedules))
+@if(isset($exam_schedules))
 
         <section class="mt-20">
             <div class="container-fluid p-0">

@@ -12,7 +12,7 @@ Route::group(['middleware' => ['XSS']], function () {
         Route::get('parent-fees/{id}', ['as' => 'parent_fees', 'uses' => 'Parent\SmFeesController@childrenFees'])->middleware('userRolePermission:71');
         Route::get('parent-class-routine/{id}', ['as' => 'parent_class_routine', 'uses' => 'Parent\SmParentPanelController@classRoutine'])->middleware('userRolePermission:72');
         Route::get('parent-attendance/{id}', ['as' => 'parent_attendance', 'uses' => 'Parent\SmParentPanelController@attendance'])->middleware('userRolePermission:75');
-        Route::get('my-child-attendance/print/{student_id}/{month}/{year}/', 'Parent\SmParentPanelController@attendancePrint')->name('my_child_attendance_print');
+        Route::get('my-child-attendance/print/{student_id}/{id}/{month}/{year}/', 'Parent\SmParentPanelController@attendancePrint')->name('my_child_attendance_print');
         Route::get('parent-homework/{id}', ['as' => 'parent_homework', 'uses' => 'Parent\SmParentPanelController@homework'])->middleware('userRolePermission:73');
         Route::get('parent-homework-view/{class_id}/{section_id}/{homework}', ['as' => 'parent_homework_view', 'uses' => 'Parent\SmParentPanelController@homeworkView'])->middleware('userRolePermission:74');
         Route::get('parent-noticeboard', ['as' => 'parent_noticeboard', 'uses' => 'Parent\SmParentPanelController@parentNoticeboard'])->middleware('userRolePermission:85');

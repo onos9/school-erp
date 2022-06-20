@@ -258,7 +258,7 @@ hr{
                                     @foreach($values as $value)
                                         @php $student++; @endphp
                                         @if($student == 1)
-                                            {{@$value->full_name}}
+                                            {{@$value->studentInfo->full_name}}
                                         @endif
                                     @endforeach
                                 </td>
@@ -267,7 +267,7 @@ hr{
                                     @foreach($values as $value)
                                         @php $student++; @endphp
                                         @if($student == 1)
-                                            {{@$value->admission_no}}
+                                            {{@$value->studentInfo->admission_no}}
                                         @endif
                                     @endforeach
                                 </td>

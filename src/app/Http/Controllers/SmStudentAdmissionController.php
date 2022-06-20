@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Scopes\StatusAcademicSchoolScope;
 use Mail;
 use Twilio;
 use App\User;
@@ -45,8 +44,10 @@ use App\SmStudentTimeline;
 use App\InfixModuleManager;
 use App\SmStudentPromotion;
 use App\SmStudentAttendance;
+use App\Traits\CustomFields;
 use Illuminate\Http\Request;
 use App\Models\SmCustomField;
+use App\Models\StudentRecord;
 use App\SmFeesAssignDiscount;
 use App\StudentBulkTemporary;
 use Illuminate\Support\Carbon;
@@ -67,9 +68,9 @@ use Modules\Chat\Entities\BlockUser;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
+use App\Scopes\StatusAcademicSchoolScope;
 use Illuminate\Support\Facades\Validator;
 use App\Events\StudentPromotionGroupDisable;
-use App\Traits\CustomFields;
 
 class SmStudentAdmissionController extends Controller
 {
@@ -3506,8 +3507,9 @@ class SmStudentAdmissionController extends Controller
     public function disabledStudent(Request $request)
     {
         try {
-            $students = SmStudent::withOutGlobalScope(StatusAcademicSchoolScope::class)->where('active_status', 0)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
 
+
+            $students = SmStudent::with('studentRecords')->where('active_status', 0)->where('school_id', Auth::user()->school_id)->get();
             $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
 
 
@@ -3532,21 +3534,25 @@ class SmStudentAdmissionController extends Controller
                 ->withInput();
         }
         try {
+            $student_ids = StudentRecord::when($request->class, function ($query) use ($request) {
+                $query->where('class_id', $request->class);
+            })
+            ->when($request->section, function ($query) use ($request) {
+                $query->where('section_id', $request->section);
+            })
+            ->where('academic_id', getAcademicId())
+            ->where('school_id', Auth::user()->school_id)
+            ->pluck('student_id')->unique();
+
             $students = SmStudent::query()->withOutGlobalScope(StatusAcademicSchoolScope::class);
-            $students->where('academic_id', getAcademicId())->where('active_status', 0);
-            if ($request->class != "") {
-                $students->where('class_id', $request->class);
-            }
-            if ($request->section != "") {
-                $students->where('section_id', $request->section);
-            }
+            $students->where('academic_id', getAcademicId())->where('active_status', 0);            
             if ($request->name != "") {
                 $students->where('full_name', 'like', '%' . $request->name . '%');
             }
             if ($request->roll_no != "") {
                 $students->where('roll_no', 'like', '%' . $request->roll_no . '%');
             }
-            $students = $students->where('school_id', Auth::user()->school_id)->get();
+            $students = $students->whereIn('id', $student_ids)->where('school_id', Auth::user()->school_id)->get();
 
             $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
 
@@ -3958,6 +3964,7 @@ class SmStudentAdmissionController extends Controller
         try{
             return Excel::download(new AllStudentExport, 'all_student_export.csv');
         }catch(\Exception $e) {
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -3968,9 +3975,8 @@ class SmStudentAdmissionController extends Controller
         try{
             $academiYear= SmAcademicYear::find(getAcademicId());
             $students = SmStudent::where('school_id',Auth::user()->school_id)
-                ->where('academic_id',getAcademicId())
-                ->orderBy('class_id','asc')
-                ->get();
+                        ->where('academic_id',getAcademicId())
+                        ->get();
 
             return view('backEnd.studentInformation.allStudentExportPdfPrint', compact('students','academiYear'));
 

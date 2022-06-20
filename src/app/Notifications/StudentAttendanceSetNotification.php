@@ -2,10 +2,12 @@
 
 namespace App\Notifications;
 
+use App\SmNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Benwilkins\FCM\FcmMessage;
 
 class StudentAttendanceSetNotification extends Notification
 {
@@ -17,20 +19,34 @@ class StudentAttendanceSetNotification extends Notification
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(SmNotification $sm_notification)
     {
-        //
+        $this->sm_notification = $sm_notification;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
+
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['fcm'];
+    }
+
+    public function toFcm($notifiable)
+    {
+        $message = new FcmMessage();
+        $notification = [
+            'title' => app('translator')->get('student.attendance_set_notification'),
+            'body' => $this->sm_notification->message,
+        ];
+        $data = [
+            'click_action' => "FLUTTER_NOTIFICATION_CLICK",
+            'id' => 1,
+            'status' => 'done',
+            'message' => $notification,
+        ];
+        $message->content($notification)
+                ->data($data)
+                ->priority(FcmMessage::PRIORITY_HIGH); // Optional - Default is 'normal'.
+        return $message;
     }
 
     /**

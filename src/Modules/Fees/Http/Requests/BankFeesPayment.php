@@ -14,10 +14,10 @@ class BankFeesPayment extends FormRequest
     public function rules()
     {
         return [
-            'class' => 'required|integer',
-            'section' => 'required|integer',
-            'payment_date' => 'required',
-            'approve_status'=>'sometimes|nullable',
+            // 'class' => 'required|integer',
+            // 'section' => 'required|integer',
+            // 'payment_date' => 'required',
+            // 'approve_status'=>'sometimes|nullable',
         ];
     }
 

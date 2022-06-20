@@ -12,6 +12,8 @@ use App\SmAcademicYear;
 use App\SmStudentCategory;
 use App\SmStudentAttendance;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
+use App\Scopes\AcademicSchoolScope;
 use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Validator;
@@ -24,84 +26,72 @@ class ApiSmStudentAttendanceController extends Controller
         $validator = Validator::make($input, [
             'date' => "required",
             'class' => "required",
-            'section' => "required"
+            'section' => "required",
         ]);
 
         if ($validator->fails()) {
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
             }
- 
         }
+        $students = studentRecords($request, null, null)->get();
+     
+        $studentAttendances = SmStudentAttendance::whereIn('student_id', $students->pluck('student_id')->unique())
+            ->where('attendance_date', date('Y-m-d', strtotime($request->date)))
+            ->where('class_id', $request->class)
+            ->where('section_id', $request->section)
+            ->orderby('student_id', 'ASC')
+            ->get();
 
-        $student_ids = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->select('id')->get();
-        $students = SmStudent::with('class','section')->where('class_id', $request->class)->where('section_id', $request->section)->get();
-        $studentAttendance=SmStudentAttendance::whereIn('student_id', $student_ids)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->orderby('student_id','ASC')->get();
+        $student_attendance = [];
+        $no_attendance = [];
+        if (count($studentAttendances) == 0) {
+            foreach ($students as $student) {
+                $d['id'] = $student->id;
+                $d['record_id'] = $student->id;
+                $d['student_id'] = $student->student_id;
+                $d['student_photo'] = $student->studentDetail->student_photo;
+                $d['full_name'] = $student->studentDetail->full_name;
+                $d['roll_no'] = $student->roll_no;
+                $d['class_name'] = $student->class->class_name;
+                $d['section_name'] = $student->section->section_name;
+                $d['attendance_type'] = null;
+                $d['user_id'] = $student->studentDetail->user_id;
+                $no_attendance[] = $d;
+            }
+        } else {
+            foreach ($students as $record) {
+                $studentAttendanceFirst = SmStudentAttendance::where('student_id', $record->student_id)
+                                            ->where('attendance_date', date('Y-m-d', strtotime($request->date)))
+                                            ->where('student_record_id', $record->id)
+                                            ->where('class_id', $request->class)
+                                            ->where('section_id', $request->section)
+                                            ->first();
 
-                $student_attendance=[];
-                $no_attendance=[];
-                 if(count($studentAttendance)==0){
-         
-			            foreach($students as $student){
-
-			                $d['id']=$student->id;
-			                $d['student_id']=$student->id;
-			                $d['student_photo']=$student->student_photo;
-			                $d['full_name']=$student->full_name;
-			                $d['roll_no']=  $student->roll_no;
-			                $d['class_name']=$student->class->class_name;
-			                $d['section_name']=  $student->section->section_name;    
-			                $d['attendance_type']=null;
-			                $d['user_id']=$student->user_id;
-			    
-			                $no_attendance[]=$d;
-			            }
-       				 }else{
-			        foreach ($studentAttendance as $attendance){
-
-			            $d['id']=$attendance->id;
-			            $d['student_id']=$attendance->student_id;
-			            $d['student_photo']=$attendance->studentInfo->student_photo;
-			            $d['full_name']=$attendance->studentInfo->full_name;
-			            $d['roll_no']=  $attendance->studentInfo->roll_no;
-			            $d['class_name']=$attendance->studentInfo->class->class_name;
-			            $d['section_name']=  $attendance->studentInfo->section->section_name;    
-			            $d['attendance_type']=$attendance->attendance_type;
-			            $d['user_id']=$attendance->studentInfo->user_id;
-			            
-			            $student_attendance[]=$d;
-			        }
-                }
+                $d['id'] = $record->id;
+                $d['record_id'] = $record->id;
+                $d['student_id'] = $record->student_id;
+                $d['student_photo'] = $record->studentDetail->student_photo;
+                $d['full_name'] = $record->studentDetail->full_name;
+                $d['roll_no'] = $record->roll_no;
+                $d['class_name'] = $record->class->class_name;
+                $d['section_name'] = $record->section->section_name;
+                $d['attendance_type'] = $studentAttendanceFirst ? $studentAttendanceFirst->attendance_type : null;
+                $d['user_id'] = $record->studentDetail->user_id;
+                $student_attendance[] = $d;
+            }
+        }
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-               if (count($studentAttendance)>0) {
-                    return ApiBaseMethod::sendResponse($student_attendance,null);
-                } else {
-                    return ApiBaseMethod::sendResponse($no_attendance,'Student attendance not done yet');
-                }
-         }
-
-
-                 
-
+            if (count($studentAttendances) > 0) {
+                return ApiBaseMethod::sendResponse($student_attendance, null);
+            } else {
+                return ApiBaseMethod::sendResponse($no_attendance, 'Student attendance not done yet');
+            }
+        }
 
         // if (ApiBaseMethod::checkUrl($request->fullUrl())) {
         //     return ApiBaseMethod::sendResponse(null, 'Student attendance been submitted successfully');
         // }
-    }
-
-
-    public function deviceInfo(Request $request){
-         $sms = SmSmsGateway::where('gateway_name','Mobile SMS')->first();
-         if($sms){
-            $sms->device_info = json_encode($request->all());
-            $result =  $sms->save();
-                if($result){
-                    return ApiBaseMethod::sendResponse('success', null);
-                }
-         }
-         else{
-            return ApiBaseMethod::sendResponse('error', null);
-         }
     }
 
     public function saas_studentAttendanceCheck(Request $request, $school_id)
@@ -110,81 +100,75 @@ class ApiSmStudentAttendanceController extends Controller
         $validator = Validator::make($input, [
             'date' => "required",
             'class' => "required",
-            'section' => "required"
+            'section' => "required",
         ]);
 
         if ($validator->fails()) {
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
             }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
         }
 
-        $student_ids = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->where('school_id',$school_id)->pluck('id')->toArray();
-        $students = SmStudent::with('class','section')->where('class_id', $request->class)->where('section_id', $request->section)->where('school_id',$school_id)->get();
-        $studentAttendance=SmStudentAttendance::whereIn('student_id', $student_ids)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->orderby('student_id','ASC')->where('school_id',$school_id)->get();
+        $students = studentRecords($request, null, $school_id)->get();
+        $studentAttendance = SmStudentAttendance::whereIn('student_id', $students->pluck('student_id')->unique())
+        ->where('attendance_date', date('Y-m-d', strtotime($request->date)))
+        ->orderby('student_id', 'ASC')
+        ->where('school_id', $school_id)
+        ->withOutGlobalScope(AcademicSchoolScope::class)
+        ->get();
 
-                $student_attendance=[];
-                $no_attendance=[];
-                 if(count($studentAttendance)==0){
-         
-			            foreach($students as $student){
+        $student_attendance = [];
+        $no_attendance = [];
+        if (count($studentAttendance) == 0) {
 
-			                $d['id']=$student->id;
-			                $d['student_id']=$student->id;
-			                $d['student_photo']=$student->student_photo;
-			                $d['full_name']=$student->full_name;
-			                $d['roll_no']=  $student->roll_no;
-			                $d['class_name']=$student->class->class_name;
-			                $d['section_name']=  $student->section->section_name;    
-			                $d['attendance_type']=null;
-			                $d['user_id']=$student->user_id;
-			    
-			                $no_attendance[]=$d;
-			            }
-       				 }else{
-			        foreach ($studentAttendance as $attendance){
+            foreach ($students as $student) {
 
-			            $d['id']=$attendance->id;
-			            $d['student_id']=$attendance->student_id;
-			            $d['student_photo']=$attendance->studentInfo->student_photo;
-			            $d['full_name']=$attendance->studentInfo->full_name;
-			            $d['roll_no']=  $attendance->studentInfo->roll_no;
-			            $d['class_name']=$attendance->studentInfo->class->class_name;
-			            $d['section_name']=  $attendance->studentInfo->section->section_name;    
-			            $d['attendance_type']=$attendance->attendance_type;
-			            $d['user_id']=$attendance->studentInfo->user_id;
-			            
-			            $student_attendance[]=$d;
-			        }
-                }
+                $d['id'] = $student->id;
+                $d['record_id'] = $student->id;
+                $d['student_id'] = $student->id;
+                $d['student_photo'] = $student->student_photo;
+                $d['full_name'] = $student->full_name;
+                $d['roll_no'] = $student->roll_no;
+                $d['class_name'] = $student->class->class_name;
+                $d['section_name'] = $student->section->section_name;
+                $d['attendance_type'] = null;
+                $d['user_id'] = $student->user_id;
+
+                $no_attendance[] = $d;
+            }
+        } else {
+            foreach ($students as $record) {
+                $studentAttendanceFirst = SmStudentAttendance::where('student_id', $record->student_id)
+                ->where('attendance_date', date('Y-m-d', strtotime($request->date)))
+                ->where('student_record_id', $record->id)
+                ->where('class_id', $request->class)
+                ->where('section_id', $request->section)
+                ->withOutGlobalScope(AcademicSchoolScope::class)
+                ->where('school_id', $school_id)
+                ->first();
+
+                $d['id'] = $record->id;
+                $d['record_id'] = $record->id;
+                $d['student_id'] = $record->student_id;
+                $d['student_photo'] = $record->studentDetail->student_photo;
+                $d['full_name'] = $record->studentDetail->full_name;
+                $d['roll_no'] = $record->roll_no;
+                $d['class_name'] = $record->class->class_name;
+                $d['section_name'] = $record->section->section_name;
+                $d['attendance_type'] = $studentAttendanceFirst ? $studentAttendanceFirst->attendance_type : null;
+                $d['user_id'] = $record->studentDetail->user_id;
+                $student_attendance[] = $d;
+            }
+        }
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-               if (count($studentAttendance)>0) {
-                    return ApiBaseMethod::sendResponse($student_attendance,null);
-                } else {
-                    return ApiBaseMethod::sendResponse($no_attendance,'Student attendance not done yet');
-                }
-         }
+            if (count($studentAttendance) > 0) {
+                return ApiBaseMethod::sendResponse($student_attendance, null);
+            } else {
+                return ApiBaseMethod::sendResponse($no_attendance, 'Student attendance not done yet');
+            }
+        }
 
-        // $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->select('id')->where('school_id',$school_id)->get();
-
-        // if (empty($attendance)) {
-        //     foreach ($students as $student) {
-        //         $attendance = SmStudentAttendance::where('student_id', $student->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id',$school_id)->first();
-
-        //         if ($attendance != "") {
-        //             return ApiBaseMethod::sendError('Student Attendance Already Done.', $validator->errors());
-        //         } else {
-        //             return ApiBaseMethod::sendResponse(null, 'Student attendance not done yet');
-        //         }
-        //     }
-        // }
-
-        // if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-        //     return ApiBaseMethod::sendResponse(null, 'Student attendance been submitted successfully');
-        // }
+ 
     }
     public function studentAttendanceStoreFirst(Request $request)
     {
@@ -192,7 +176,8 @@ class ApiSmStudentAttendanceController extends Controller
         $validator = Validator::make($input, [
             'date' => "required",
             'class' => "required",
-            'section' => "required"
+            'section' => "required",
+            'record_id' => "required",
         ]);
 
         if ($validator->fails()) {
@@ -203,16 +188,20 @@ class ApiSmStudentAttendanceController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-        $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->select('id')->get();
-        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->first();
+        $student_ids = studentRecords($request, null, null)->get()->pluck('student_id')->unique();
+        $students = SmStudent::whereIn('id', $student_ids)->select('id')->get();
+        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('student_record_id', $request->record_id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->first();
         if (empty($attendance)) {
             foreach ($students as $student) {
-                $attendance = SmStudentAttendance::where('student_id', $student->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->first();
+                $attendance = SmStudentAttendance::where('student_id', $student->id)->where('student_record_id', $request->record_id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->first();
                 if ($attendance != "") {
                     $attendance->delete();
                 } else {
                     $attendance = new SmStudentAttendance();
                     $attendance->student_id = $student->id;
+                    $attendance->student_record_id = $request->record_id;
+                    $attendance->class_id = $request->class;
+                    $attendance->section_id = $request->section;
                     $attendance->attendance_type = "P";
                     $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
                     $attendance->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
@@ -231,7 +220,7 @@ class ApiSmStudentAttendanceController extends Controller
         $validator = Validator::make($input, [
             'date' => "required",
             'class' => "required",
-            'section' => "required"
+            'section' => "required",
         ]);
 
         if ($validator->fails()) {
@@ -242,17 +231,22 @@ class ApiSmStudentAttendanceController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-        $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->select('id')->where('school_id',$school_id)->get();
-        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id',$school_id)->first();
+        $student_ids = studentRecords($request, null, null)->get()->pluck('student_id')->unique();
+        $students = SmStudent::whereIn('id', $student_ids)->where('school_id', $school_id)->select('id')->get();
+
+        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('student_record_id', $request->record_id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id', $school_id)->first();
         if (empty($attendance)) {
             foreach ($students as $student) {
-                $attendance = SmStudentAttendance::where('student_id', $student->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id',$school_id)->first();
+                $attendance = SmStudentAttendance::where('student_id', $student->id)->where('student_record_id', $request->record_id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id', $school_id)->first();
                 if ($attendance != "") {
                     $attendance->delete();
                 } else {
                     $attendance = new SmStudentAttendance();
                     $attendance->student_id = $student->id;
                     $attendance->attendance_type = "P";
+                    $attendance->student_record_id = $request->record_id;
+                    $attendance->class_id = $request->class;
+                    $attendance->section_id = $request->section;
                     $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
                     $attendance->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
                     $attendance->save();
@@ -272,7 +266,8 @@ class ApiSmStudentAttendanceController extends Controller
             'date' => "required",
             'attendance' => "required",
             'class' => "required",
-            'section' => "required"
+            'section' => "required",
+            'record_id' => "required",
         ]);
 
         if ($validator->fails()) {
@@ -283,32 +278,45 @@ class ApiSmStudentAttendanceController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-        $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->select('id')->get();
-        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->first();
-        if (empty($attendance)) {
-            foreach ($students as $student) {
-                $attendance = SmStudentAttendance::where('student_id', $student->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->first();
-                if ($attendance != "") {
-                    $attendance->delete();
-                }
 
-                $attendance = new SmStudentAttendance();
-                $attendance->student_id = $student->id;
-                $attendance->attendance_type =$request->attendance;
-                $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
-                $attendance->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
-                $attendance->save();
-            }
-        }
-        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->first();
+        $student_ids = studentRecords($request, null, null)->get()->pluck('student_id')->unique();
+        $students = SmStudent::whereIn('id', $student_ids)->select('id')->get();
+        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('student_record_id', $request->record_id)
+            ->where('attendance_date', date('Y-m-d', strtotime($request->date)))
+            ->first();
+        // if (empty($attendance)) {
+        //     foreach ($students as $student) {
+        //         $attendance = SmStudentAttendance::where('student_id', $student->id)->where('student_record_id', $request->record_id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id', auth()->user()->school_id)->first();
+        //         if ($attendance != "") {
+        //             $attendance->delete();
+        //         }
+
+        //         $attendance = new SmStudentAttendance();
+        //         $attendance->student_id = $student->id;
+        //         $attendance->attendance_type = $request->id==$student->id ? $request->attendance :null;
+        //         $attendance->student_record_id = $request->record_id;
+        //         $attendance->class_id = $request->class;
+        //         $attendance->section_id = $request->section;
+        //         $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
+        //         $attendance->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
+        //         $attendance->school_id = auth()->user()->school_id;
+        //         $attendance->save();
+        //     }
+        // }
+        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('student_record_id', $request->record_id)
+            ->where('attendance_date', date('Y-m-d', strtotime($request->date)))->first();
         if ($attendance != "") {
             $attendance->delete();
         }
         $attendance = new SmStudentAttendance();
         $attendance->student_id = $request->id;
         $attendance->attendance_type = $request->attendance;
+        $attendance->student_record_id = $request->record_id;
+        $attendance->class_id = $request->class;
+        $attendance->section_id = $request->section;
         $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
         $attendance->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
+        $attendance->school_id = auth()->user()->school_id;
         $attendance->save();
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {
             return ApiBaseMethod::sendResponse(null, 'Student attendance been submitted successfully');
@@ -322,7 +330,8 @@ class ApiSmStudentAttendanceController extends Controller
             'date' => "required",
             'attendance' => "required",
             'class' => "required",
-            'section' => "required"
+            'section' => "required",
+            'record_id' => "required",
         ]);
 
         if ($validator->fails()) {
@@ -333,30 +342,37 @@ class ApiSmStudentAttendanceController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-        $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->select('id')->where('school_id',$school_id)->get();
-        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id',$school_id)->first();
-        if (empty($attendance)) {
-            foreach ($students as $student) {
-                $attendance = SmStudentAttendance::where('student_id', $student->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id',$school_id)->first();
-                if ($attendance != "") {
-                    $attendance->delete();
-                }
+        $student_ids = studentRecords($request, null, null)->get()->pluck('student_id')->unique();
+        $students = SmStudent::whereIn('id', $student_ids)->select('id')->where('school_id', $school_id)->get();
+        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('student_record_id', $request->record_id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id', $school_id)->first();
+        // if (empty($attendance)) {
+        //     foreach ($students as $student) {
+        //         $attendance = SmStudentAttendance::where('student_id', $student->id)->where('student_record_id', $request->record_id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id', $school_id)->first();
+        //         if ($attendance != "") {
+        //             $attendance->delete();
+        //         }
 
-                $attendance = new SmStudentAttendance();
-                $attendance->student_id = $student->id;
-                $attendance->attendance_type = "P";
-                $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
-                $attendance->school_id = $school_id;
-                $attendance->save();
-            }
-        }
-        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id',$school_id)->first();
+        //         $attendance = new SmStudentAttendance();
+        //         $attendance->student_id = $student->id;
+        //         $attendance->attendance_type = "P";
+        //         $attendance->student_record_id = $request->record_id;
+        //         $attendance->class_id = $request->class;
+        //         $attendance->section_id = $request->section;
+        //         $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
+        //         $attendance->school_id = $school_id;
+        //         $attendance->save();
+        //     }
+        // }
+        $attendance = SmStudentAttendance::where('student_id', $request->id)->where('attendance_date', date('Y-m-d', strtotime($request->date)))->where('school_id', $school_id)->first();
         if ($attendance != "") {
             $attendance->delete();
         }
         $attendance = new SmStudentAttendance();
         $attendance->student_id = $request->id;
         $attendance->attendance_type = $request->attendance;
+        $attendance->student_record_id = $request->record_id;
+        $attendance->class_id = $request->class;
+        $attendance->section_id = $request->section;
         $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
         $attendance->school_id = $school_id;
         $attendance->academic_id = SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR();
@@ -375,22 +391,22 @@ class ApiSmStudentAttendanceController extends Controller
                 return ApiBaseMethod::sendResponse($classes, null);
             }
             return view('backEnd.studentInformation.student_attendance', compact('classes'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function saas_student_attendance_index(Request $request, $school_id)
     {
 
         try {
-            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
+            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 return ApiBaseMethod::sendResponse($classes, null);
             }
             return view('backEnd.studentInformation.student_attendance', compact('classes'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function studentSearch(Request $request)
@@ -399,10 +415,8 @@ class ApiSmStudentAttendanceController extends Controller
         $validator = Validator::make($input, [
             'class' => 'required',
             'section' => 'required',
-            'attendance_date' => 'required'
+            'attendance_date' => 'required',
         ]);
-
-
 
         if ($validator->fails()) {
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
@@ -431,9 +445,9 @@ class ApiSmStudentAttendanceController extends Controller
 
                 if ($attendance != "") {
                     $already_assigned_students[] = $attendance;
-                    $attendance_type =  $attendance->attendance_type;
+                    $attendance_type = $attendance->attendance_type;
                 } else {
-                    $new_students[] =  $student;
+                    $new_students[] = $student;
                 }
             }
 
@@ -444,7 +458,6 @@ class ApiSmStudentAttendanceController extends Controller
             $search_info['class_name'] = $class_info->class_name;
             $search_info['section_name'] = $section_info->section_name;
             $search_info['date'] = $request->attendance_date;
-
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 $data = [];
@@ -457,8 +470,8 @@ class ApiSmStudentAttendanceController extends Controller
                 return ApiBaseMethod::sendResponse($data, null);
             }
             return view('backEnd.studentInformation.student_attendance', compact('classes', 'date', 'class_id', 'date', 'already_assigned_students', 'new_students', 'attendance_type', 'search_info'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function saas_studentSearch(Request $request)
@@ -467,10 +480,8 @@ class ApiSmStudentAttendanceController extends Controller
         $validator = Validator::make($input, [
             'class' => 'required',
             'section' => 'required',
-            'attendance_date' => 'required'
+            'attendance_date' => 'required',
         ]);
-
-
 
         if ($validator->fails()) {
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
@@ -499,9 +510,9 @@ class ApiSmStudentAttendanceController extends Controller
 
                 if ($attendance != "") {
                     $already_assigned_students[] = $attendance;
-                    $attendance_type =  $attendance->attendance_type;
+                    $attendance_type = $attendance->attendance_type;
                 } else {
-                    $new_students[] =  $student;
+                    $new_students[] = $student;
                 }
             }
 
@@ -512,7 +523,6 @@ class ApiSmStudentAttendanceController extends Controller
             $search_info['class_name'] = $class_info->class_name;
             $search_info['section_name'] = $section_info->section_name;
             $search_info['date'] = $request->attendance_date;
-
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 $data = [];
@@ -525,8 +535,8 @@ class ApiSmStudentAttendanceController extends Controller
                 return ApiBaseMethod::sendResponse($data, null);
             }
             return view('backEnd.studentInformation.student_attendance', compact('classes', 'date', 'class_id', 'date', 'already_assigned_students', 'new_students', 'attendance_type', 'search_info'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function student_search_index(Request $request)
@@ -539,25 +549,25 @@ class ApiSmStudentAttendanceController extends Controller
                 return ApiBaseMethod::sendResponse($classes, null);
             }
             return view('backEnd.studentInformation.student_attendance', compact('classes'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
-    public function saas_student_search_index(Request $request,$school_id)
+    public function saas_student_search_index(Request $request, $school_id)
     {
 
         try {
-            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
+            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 return ApiBaseMethod::sendResponse($classes, null);
             }
             return view('backEnd.studentInformation.student_attendance', compact('classes'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
-    
+
     public function studentAttendanceStore(Request $request)
     {
 
@@ -568,7 +578,6 @@ class ApiSmStudentAttendanceController extends Controller
                 if ($attendance != "") {
                     $attendance->delete();
                 }
-
 
                 $attendance = new SmStudentAttendance();
                 $attendance->student_id = $student;
@@ -587,8 +596,8 @@ class ApiSmStudentAttendanceController extends Controller
             }
             Toastr::success('Operation successful', 'Success');
             return redirect('student-attendance');
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function saas_studentAttendanceStore(Request $request)
@@ -602,7 +611,6 @@ class ApiSmStudentAttendanceController extends Controller
                     $attendance->delete();
                 }
 
-
                 $attendance = new SmStudentAttendance();
                 $attendance->student_id = $student;
                 if (isset($request->mark_holiday)) {
@@ -612,7 +620,7 @@ class ApiSmStudentAttendanceController extends Controller
                     $attendance->notes = $request->note[$student];
                 }
                 $attendance->attendance_date = date('Y-m-d', strtotime($request->date));
-                $attendance->school_id =$request->school_id;
+                $attendance->school_id = $request->school_id;
                 $attendance->save();
             }
 
@@ -621,8 +629,8 @@ class ApiSmStudentAttendanceController extends Controller
             }
             Toastr::success('Operation successful', 'Success');
             return redirect('student-attendance');
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function studentAttendanceReport(Request $request)
@@ -640,16 +648,16 @@ class ApiSmStudentAttendanceController extends Controller
                 return ApiBaseMethod::sendResponse($data, null);
             }
             return view('backEnd.studentInformation.student_attendance_report', compact('classes', 'types', 'genders'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
-    public function saas_studentAttendanceReport(Request $request,$school_id)
+    public function saas_studentAttendanceReport(Request $request, $school_id)
     {
         try {
-            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
-            $types = SmStudentCategory::where('school_id',$school_id)->get();
-            $genders = SmBaseSetup::where('active_status', '=', '1')->where('base_group_id', '=', '1')->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
+            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
+            $types = SmStudentCategory::where('school_id', $school_id)->get();
+            $genders = SmBaseSetup::where('active_status', '=', '1')->where('base_group_id', '=', '1')->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 $data = [];
@@ -659,11 +667,11 @@ class ApiSmStudentAttendanceController extends Controller
                 return ApiBaseMethod::sendResponse($data, null);
             }
             return view('backEnd.studentInformation.student_attendance_report', compact('classes', 'types', 'genders'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
-    
+
     public function studentAttendanceReportSearch(Request $request)
     {
 
@@ -672,7 +680,7 @@ class ApiSmStudentAttendanceController extends Controller
             'class' => 'required',
             'section' => 'required',
             'month' => 'required',
-            'year' => 'required'
+            'year' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -717,8 +725,8 @@ class ApiSmStudentAttendanceController extends Controller
             }
 
             return view('backEnd.studentInformation.student_attendance_report', compact('classes', 'attendances', 'days', 'year', 'month', 'current_day', 'class_id', 'section_id', 'clas', 'sec'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function saas_studentAttendanceReportSearch(Request $request, $school_id)
@@ -729,7 +737,7 @@ class ApiSmStudentAttendanceController extends Controller
             'class' => 'required',
             'section' => 'required',
             'month' => 'required',
-            'year' => 'required'
+            'year' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -746,15 +754,15 @@ class ApiSmStudentAttendanceController extends Controller
             $class_id = $request->class;
             $section_id = $request->section;
             $current_day = date('d');
-            $clas = SmClass::where('school_id',$school_id)->findOrFail($request->class);
-            $sec = SmSection::where('school_id',$school_id)->findOrFail($request->section);
+            $clas = SmClass::where('school_id', $school_id)->findOrFail($request->class);
+            $sec = SmSection::where('school_id', $school_id)->findOrFail($request->section);
             $days = cal_days_in_month(CAL_GREGORIAN, $request->month, $request->year);
-            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
-            $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
+            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
+            $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
 
             $attendances = [];
             foreach ($students as $student) {
-                $attendance = SmStudentAttendance::where('student_id', $student->id)->where('attendance_date', 'like', $request->year . '-' . $request->month . '%')->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
+                $attendance = SmStudentAttendance::where('student_id', $student->id)->where('attendance_date', 'like', $request->year . '-' . $request->month . '%')->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
                 if (count($attendance) != 0) {
                     $attendances[] = $attendance;
                 }
@@ -774,8 +782,8 @@ class ApiSmStudentAttendanceController extends Controller
             }
 
             return view('backEnd.studentInformation.student_attendance_report', compact('classes', 'attendances', 'days', 'year', 'month', 'current_day', 'class_id', 'section_id', 'clas', 'sec'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function studentAttendanceReport_search(Request $request)
@@ -793,16 +801,16 @@ class ApiSmStudentAttendanceController extends Controller
                 return ApiBaseMethod::sendResponse($data, null);
             }
             return view('backEnd.studentInformation.student_attendance_report', compact('classes', 'types', 'genders'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
         }
     }
     public function saas_studentAttendanceReport_search(Request $request, $school_id)
     {
         try {
-            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
-            $types = SmStudentCategory::where('school_id',$school_id)->get();
-            $genders = SmBaseSetup::where('active_status', '=', '1')->where('base_group_id', '=', '1')->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id',$school_id)->get();
+            $classes = SmClass::where('active_status', 1)->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
+            $types = SmStudentCategory::where('school_id', $school_id)->get();
+            $genders = SmBaseSetup::where('active_status', '=', '1')->where('base_group_id', '=', '1')->where('academic_id', SmAcademicYear::SINGLE_SCHOOL_API_ACADEMIC_YEAR())->where('school_id', $school_id)->get();
 
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
                 $data = [];
@@ -812,8 +820,143 @@ class ApiSmStudentAttendanceController extends Controller
                 return ApiBaseMethod::sendResponse($data, null);
             }
             return view('backEnd.studentInformation.student_attendance_report', compact('classes', 'types', 'genders'));
-        } catch (\Exception $e) {
-           return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        } catch (\Exception$e) {
+            return ApiBaseMethod::sendError('Error.', $e->getMessage());
+        }
+    }
+    public function studentMyAttendanceSearchAPI(Request $request, $id = null, $record_id)
+    {
+
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'month' => "required",
+            'year' => "required",
+        ]);
+
+        if ($validator->fails()) {
+            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
+                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $student_detail = SmStudent::where('user_id', $id)->first();
+
+        $year = $request->year;
+        $month = $request->month;
+        if ($month < 10) {
+            $month = '0' . $month;
+        }
+        $current_day = date('d');
+
+        $days = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
+        $days2 = '';
+        if ($month != 1) {
+            $days2 = cal_days_in_month(CAL_GREGORIAN, $month - 1, $request->year);
+        } else {
+            $days2 = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
+        }
+
+        $previous_month = $month - 1;
+        $previous_date = $year . '-' . $previous_month . '-' . $days2;
+
+        $previousMonthDetails['date'] = $previous_date;
+        $previousMonthDetails['day'] = $days2;
+        $previousMonthDetails['week_name'] = date('D', strtotime($previous_date));
+
+        $attendances = SmStudentAttendance::where('student_id', $student_detail->id)
+            ->where('attendance_date', 'like', '%' . $request->year . '-' . $month . '%')
+            ->where('student_record_id', $record_id)
+            ->select('attendance_type', 'attendance_date')
+            ->get();
+
+        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
+            $data['attendances'] = $attendances;
+            $data['previousMonthDetails'] = $previousMonthDetails;
+            $data['days'] = $days;
+            $data['year'] = $year;
+            $data['month'] = $month;
+            $data['current_day'] = $current_day;
+            $data['status'] = 'Present: P, Late: L, Absent: A, Holiday: H, Half Day: F';
+            return ApiBaseMethod::sendResponse($data, null);
+        }
+
+        return view('backEnd.studentPanel.student_attendance', compact('attendances', 'days', 'year', 'month', 'current_day'));
+    }
+    public function saas_studentMyAttendanceSearchAPI(Request $request, $school_id, $id = null, $record_id)
+    {
+
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'month' => "required",
+            'year' => "required",
+        ]);
+
+        if ($validator->fails()) {
+            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
+                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $student_detail = SmStudent::where('user_id', $id)->first();
+
+        $year = $request->year;
+        $month = $request->month;
+        if ($month < 10) {
+            $month = '0' . $month;
+        }
+        $current_day = date('d');
+
+        $days = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
+        $days2 = '';
+        if ($month != 1) {
+            $days2 = cal_days_in_month(CAL_GREGORIAN, $month - 1, $request->year);
+        } else {
+            $days2 = cal_days_in_month(CAL_GREGORIAN, $month, $request->year);
+        }
+
+        $previous_month = $month - 1;
+        $previous_date = $year . '-' . $previous_month . '-' . $days2;
+
+        $previousMonthDetails['date'] = $previous_date;
+        $previousMonthDetails['day'] = $days2;
+        $previousMonthDetails['week_name'] = date('D', strtotime($previous_date));
+
+        $attendances = SmStudentAttendance::where('student_id', $student_detail->id)
+            ->where('attendance_date', 'like', '%' . $request->year . '-' . $month . '%')
+            ->where('student_record_id', $record_id)
+            ->where('school_id', $school_id)
+            ->select('attendance_type', 'attendance_date')           
+            ->get();
+
+        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
+            $data['attendances'] = $attendances;
+            $data['previousMonthDetails'] = $previousMonthDetails;
+            $data['days'] = $days;
+            $data['year'] = $year;
+            $data['month'] = $month;
+            $data['current_day'] = $current_day;
+            $data['status'] = 'Present: P, Late: L, Absent: A, Holiday: H, Half Day: F';
+            return ApiBaseMethod::sendResponse($data, null);
+        }
+        //Test
+        return view('backEnd.studentPanel.student_attendance', compact('attendances', 'days', 'year', 'month', 'current_day'));
+    }
+    
+    public function deviceInfo(Request $request)
+    {
+        $sms = SmSmsGateway::where('gateway_name', 'Mobile SMS')->first();
+        if ($sms) {
+            $sms->device_info = json_encode($request->all());
+            $result = $sms->save();
+            if ($result) {
+                return ApiBaseMethod::sendResponse('success', null);
+            }
+        } else {
+            return ApiBaseMethod::sendResponse('error', null);
         }
     }
 }

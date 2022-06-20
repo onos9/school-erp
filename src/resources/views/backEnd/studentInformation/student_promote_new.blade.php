@@ -145,6 +145,8 @@
 
                     {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'student-promote-store', 'method' => 'POST', 'enctype' => 'multipart/form-data', 'id' => 'student_promote_submit']) }}
                     <input type="hidden" name="current_session" value="{{$current_session}}">
+                    <input type="hidden" name="pre_class" value="{{ isset($current_class) ? $current_class:''}}">
+                    <input type="hidden" name="pre_section" value="{{ isset($current_section) ? $current_section:''}}">
                     <input type="hidden" name="promote_session" value="{{$promote_session}}">
                     <div class="row">
                         <div class="col-lg-12">
@@ -160,7 +162,7 @@
                                         <th>@lang('student.current_roll')</th>
                                         <th>@lang('student.name')</th>   
                                         {{-- <th>@lang('student.photo')</th>  --}}
-                                        <th>@lang('common.class_Sec')</th>                                                                        
+                                        {{-- <th>@lang('common.class_Sec')</th>                                                                         --}}
                                                                             
                                         <th>@lang('student.promote_class')</th>           
                                         <th>@lang('student.promote_section')</th>                           
@@ -177,10 +179,10 @@
                                             <input type="checkbox" id="student_{{$student->id}}" class="common-checkbox promote_check" name="promote[{{$student->id}}][student]" value="{{$student->id}}">
                                             <label for="student_{{$student->id}}"></label>
                                         </td>
-                                        <td> <a href="{{route('student_view',[$student->id]) }}"  target="_blank" rel="noopener noreferrer">  <h5 style="color:#A235EC">{{$student->roll_no}}</h5></a> </td>
+                                        <td> <a href="{{route('student_view',[$student->id]) }}"  target="_blank" rel="noopener noreferrer">  <h5 style="color:#A235EC">{{$student->recordStudentRoll->roll_no}}</h5></a> </td>
                                         <td>{{  $student->first_name .' '.$student->last_name }}</td>
                                        
-                                        <td>{{$student->class !=""?$student->class->class_name:""}} ({{ $student->section !=""?$student->section->section_name:"" }}) </td>
+                                        {{-- <td></td> --}}
 
                                         <td>
                                             <div class="row">

@@ -26,8 +26,7 @@ class SmStaffFactory extends Factory
     public function definition()
     {
         return [
-            'full_name' => $this->faker->firstNameMale, 
-            'role_id'   => $this->faker->numberBetween(4, 9),         
+            'full_name' => $this->faker->firstNameMale,
             'basic_salary' =>30000,       
         ];
     }

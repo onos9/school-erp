@@ -101,4 +101,7 @@
     'my_lesson_plan_overview'=>'Lesson plan overview',
     'upcoming_date'=>'Upcoming Date',
     'lecture_youtube_link'=>'Lecture youtube link',
+    'lesson_plan_subtopic'=>'Lesson plan subtopic',
+    'lesson_plan_setting'=>'Lesson plan setting',
+
     ];

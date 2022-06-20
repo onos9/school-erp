@@ -209,13 +209,9 @@ class SmStudentAjaxController extends Controller
     
     public function ajaxSelectStudent(Request $request)
     {
-        $students = SmStudent::where('section_id', $request->section);
-
-        if ($request->class){
-            $students = $students->where('class_id', $request->class);
-        }
-
-        $students = $students->where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get(['id','full_name','user_id']);
+       
+        $student_ids = SmStudentReportController::classSectionStudent($request);
+        $students = SmStudent::whereIn('id', $student_ids)->where('active_status', 1)->where('school_id', Auth::user()->school_id)->get(['id','full_name','user_id']);
 
         return response()->json([$students]);
     }
@@ -231,12 +227,16 @@ class SmStudentAjaxController extends Controller
 
     public function ajaxSectionStudent(Request $request)
     {
+        $class = SmClass::withOutGlobalScope(StatusAcademicSchoolScope::class)->find($request->id);
         try {
             if (teacherAccess()) {
-                $sectionIds = SmAssignSubject::where('class_id', '=', $request->id)
+                $sectionIds = SmAssignSubject::withOutGlobalScope(StatusAcademicSchoolScope::class)->where('class_id', '=', $request->id)
                             ->where('teacher_id',Auth::user()->staff->id)               
                             ->where('school_id', Auth::user()->school_id)
                             ->groupby(['class_id','section_id'])
+                            ->when($class, function ($q) use ($class) {
+                                $q->where('academic_id', $class->academic_id);
+                            })
                             ->get();
             } else {
                 $sectionIds = SmClassSection::where('class_id', '=', $request->id)               

@@ -1,25 +1,26 @@
 <?php
 
 namespace Modules\Lesson\Http\Controllers\Parent;
-use App\SmStaff;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use App\SmClass;
+use App\SmStaff;
+use App\SmLesson;
 use App\SmSection;
 use App\SmStudent;
 use App\SmSubject;
 use App\SmWeekend;
+use Carbon\Carbon;
 use App\SmClassTime;
 use App\ApiBaseMethod;
-use App\SmLesson;
 use App\SmLessonTopic;
 use App\SmLessonDetails;
+use Carbon\CarbonPeriod;
 use App\SmLessonTopicDetail;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Brian2694\Toastr\Facades\Toastr;
+use Illuminate\Support\Facades\Auth;
 use Modules\Lesson\Entities\LessonPlanner;
 use Illuminate\Contracts\Support\Renderable;
 
@@ -34,8 +35,10 @@ class ParentLessonPlanController extends Controller
         try {
 
             $this_week= $weekNumber = date("W");
-            
-            $period =  CarbonPeriod::create(Carbon::now()->startOfWeek(Carbon::SATURDAY)->format('Y-m-d'), Carbon::now()->endOfWeek(Carbon::FRIDAY)->format('Y-m-d'));
+
+            $start_day = WEEK_DAYS[generalSetting()->week_start_id ?? 1];
+            $end_day = $start_day==0 ? 6 : $start_day-1;
+            $period = CarbonPeriod::create(Carbon::now()->startOfWeek($start_day)->format('Y-m-d'), Carbon::now()->endOfWeek($end_day)->format('Y-m-d'));
             $dates=[];
             foreach ($period as $date){
                     $dates[] = $date->format('Y-m-d');
@@ -50,8 +53,8 @@ class ParentLessonPlanController extends Controller
 
             $class_times = SmClassTime::where('type', 'class')->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
 
-
-            return view('lesson::parent.parent_lesson_plan', compact('student_detail','dates','this_week','class_times', 'class_id', 'section_id', 'sm_weekends'));
+            $records = studentRecords(null, $student_detail->id)->get();
+            return view('lesson::parent.parent_lesson_plan', compact('student_detail','dates','this_week','class_times', 'class_id', 'section_id', 'sm_weekends', 'records'));
         } catch (\Exception $e) {
            
             Toastr::error('Operation Failed', 'Failed');
@@ -100,7 +103,7 @@ class ParentLessonPlanController extends Controller
      * @return Renderable
      */
 
-            public function changeWeek(Request $request,$id,$next_date){
+    public function changeWeek(Request $request,$id,$next_date){
 
             $start_date=Carbon::parse($next_date)->addDay(1);
             $date = Carbon::parse($next_date)->addDay(1);
@@ -127,29 +130,10 @@ class ParentLessonPlanController extends Controller
             $sm_weekends = SmWeekend::orderBy('order', 'ASC')->where('active_status', 1)->where('school_id',Auth::user()->school_id)->get();
 
             $class_times = SmClassTime::where('type', 'class')->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
+            $records = studentRecords(null, $student_detail->id)->get();
+       
 
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['student_detail'] = $student_detail->toArray();
-                $weekenD = SmWeekend::all();
-                foreach ($weekenD as $row) {
-                    $data[$row->name] = DB::table('sm_class_routine_updates')
-                        ->select('sm_class_times.period', 'sm_class_times.start_time', 'sm_class_times.end_time', 'sm_subjects.subject_name', 'sm_class_rooms.room_no')
-                        ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_routine_updates.class_id')
-                        ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_routine_updates.section_id')
-                        ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_class_routine_updates.class_period_id')
-                        ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_class_routine_updates.subject_id')
-                        ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_class_routine_updates.room_id')
-
-                        ->where([
-                            ['sm_class_routine_updates.class_id', $class_id], ['sm_class_routine_updates.section_id', $section_id], ['sm_class_routine_updates.day', $row->id],
-                        ])->where('sm_class_routine_updates.academic_id', getAcademicId())->where('sm_classesschool_id',Auth::user()->school_id)->get();
-                }
-
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-
-            return view('lesson::parent.parent_lesson_plan', compact('dates','this_week','class_times', 'class_id', 'section_id', 'sm_weekends','student_detail'));
+            return view('lesson::parent.parent_lesson_plan', compact('dates','this_week','class_times', 'class_id', 'section_id', 'sm_weekends','student_detail','records'));
       
     }
     public function discreaseChangeWeek(Request $request,$id,$pre_date){
@@ -180,28 +164,9 @@ class ParentLessonPlanController extends Controller
 
             $class_times = SmClassTime::where('type', 'class')->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
 
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                $data = [];
-                $data['student_detail'] = $student_detail->toArray();
-                $weekenD = SmWeekend::all();
-                foreach ($weekenD as $row) {
-                    $data[$row->name] = DB::table('sm_class_routine_updates')
-                        ->select('sm_class_times.period', 'sm_class_times.start_time', 'sm_class_times.end_time', 'sm_subjects.subject_name', 'sm_class_rooms.room_no')
-                        ->join('sm_classes', 'sm_classes.id', '=', 'sm_class_routine_updates.class_id')
-                        ->join('sm_sections', 'sm_sections.id', '=', 'sm_class_routine_updates.section_id')
-                        ->join('sm_class_times', 'sm_class_times.id', '=', 'sm_class_routine_updates.class_period_id')
-                        ->join('sm_subjects', 'sm_subjects.id', '=', 'sm_class_routine_updates.subject_id')
-                        ->join('sm_class_rooms', 'sm_class_rooms.id', '=', 'sm_class_routine_updates.room_id')
+            $records = studentRecords(null, $student_detail->id)->get();
 
-                        ->where([
-                            ['sm_class_routine_updates.class_id', $class_id], ['sm_class_routine_updates.section_id', $section_id], ['sm_class_routine_updates.day', $row->id],
-                        ])->where('sm_class_routine_updates.academic_id', getAcademicId())->where('sm_classesschool_id',Auth::user()->school_id)->get();
-                }
-
-                return ApiBaseMethod::sendResponse($data, null);
-            }
-
-            return view('lesson::parent.parent_lesson_plan', compact('dates','this_week','class_times', 'class_id', 'section_id', 'sm_weekends','student_detail'));
+            return view('lesson::parent.parent_lesson_plan', compact('dates','this_week','class_times', 'class_id', 'section_id', 'sm_weekends','student_detail','records'));
     }
     public function create()
     {

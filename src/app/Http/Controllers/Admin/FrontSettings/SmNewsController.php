@@ -67,7 +67,7 @@ class SmNewsController extends Controller
             $news = SmNews::where('school_id', app('school')->id)->get();
             $add_news = SmNews::find($id);
             $news_category = SmNewsCategory::where('school_id', app('school')->id)->get();
-            return view('backEnd.frontsettings.news.news_page', compact('add_news', 'news', 'news_category'));
+            return view('backEnd.frontSettings.news.news_page', compact('add_news', 'news', 'news_category'));
         }catch (\Exception $e) {
            Toastr::error('Operation Failed', 'Failed');
            return redirect()->back();
@@ -106,7 +106,7 @@ class SmNewsController extends Controller
 
         try{
             $news = SmNews::find($id);
-            return view('backEnd.frontsettings.news.news_details', compact('news'));
+            return view('backEnd.frontSettings.news.news_details', compact('news'));
         }catch (\Exception $e) {
            Toastr::error('Operation Failed', 'Failed');
            return redirect()->back();
@@ -116,7 +116,7 @@ class SmNewsController extends Controller
     {
 
         try{
-            return view('backEnd.frontsettings.news.delete_modal', compact('id'));
+            return view('backEnd.frontSettings.news.delete_modal', compact('id'));
         }catch (\Exception $e) {
            Toastr::error('Operation Failed', 'Failed');
            return redirect()->back();

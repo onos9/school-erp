@@ -202,6 +202,11 @@ Route::post('update-website-url', 'Admin\SystemSettings\SmSystemSettingControlle
 
 Route::get('update-created-date', 'Admin\SystemSettings\SmSystemSettingController@updateCreatedDate');
 
+Route::get('preloader-setting', 'Admin\SystemSettings\PreloaderSettingController@index')
+    ->name('setting.preloader');
+
+Route::post('preloader-setting', 'Admin\SystemSettings\PreloaderSettingController@store');
+
 // manage currency
 
 Route::get('manage-currency', 'Admin\SystemSettings\SmSystemSettingController@manageCurrency')->name('manage-currency')->middleware('userRolePermission:401');

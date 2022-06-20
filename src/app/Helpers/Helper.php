@@ -6,6 +6,7 @@ use App\SmStyle;
 use App\SmParent;
 use App\SmStudent;
 use App\SmLanguage;
+use App\SmAddIncome;
 use App\SmExamSetup;
 use App\SmMarkStore;
 use App\SmsTemplate;
@@ -37,12 +38,24 @@ use Nwidart\Modules\Facades\Module;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use AfricasTalking\SDK\AfricasTalking;
+use App\Models\SmStudentRegistrationField;
+use App\Models\StudentRecord;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Modules\Lms\Entities\CourseSetting;
 use Modules\MenuManage\Entities\MenuManage;
 use Modules\Fees\Entities\FmFeesInvoiceSettings;
 use Modules\ParentRegistration\Entities\SmStudentRegistration;
+
+const WEEK_DAYS = [
+    3=>1,
+    4=>2,
+    5=>3,
+    6=>4,
+    7=>5,
+    1=>6,
+    2=>0,
+];
 
 function sendEmailBio($data, $to_name, $to_email, $email_sms_title)
 {
@@ -100,7 +113,7 @@ function sendSMSApi($to_mobile, $sms, $id)
 {
     $activeSmsGateway = SmSmsGateway::find($id);
     if ($activeSmsGateway->gateway_name == 'Twilio') {
-        $client = new Twilio\Rest\Client($activeSmsGateway->twilio_account_sid, $activeSmsGateway->twilio_authentication_token);
+        $client = new \Twilio\Rest\Client($activeSmsGateway->twilio_account_sid, $activeSmsGateway->twilio_authentication_token);
         if (!empty($to_mobile)) {
             $result = $message = $client->messages->create($to_mobile, array('from' => $activeSmsGateway->twilio_registered_no, 'body' => $sms));
             return $result;
@@ -190,7 +203,7 @@ function sendSMSBio($to_mobile, $sms)
         $account_id = $activeSmsGateway->twilio_account_sid; // Your Account SID from www.twilio.com/console
         $auth_token = $activeSmsGateway->twilio_authentication_token; // Your Auth Token from www.twilio.com/console
         $from_phone_number = $activeSmsGateway->twilio_registered_no;
-        $client = new Twilio\Rest\Client($account_id, $auth_token);
+        $client = new \Twilio\Rest\Client($account_id, $auth_token);
         if (!empty($to_mobile)) {
             $result = $message = $client->messages->create($to_mobile, array('from' => $from_phone_number, 'body' => $sms));
             return $result;
@@ -422,7 +435,7 @@ if (!function_exists('moduleStatusCheck')) {
             $all_module = session()->get('all_module');
 
             $modulestatus = Module::find($module)->isDisabled();
-
+           
             //if session exist and non empty
             if (!empty($all_module)) {
 
@@ -442,9 +455,10 @@ if (!function_exists('moduleStatusCheck')) {
                 if (file_exists($is_module_available)) {
 
                     $modulestatus = Module::find($module)->isDisabled();
-
+                    
                     if ($modulestatus == false) {
                         $is_verify = InfixModuleManager::where('name', $module)->first();
+                       
                         if (!empty($is_verify->purchase_code)) {
                             return true;
 
@@ -586,12 +600,8 @@ if (!function_exists('send_mail')) {
         $sender_name = $setting->from_name;
         $email_driver = $setting->mail_driver;
 
-        if($data['subject']){
-            $subject= $data['subject'];
-        }else{
-            $subject = getTempleteDetails($purpose)->subject;
-        }
-        
+        $subject = getTempleteDetails($purpose)->subject;
+
         $body = App\SmsTemplate::emailTempleteToBody(getTempleteDetails($purpose)->body,$data);
         $view = view('backEnd.email.emailBody',compact('body'));
         
@@ -634,6 +644,21 @@ if (!function_exists('send_mail')) {
     }
 }
 
+
+
+if (!function_exists('getFileName')) {
+    function getFileName($data)
+    {
+        if ($data) {
+            $name = explode('/', $data);
+            return $name[4] ?? $name[0];
+        } else {
+            return '';
+        }
+    }
+}
+
+
 // Get File Path From HELPER
 
 if (!function_exists('getFilePath3')) {
@@ -642,7 +667,7 @@ if (!function_exists('getFilePath3')) {
         
         if ($data) {
             $name = explode('/', $data);
-            return $name[3] ?? $name[0];        
+            return $name[3] ?? $name[0];
         } else {
             return '';
         }
@@ -668,15 +693,20 @@ if (!function_exists('getFilePath4')) {
 if (!function_exists('showPicName')) {
     function showPicName($data)
     {
-        if ($data) {
-            $name = explode('/', $data);
-            if ($name[4]) {
-                return $name[4];
+        try{
+            if ($data) {
+                $name = explode('/', $data);
+                if ($name[4]) {
+                    return $name[4];
+                } else {
+                    return '';
+                }
             } else {
                 return '';
             }
-        } else {
-            return '';
+        }
+        catch (\Exception $e) {
+         return null;
         }
     }
 }
@@ -1183,7 +1213,7 @@ if (!function_exists('feesPayment')) {
 if (!function_exists('generalSetting')) {
     function generalSetting()
     {
-//        session()->forget('generalSetting');
+        session()->forget('generalSetting');
         if (session()->has('generalSetting')) {
             return session()->get('generalSetting');
         } else {
@@ -1271,6 +1301,7 @@ if (!function_exists('allStyles')) {
 if (!function_exists('textDirection')) {
     function textDirection()
     {
+        
 
         if (session()->has('text_direction')) {
             return session()->get('text_direction');
@@ -1285,12 +1316,13 @@ if (!function_exists('textDirection')) {
 if (!function_exists('userRtlLtl')) {
     function userRtlLtl()
     {
+        // return 1;
 
         if (session()->has('user_text_direction')) {
             return session()->get('user_text_direction');
         } else {
             $school_id = app()->bound('school') ? app('school')->id : 1;
-            $user= $user=User::where('role_id',1)->where('school_id', $school_id)->first();
+            $user= User::where('role_id', 1)->where('school_id', $school_id)->first();
             
             $ttl_rtl = $user ? $user->rtl_ltl : 2;
             session()->put('user_text_direction', $ttl_rtl);
@@ -2030,27 +2062,46 @@ if (!function_exists('feesInvoiceNumber')) {
         $settings = feesInvoiceSettings();
         $positions = json_decode($settings->invoice_positions);
         $format = '';
-        foreach($positions as $position ){
+        foreach($positions as $position){
             if($format){
                 $format .= '-';
             }
             $format .= $position->id;
         }
+        
+        if($format){
+            $format .= '-';
+        }
+        
+        $format .= 'uniq_id_start';
 
         $key = [
             'prefix', 
-            'admission_no', 
+            'admission_no',
             'class', 
             'section',
+            'uniq_id_start'
         ];
-        $value = [
-            $settings->prefix,
-            Str::limit($invoice->studentInfo->admission_no,$settings->admission_limit),
-            Str::limit($invoice->studentInfo->class->class_name,$settings->class_limit), 
-            Str::limit($invoice->studentInfo->section->section_name,$settings->section_limit),
-            $settings->uniq_id_start + $invoice->id
-        ];
-        return str_replace($key, $value, $format);
+
+        $value = [];
+        
+        if($settings->prefix){
+            $value[] = $settings->prefix;
+        }
+        if($settings->admission_limit){
+            $value[] = Str::limit($invoice->studentInfo->admission_no,$settings->admission_limit, '');
+        }
+        if($settings->class_limit){
+            $value[] = Str::limit($invoice->recordDetail->class->class_name,$settings->class_limit, '');
+        }
+        if($settings->section_limit){
+            $value[] = Str::limit($invoice->recordDetail->section->section_name,$settings->section_limit, '');
+        }
+        $value[] = $settings->uniq_id_start + $invoice->id;
+        
+        $formated = str_replace($key, $value, $format);
+
+        return trim($formated, '-');
     }
 }
 
@@ -2076,7 +2127,7 @@ if (!function_exists('send_sms')) {
                 $auth_token = $activeSmsGateway->twilio_authentication_token;
                 $from_phone_number = $activeSmsGateway->twilio_registered_no;
 
-                $client = new Client($account_id, $auth_token);
+                $client = new \Twilio\Rest\Client($account_id, $auth_token);
                 $result = $message = $client->messages->create($reciver_number, array('from' => $from_phone_number, 'body' => $body));
 
             }else if($activeSmsGateway->gateway_name == 'Msg91'){
@@ -2132,7 +2183,7 @@ if (!function_exists('send_sms')) {
 
             }else if($activeSmsGateway->gateway_name == 'Himalayasms'){
                 if($reciver_number != ""){
-                    $client = new HttpClient();
+                    $client = new Client();
                     $request = $client->get( "https://sms.techhimalaya.com/base/smsapi/index.php", [
                         'query' => [
                             'key' => $activeSmsGateway->himalayasms_key,
@@ -2155,7 +2206,7 @@ if (!function_exists('send_sms')) {
     }
 }
 
-// time format 2 hours 30 min ->abunayem
+// time format 2 hours 30 min
 if (!function_exists('timeCalculation')) {
     function timeCalculation($time) : string
     {
@@ -2205,6 +2256,35 @@ function spn_nav_item_open($data, $default_class = 'active')
     return false;
 }
 
+
+                                                                                            
+if (!function_exists('addIncome')) {
+    function addIncome($payment_method, $name, $amount, $fees_colection_id ,$user_id)
+    {
+        $payment_method=SmPaymentMethhod::where('method',$payment_method)->first();
+        $income_head=generalSetting();
+
+        $add_income = new SmAddIncome();
+        $add_income->name = $name;
+        $add_income->date = date('Y-m-d');
+        $add_income->amount = $amount;
+        $add_income->fees_collection_id = $fees_colection_id;
+        $add_income->active_status = 1;
+        $add_income->income_head_id = $income_head->income_head_id;
+        $add_income->payment_method_id = $payment_method ? $payment_method->id : null;
+        $add_income->created_by = $user_id;
+        $add_income->school_id = Auth::user()->school_id;
+        $add_income->academic_id = getAcademicId();
+        $result=$add_income->save();
+
+        if($result){
+            return true;
+        }else{
+            return false;
+        }
+    }
+}
+
 if (!function_exists('sendNotification')) {
     function sendNotification($message, $url, $user_id, $role_id)
     {
@@ -2216,7 +2296,13 @@ if (!function_exists('sendNotification')) {
         $notification->role_id = $role_id;
         $notification->school_id = Auth::user()->school_id;
         $notification->academic_id = getAcademicId();
-        $notification->save();
+        $result= $notification->save();
+
+        if($result){
+            return true;
+        }else{
+            return false;
+        }
     }
 }
 
@@ -2224,5 +2310,68 @@ if (!function_exists('sendNotification')) {
 if(!function_exists('apk_secret')){
     function apk_secret(){
         return \Illuminate\Support\Facades\Storage::exists('.apk_secret') ? Storage::get('.apk_secret') : false;
+    }
+}
+
+function studentFieldLabel($fields, $name) {
+    $field=$fields->where('field_name', $name)->first();
+    if ($field && $field->label_name) {
+        return $field->label_name;
+    }
+
+    return __('student.'.$name);
+}
+if (!function_exists('is_required')) {
+    function is_required($field_name) {
+          
+        $field = SmStudentRegistrationField::where('field_name', $field_name)
+                ->where('school_id', auth()->user()->school_id)->first();
+        if ($field && $field->is_required==1) {
+            return true;
+        }
+
+        return false;
+    }
+}
+if (!function_exists('has_permission')) {
+    function has_permission($field_name) {
+          
+        $fields = SmStudentRegistrationField::where('school_id', auth()->user()->school_id)
+                    ->when(auth()->user()->role_id == 2, function ($query) {
+                        $query->where('student_edit', 1);
+                    })
+                    ->when(auth()->user()->role_id == 3, function ($query) {
+                        $query->where('parent_edit', 1);
+                    })
+                    ->pluck('field_name')->toArray();
+        if (in_array($field_name, $fields)) {
+            return true;
+        }
+        return false;
+    }   
+}
+
+if (!function_exists('studentRecords')) {
+    function studentRecords($request = null, $student_id = null, $school_id = null) {
+        $studentRecord = StudentRecord::query()->with('classes');
+        if ($student_id != null) {
+            $studentRecord->where('student_id', $student_id);
+        }
+        if ($school_id != null) {
+            $studentRecord->where('school_id', $school_id);
+        } else {
+            $studentRecord->where('school_id', auth()->user()->school_id);
+        }
+        if ($request != null) {
+            $studentRecord->when($request->class, function ($query) use ($request) {
+                $query->where('class_id', $request->class);
+            })
+            ->when($request->section, function ($query) use ($request) {
+                $query->where('section_id', $request->section);
+            });
+        }
+        $studentRecord = $studentRecord->where('academic_id', getAcademicId())
+                        ->where('is_promote', 0);
+        return $studentRecord;
     }
 }

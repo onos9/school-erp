@@ -29,6 +29,11 @@ class UtilityController extends Controller
     }
 
     public function action($action){
+
+        if (config('app.app_sync')) {
+            Toastr::error('Restricted in demo mode');
+            return back();
+        }
         try {
 
             $message = "";

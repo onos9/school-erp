@@ -160,7 +160,7 @@ class SmAddOnsController extends Controller
                     $data['success'] = 'Operation success! Thanks you.';
                     session()->forget('all_module');
 
-                    $all_module = [];
+                    $all_modules = [];
                     $modules = InfixModuleManager::select('name')->get();
                     foreach ($modules as $module) {
                         $all_modules[] = $module->name;
@@ -177,7 +177,7 @@ class SmAddOnsController extends Controller
                 $data['data'] = 'disable';
                 $data['Module'] = $ModuleManage;
                 session()->forget('all_module');
-                $all_module = [];
+                $all_modules = [];
                 $modules = InfixModuleManager::select('name')->get();
                 foreach ($modules as $module) {
                     $all_modules[] = $module->name;
@@ -446,10 +446,6 @@ class SmAddOnsController extends Controller
 
                     $moduleCheck = \Nwidart\Modules\Facades\Module::find($name);
                     $moduleCheck->enable();
-
-
-                    $ModuleManage = Module::where('name', $name)->first();
-
 
                 } catch (\Exception $e) {
                     Log::info($e->getMessage());

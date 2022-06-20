@@ -42,7 +42,7 @@ Route::group(['middleware' => ['XSS']], function () {
         // Student Attendance
         Route::get('student-my-attendance', ['as' => 'student_my_attendance', 'uses' => 'Student\SmStudentPanelController@studentMyAttendance'])->middleware('userRolePermission:35');
         Route::post('student-my-attendance', ['as' => 'student_my_attendance', 'uses' => 'Student\SmStudentPanelController@studentMyAttendanceSearch']);
-        Route::get('my-attendance/print/{month}/{year}/', 'Student\SmStudentPanelController@studentMyAttendancePrint')->name('my-attendance/print');
+        Route::get('my-attendance/print/{id}/{month}/{year}/', 'Student\SmStudentPanelController@studentMyAttendancePrint')->name('my-attendance/print');
 
         // Student Result
         Route::get('student-result', ['as' => 'student_result', 'uses' => 'Student\SmStudentPanelController@studentResult'])->middleware('userRolePermission:37');
@@ -119,7 +119,7 @@ Route::get('download-uploaded-content/{id}/{student_id}', 'Student\SmStudentPane
 Route::get('fees-payment-stripe/{fees_type}/{student_id}/{amount}/{assign_id}', 'Student\SmFeesController@feesPaymentStripe')->name('fees-payment-stripe');
 Route::post('fees-payment-stripe-store', 'Student\SmFeesController@feesPaymentStripeStore')->name('fees-payment-stripe-store');
 //student bank cheque payment
-Route::get('fees-generate-modal-child/{amount}/{student_id}/{type}/{assign_id}', 'Student\SmFeesController@feesGenerateModalChild')->name('fees-generate-modal-child');
+Route::get('fees-generate-modal-child/{amount}/{student_id}/{type}/{assign_id}/{record_id}', 'Student\SmFeesController@feesGenerateModalChild')->name('fees-generate-modal-child');
 Route::post('child-bank-slip-store', 'Student\SmFeesController@childBankSlipStore')->name('child-bank-slip-store');
 Route::get('fees-generate-modal-child-view/{id}/{type_id}', 'Student\SmFeesController@feesGenerateModalBankView')->name('fees-generate-modal-child-view');
 Route::post('child-bank-slip-delete', 'Student\SmFeesController@childBankSlipDelete');

@@ -245,7 +245,7 @@ class HomeController extends Controller
             if (moduleStatusCheck('Lead')==true) {
                 $reminders = LeadReminder::with('lead:first_name,last_name,id')->where('academic_id', getAcademicId())
                     ->where('school_id', $school_id)
-                    ->when(auth()->user()->role_id!=1, function ($q) {
+                    ->when(auth()->user()->role_id!=1 && auth()->user()->staff, function ($q) {
                         $q->where('reminder_to', auth()->user()->staff->id);
                     })->get();
                 foreach ($reminders as $k => $event) {
@@ -264,13 +264,13 @@ class HomeController extends Controller
                 ->where('school_id', $school_id)->count();
             $data =[
                 'totalStudents' => SmStudent::where('active_status', 1)
-                    ->where('academic_id', getAcademicId())
+                
                     ->where('school_id', $school_id)
                     ->count(),
 
                 'totalParents' => SmStudent::whereNotNull('parent_id')
                     ->where('active_status', 1)
-                    ->where('academic_id', getAcademicId())
+                
                     ->where('school_id', $school_id)
                     ->select('parent_id')
                     ->distinct()

@@ -290,7 +290,7 @@ class SmAccountsController extends Controller
                 if ($request->payment_method == 1 || $request->payment_method == 2 || $request->payment_method == 3 || $request->payment_method == 4 || $request->payment_method == 5) {
                     $add_incomes = SmAddIncome::addIncome($date_from, $date_to, $payment_method)->get();
                     return view('backEnd.accounts.transaction', compact('payment_methods', 'add_incomes', 'search_info'));
-                } else if ($request->payment_method == "all") {
+                } else {
                     $add_incomes = SmAddIncome::where('date', '>=', $date_from)
                         ->where('date', '<=', $date_to)
                         ->where('active_status', 1)
@@ -302,7 +302,7 @@ class SmAccountsController extends Controller
                 if ($request->payment_method == 1 || $request->payment_method == 2 || $request->payment_method == 3 || $request->payment_method == 4 || $request->payment_method == 5) {
                     $add_expenses = SmAddExpense::addExpense($date_from, $date_to, $payment_method)->get();
                     return view('backEnd.accounts.transaction', compact('payment_methods', 'add_expenses', 'search_info'));
-                } else if ($request->payment_method == "all") {
+                } else{
                     $add_expenses = SmAddExpense::where('date', '>=', $date_from)
                         ->where('date', '<=', $date_to)
                         ->where('active_status', 1)
@@ -312,7 +312,7 @@ class SmAccountsController extends Controller
                 }
             }
         } catch (Exception $e) {
-
+dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

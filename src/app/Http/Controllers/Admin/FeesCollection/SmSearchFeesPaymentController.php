@@ -29,20 +29,24 @@ class SmSearchFeesPaymentController extends Controller
     public function index(Request $request)
     {
         try {
-
-
             if(auth()->user()->role_id ==1 || auth()->user()->role_id ==5){
-                $fees_payments = SmFeesPayment::with('studentInfo')->where('active_status',1)->where('school_id', auth()->user()->school_id)->orderby('id','DESC')->get();
-
+                $fees_payments = SmFeesPayment::with('recordDetail')
+                                ->where('active_status',1)
+                                ->where('school_id', auth()->user()->school_id)
+                                ->orderby('id','DESC')
+                                ->get();
             }else{
-                $fees_payments = SmFeesPayment::with('studentInfo')->where('created_by',auth()->user()->id)->where('school_id', auth()->user()->school_id)->where('active_status',1)->orderby('id','DESC')->get();
+                $fees_payments = SmFeesPayment::with('recordDetail')
+                                ->where('created_by',auth()->user()->id)
+                                ->where('school_id', auth()->user()->school_id)
+                                ->where('active_status',1)
+                                ->orderby('id','DESC')
+                                ->get();
             }
-
-
-            $classes = SmClass::where('active_status', 1)->where('school_id',Auth::user()->school_id)->where('academic_id', getAcademicId())->get();
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendResponse($fees_payments, null);
-            }
+            $classes = SmClass::where('active_status', 1)
+                        ->where('school_id',Auth::user()->school_id)
+                        ->where('academic_id', getAcademicId())
+                        ->get();
             return view('backEnd.feesCollection.search_fees_payment', compact('classes','fees_payments'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
@@ -52,72 +56,85 @@ class SmSearchFeesPaymentController extends Controller
 
     public function search(SmFeesCollectSearchRequest $request)
     {
-
-
-        $input = $request->all();
-        $validator = Validator::make($input, [
+        $request->validate([
             'class' => 'required',
             'section' => 'required'
         ]);
 
-        if ($validator->fails()) {
-            if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-                return ApiBaseMethod::sendError('Validation Error.', $validator->errors());
-            }
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        $date_from = date('Y-m-d', strtotime($request->date_from));
+        $date_to = date('Y-m-d', strtotime($request->date_to));
         try {
-            $classes = SmClass::where('active_status', 1)->where('school_id',Auth::user()->school_id)->where('academic_id', getAcademicId())->get();
-            $fees_payments = SmFeesPayment::with('studentInfo')->whereHas('studentInfo', function ($q) use($request){
-                return $q->where('class_id', $request->class)->where('section_id', $request->section)->when($request->keyword, function ($q) use ($request){
-                    return $q->where(function($q) use($request) {
-                        return $q->where('full_name', 'like', '%' . @$request->keyword . '%')->orWhere('admission_no', 'like', '%' . @$request->keyword . '%')->orWhere('roll_no','like',  '%' . @$request->keyword . '%');
-                    });
-                });
-            })->where('active_status',1)->orderby('id','DESC')->where('school_id', Auth::user()->school_id);
+            $classes = SmClass::where('active_status', 1)
+                        ->where('school_id',Auth::user()->school_id)
+                        ->where('academic_id', getAcademicId())
+                        ->get();
 
-            if(auth()->user()->role_id != 1 && auth()->user()->role_id != 5) {
+            $fees_payments = SmFeesPayment::with('recordDetail','studentInfo')
+            ->whereHas('recordDetail', function ($q) use($request){
+                return $q->where('class_id', $request->class)
+                        ->where('section_id', $request->section);
+                })
+                ->when($request->keyword, function ($q) use ($request) {
+                        $q->whereHas('studentInfo', function ($q) use($request){
+                            return $q->where(function($q) use($request) {
+                            return $q->where('full_name', 'like', '%' . @$request->keyword . '%')
+                            ->orWhere('admission_no', 'like', '%' . @$request->keyword . '%')
+                            ->orWhere('roll_no','like',  '%' . @$request->keyword . '%');
+                        });
+                });
+            })
+            ->when($request->date_from && $request->date_to == null, function ($query) use ($date_from) {
+                $query->whereDate('payment_date', '=', $date_from);
+            })
+            ->when($request->date_to && $request->date_from == null, function ($query) use ($date_from, $date_to) {
+                $query->whereDate('payment_date', '=', $date_to);
+            })
+            ->when($request->date_from && $request->date_to, function ($query) use ($date_from, $date_to) {
+                $query->whereDate('payment_date', '>=', $date_from)->whereDate('payment_date', '<=', $date_to);
+            })->where('active_status', 1)->orderby('id', 'DESC')->where('school_id', Auth::user()->school_id); 
+            if (auth()->user()->role_id != 1 && auth()->user()->role_id != 5) {
                 $fees_payments = $fees_payments->where('created_by', auth()->user()->id);
             }
-
             $fees_payments = $fees_payments->get();
-            return view('backEnd.feesCollection.search_fees_payment', compact('fees_payments', 'classes'));
+            $search['date_from']  = $request->date_from;
+            $search['date_to']    = $request->date_to;
+            return view('backEnd.feesCollection.search_fees_payment', compact('fees_payments', 'classes'))->with($search);
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
     }
-    //added by nayem fees edit delete
-
+    
     public function editFeesPayment($id){
-
         try {
             $fees_payment = SmFeesPayment::find($id);
-
             if(auth()->user()->role_id !=1){
                 if($fees_payment->created_by !=  auth()->user()->id ){
                     Toastr::error('Payment recieved Other person,You Can not Edit', 'Failed');
                     return redirect()->back();
                 }
             }
-            $data['bank_info'] = SmPaymentGatewaySetting::where('gateway_name', 'Bank')->where('school_id', Auth::user()->school_id)->first();
-            $data['cheque_info'] = SmPaymentGatewaySetting::where('gateway_name', 'Cheque')->where('school_id', Auth::user()->school_id)->first();
+            $data['bank_info'] = SmPaymentGatewaySetting::where('gateway_name', 'Bank')
+                                ->where('school_id', Auth::user()->school_id)
+                                ->first();
+            $data['cheque_info'] = SmPaymentGatewaySetting::where('gateway_name', 'Cheque')
+                                ->where('school_id', Auth::user()->school_id)
+                                ->first();
 
-            $banks = SmBankAccount::where('school_id', Auth::user()->school_id)
-                ->get();
-            $method['bank_info'] = SmPaymentMethhod::where('method', 'Bank')->where('school_id', Auth::user()->school_id)->first();
-            $method['cheque_info'] = SmPaymentMethhod::where('method', 'Cheque')->where('school_id', Auth::user()->school_id)->first();
+            $banks = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
 
+            $method['bank_info'] = SmPaymentMethhod::where('method', 'Bank')
+                                ->where('school_id', Auth::user()->school_id)
+                                ->first();
+
+            $method['cheque_info'] = SmPaymentMethhod::where('method', 'Cheque')
+                                ->where('school_id', Auth::user()->school_id)
+                                ->first();
             return view('backEnd.feesCollection.edit_fees_payment_modal', compact('fees_payment','data','method','banks'));
-
         } catch (\Throwable $th) {
-            // throw $th;
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
-
     }
 
 

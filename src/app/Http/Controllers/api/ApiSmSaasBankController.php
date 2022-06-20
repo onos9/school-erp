@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use App\SmTeacherUploadContent;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\StudentRecord;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Validator;
 
@@ -133,49 +134,9 @@ class ApiSmSaasBankController extends Controller
         }
     }
 
-    public function saas_studentSyllabusApi(Request $request,$school_id, $id)
-    {
 
-        $student_detail = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first(['id','full_name','admission_no','email','mobile','class_id','section_id']);
-        if (!$student_detail){
-            $data = [];
-            $data['student_detail'] = [];
-            $data['uploadContents'] = [];
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-        $uploadContents = SmTeacherUploadContent::where('content_type', 'sy')
-            ->select('content_title', 'upload_date', 'description', 'upload_file')
-            ->where(function ($query) use ($student_detail) {
-                $query->where('available_for_all_classes', 1)
-                    ->orWhere([['class', $student_detail->class_id], ['section', $student_detail->section_id]]);
-            })->where('school_id',$school_id)->where('academic_id', SmAcademicYear::API_ACADEMIC_YEAR($school_id))->get();
 
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['student_detail'] = $student_detail->toArray();
-            $data['uploadContents'] = $uploadContents->toArray();
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
 
-    public function saas_studentOtherDownloadsApi(Request $request,$school_id, $id)
-    {
-
-        $student_detail = SmStudent::where('user_id', $id)->where('school_id',$school_id)->first(['id','full_name','admission_no','email','mobile','class_id','section_id']);
-        $uploadContents = SmTeacherUploadContent::where('content_type', 'ot')
-            ->select('content_title', 'upload_date', 'description', 'upload_file')
-            ->where(function ($query) use ($student_detail) {
-                $query->where('available_for_all_classes', 1)
-                    ->orWhere([['class', $student_detail->class_id], ['section', $student_detail->section_id]]);
-            })->where('school_id',$school_id)->where('academic_id', SmAcademicYear::API_ACADEMIC_YEAR($school_id))->get();
-
-        if (ApiBaseMethod::checkUrl($request->fullUrl())) {
-            $data = [];
-            $data['student_detail'] = $student_detail->toArray();
-            $data['uploadContents'] = $uploadContents->toArray();
-            return ApiBaseMethod::sendResponse($data, null);
-        }
-    }
 
     public function saas_roomList(Request $request)
     {
@@ -191,7 +152,7 @@ class ApiSmSaasBankController extends Controller
     }
 
     
-    public function saas_bookCategory(Request $request,$school_id)
+    public function saas_bookCategory(Request $request, $school_id)
     {
         $book_category = DB::table('sm_book_categories')->where('school_id',$school_id)->get();
         if (ApiBaseMethod::checkUrl($request->fullUrl())) {

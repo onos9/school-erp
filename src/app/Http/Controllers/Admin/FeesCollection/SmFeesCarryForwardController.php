@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Admin\FeesCollection\SmFeesForwardSearchRequest;
+use App\Models\StudentRecord;
 use Illuminate\Support\Facades\Validator;
 
 class SmFeesCarryForwardController extends Controller
@@ -27,7 +28,6 @@ class SmFeesCarryForwardController extends Controller
     {
         try {
             $classes = SmClass::get();
-          
             return view('backEnd.feesCollection.fees_forward', compact('classes'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
@@ -37,8 +37,6 @@ class SmFeesCarryForwardController extends Controller
 
     public function feesForwardSearch(SmFeesForwardSearchRequest $request)
     {
-
-
         $input = $request->all();
         $validator = Validator::make($input, [
             'class' => 'required',
@@ -50,24 +48,28 @@ class SmFeesCarryForwardController extends Controller
                 ->withInput();
         }
         try {
-            $classes = SmClass::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->get();
-            $students = SmStudent::where('class_id', $request->class)->where('section_id', $request->section)->where('school_id',Auth::user()->school_id)->get();
+            $classes = SmClass::where('active_status', 1)
+                        ->where('academic_id', getAcademicId())
+                        ->where('school_id',Auth::user()->school_id)
+                        ->get();
+
+            $students = StudentRecord::where('class_id', $request->class)
+                        ->where('section_id', $request->section)
+                        ->where('school_id',Auth::user()->school_id)
+                        ->get();
+
             if ($students->count() != 0) {
                 foreach ($students as $student) {
                     $fees_balance = SmFeesCarryForward::where('student_id', $student->id)->count();
                 }
-
                 $class_id = $request->class;
-
                 if ($fees_balance == 0) {
-
                     return view('backEnd.feesCollection.fees_forward', compact('classes', 'students', 'class_id'));
                 } else {
                     $update = "";
                     return view('backEnd.feesCollection.fees_forward', compact('classes', 'students', 'update', 'class_id'));
                 }
-            } else {
-
+            }else{
                 Toastr::error('Operation Failed', 'Failed');
                 return redirect('fees-forward');
             }

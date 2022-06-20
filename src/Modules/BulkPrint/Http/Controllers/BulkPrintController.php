@@ -3,24 +3,30 @@
 namespace Modules\BulkPrint\Http\Controllers;
 
 use App\Role;
-use App\SmParent;
 use App\SmClass;
 use App\SmStaff;
+use App\SmParent;
 use App\SmStudent;
+use App\SmBankAccount;
 use App\SmStudentIdCard;
 use App\SmGeneralSettings;
 use App\SmHrPayrollGenerate;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use App\SmHrPayrollEarnDeduc;
 use App\SmStudentCertificate;
+use Modules\Lms\Entities\Course;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Routing\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
+use Modules\Fees\Entities\FmFeesInvoice;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Contracts\Support\Renderable;
 use Modules\BulkPrint\Entities\InvoiceSetting;
 use Modules\RolePermission\Entities\InfixRole;
+use Modules\BulkPrint\Entities\FeesInvoiceSetting;
+use Modules\Fees\Http\Controllers\FeesReportController;
 
 class BulkPrintController extends Controller
 {
@@ -53,13 +59,8 @@ class BulkPrintController extends Controller
         ]);
          
         if($request->role==2){
-            $s_students=SmStudent::query()->with('section','class','parents','bloodGroup');
-            if($request->class){
-                $s_students->where('class_id',$request->class_id);
-            }
-            if($request->section){
-                $request->where('section_id',$request->section_id);
-            }
+            $s_students=SmStudent::query()->with('parents', 'bloodGroup');
+            
            $s_students = $s_students->status()->get();
        }elseif($request->role==3){
            $studentGuardian = SmStudent::where('school_id', Auth::user()->school_id)->get('parent_id');
@@ -145,7 +146,7 @@ class BulkPrintController extends Controller
             $inputs=$request->except('_token');
             $validator = Validator::make($inputs, [
                 'role_id' => 'required|array',
-                'id_card' => 'required'               
+                'id_card' => 'required'
             ]);
     
             if ($validator->fails()) {
@@ -291,19 +292,18 @@ class BulkPrintController extends Controller
             }
             set_time_limit(2700);
 
-            $students=SmStudent::query()->with('class','section','feesAssign','parents');
-            if(!empty($request->section)){
-                $students->where('section_id',$request->section);
-            }
+            $students=StudentRecord::query()->with('class','section','studentDetail.feesAssign','studentDetail.parents');
+                        if(!empty($request->section)){
+                            $students->where('section_id',$request->section);
+                        }
             $students=$students->where('class_id',$request->class)
-            ->where('active_status', 1)
-            ->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)
-            ->get();
+                    ->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)
+                    ->get();
 
             $invoiceSettings=InvoiceSetting::where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->first();
 
             return view('bulkprint::feesCollection.fees_payment_invoice_bulk_print')->with(['students' => $students,'invoiceSettings'=>$invoiceSettings]);
-        } catch (\Exception $e) {            
+        } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -394,48 +394,178 @@ class BulkPrintController extends Controller
             return redirect()->back();
         }
     }
-
-    public function certificateBulkPrintSearch(Request $request){
-        try {          
-         
+ 
+    public function certificateBulkPrintSearch(Request $request)
+    {
+        try {
+            // return $request->all();
             $inputs=$request->except('_token');
             $validator = Validator::make($inputs, [
-               'class' => 'required',
-                'certificate' => 'required'              
+                'class' => 'required',
+                'certificate' => 'required'
             ]);
-    
             if ($validator->fails()) {
-             
                 return redirect()->back()
                     ->withErrors($validator)
                     ->withInput();
             }
-            $certificate_id = $request->certificate;
-            $students = SmStudent::query();
 
-            if($request->section){
-                $students->where('section_id',$request->section);
-            }
+            $students = StudentRecord::when($request->class, function ($query) use ($request) {
+                $query->where('class_id', $request->class);
+            })
+            ->when($request->section, function ($query) use ($request) {
+                $query->where('section_id', $request->section);
+            })
+            ->where('academic_id', getAcademicId())
+            ->where('school_id', auth()->user()->school_id)->get();
 
-            $students=$students->with('class','parents','section','gender')->where('active_status', 1)
-                                ->where('academic_id', getAcademicId())
-                                ->where('school_id',Auth::user()->school_id)
-                                ->get();
-
-                                // return $students;
-
-            $certificate = SmStudentCertificate::find($certificate_id);                     
+            $certificate = SmStudentCertificate::find($request->certificate);
             $pdf = PDF::loadView('bulkprint::admin.student_certificate_bulk_print', ['students' => $students, 'certificate' => $certificate]);
             $pdf->setPaper('A4', 'landscape');
-        return $pdf->stream('certificate.pdf');
-
-        } catch (\Throwable $th) {
-            //throw $th;
-             Toastr::error('Operation Failed', 'Failed');
+            return $pdf->stream('certificate.pdf');
+        } catch (\Exception $th) {
+            dd($th);
+            Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
     }
 
+    public function lmsCertificateBulkPrint(){
+        $courses= Course::get();
+        return view('bulkprint::admin.lmsCertificate', compact('courses'));
+    }
 
+    public function lmsCertificateBulkPrintSeacrh(Request $request){
+        try{
+            $courses = Course::find($request->course_id);
+            $courseLogs= $courses->purchaseLogs;
+            $studenId= [];
+            foreach($courseLogs as $courseLog){
+                $studenId []= $courseLog->student_id;
+            }
+            $users =SmStudent::whereIn('user_id',$studenId)->get();
+            
+           $certificate = SmStudentCertificate::find($courses->certificate_id);
+           $gridGap = $request->grid_gap;
 
+           $type = 'school';
+           return view('backEnd.admin.certificate.certificate_print', compact('users','certificate','gridGap','type'));
+        }catch(\Exception $e){
+            Toastr::error('Operation Failed', 'Failed');
+            return redirect()->back();
+        }
+    }
+
+    public function feesInvoiceBulkPrint()
+    {
+        try{
+            $classes = SmClass::where('school_id', auth()->user()->school_id)
+                            ->where('academic_id', getAcademicId())
+                            ->get();
+            return view('bulkprint::feesInvoice.feesInvoiceBulk',compact('classes'));
+        }catch(\Exception $e){
+            Toastr::error('Operation Failed', 'Failed');
+            return redirect()->back();
+        }
+    }
+
+    public function feesInvoiceBulkPrintSearch(Request $request)
+    {
+        try{
+            $invoices  = FmFeesInvoice::when($request->class, function ($query) use ($request) {
+                        $query->where('class_id', $request->class);
+                    })
+                    ->when($request->section, function ($query) use ($request) {
+                        $query->whereHas('recordDetail', function($q) use($request){
+                            return $q->where('section_id', $request->section);
+                        });
+                    })
+                    ->when($request->student, function ($query) use ($request) {
+                        $query->whereHas('recordDetail', function($q) use($request){
+                            return $q->where('id', $request->student);
+                        });
+                    })
+                    ->with('invoiceDetails')
+                    ->where('school_id', auth()->user()->school_id)
+                    ->where('academic_id', getAcademicId())
+                    ->get();
+
+            $banks = SmBankAccount::where('active_status', '=', 1)
+                    ->where('school_id', Auth::user()->school_id)
+                    ->get();
+
+            $invoiceSettings = FeesInvoiceSetting::where('school_id', Auth::user()->school_id)
+                    ->first();
+            if($invoiceSettings->invoice_type == 'slip'){
+                return view('bulkprint::feesInvoice.feesInvoiceBulkPrintSlip',compact('invoices','invoiceSettings'));
+            }else{
+                return view('bulkprint::feesInvoice.feesInvoiceBulkPrint',compact('banks','invoices'));
+            }
+        }catch(\Exception $e){
+            dd($e);
+            Toastr::error('Operation Failed', 'Failed');
+            return redirect()->back();
+        }
+    }
+
+    public function feesInvoiceBulkPrintSettings()
+    {
+        $feesInvoiceSettings = FeesInvoiceSetting::where('academic_id', getAcademicId())
+                            ->where('school_id',Auth::user()->school_id)
+                            ->first();
+        return view('bulkprint::feesInvoice.feesInvoiceSettings',compact('feesInvoiceSettings'));
+    }
+
+    public function feesInvoiceSettingsUpdate(Request $request)
+    {
+        try {
+                if($request->copy_s_per_th && $request->copy_o_per_th && $request->copy_c_per_th ){
+                    $per_th=3;
+                }elseif(($request->copy_s_per_th && $request->copy_o_per_th) || ($request->copy_s_per_th && $request->copy_c_per_th) || ($request->copy_o_per_th && $request->copy_c_per_th)){
+                    $per_th=2;
+                }elseif($request->copy_s_per_th || $request->copy_o_per_th || $request->copy_c_per_th){
+                    $per_th=1;
+                }else{
+                    $per_th=null;
+                }
+
+                if($per_th==null){
+                    Toastr::error('Please Select at least One page', 'Failed');
+                    return redirect()->back();
+                }
+
+                $invoiceSetting=FeesInvoiceSetting::find($request->id);
+                $invoiceSetting->invoice_type=$request->invoice_type;
+                $invoiceSetting->per_th=$per_th;
+                $invoiceSetting->student_name=$request->student_name;
+                $invoiceSetting->student_section=$request->student_section;
+                $invoiceSetting->student_class=$request->student_class;   
+                $invoiceSetting->student_roll=$request->student_roll;
+                $invoiceSetting->student_group=$request->student_group;
+                $invoiceSetting->student_admission_no=$request->student_admission_no;
+                $invoiceSetting->footer_1=$request->footer_1;
+                $invoiceSetting->footer_2=$request->footer_2;
+                $invoiceSetting->footer_3=$request->footer_3;
+                $invoiceSetting->copy_s=$request->copy_s;
+                $invoiceSetting->copy_o=$request->copy_o; 
+                $invoiceSetting->copy_c=$request->copy_c;
+                $invoiceSetting->c_signature_p=$request->copy_s_per_th=='on'? 1:0;
+                $invoiceSetting->c_signature_o=$request->copy_o_per_th=='on'? 1:0; 
+                $invoiceSetting->c_signature_c=$request->copy_c_per_th=='on'? 1:0;
+                $invoiceSetting->signature_p=$request->signature_p;
+                $invoiceSetting->signature_c=$request->signature_c;
+                $invoiceSetting->signature_o=$request->signature_o;
+                $invoiceSetting->copy_write_msg=$request->copy_write_msg;
+                $invoiceSetting->updated_by=Auth::user()->id;
+                $invoiceSetting->school_id=Auth::user()->school_id;
+                $invoiceSetting->academic_id= getAcademicId();
+                $invoiceSetting->update();
+
+                Toastr::success('Operation Successfully', 'Success');
+                return redirect()->route('fees-invoice-bulk-print-settings');
+            } catch (\Throwable $th) {
+                Toastr::error('Operation Failed', 'Failed');
+                return redirect()->back();
+            }
+    }
 }

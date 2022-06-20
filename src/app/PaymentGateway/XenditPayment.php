@@ -5,19 +5,14 @@ use App\User;
 use App\SmParent;
 use App\SmStudent;
 use Xendit\Xendit;
-use App\SmAddIncome;
 use App\SmFeesPayment;
-use App\SmPaymentMethhod;
 use App\SmPaymentGatewaySetting;
 use Illuminate\Support\Facades\Log;
 use Brian2694\Toastr\Facades\Toastr;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Modules\Fees\Entities\FmFeesTransaction;
-use Modules\Fees\Entities\FmFeesInvoiceChield;
 use Modules\Wallet\Entities\WalletTransaction;
-use Modules\Fees\Http\Controllers\FeesController;
-use Modules\Fees\Entities\FmFeesTransactionChield;
+use Modules\Fees\Http\Controllers\FeesExtendedController;
 
 class XenditPayment {
 
@@ -37,31 +32,31 @@ class XenditPayment {
            if($xendit_config){
                 if($data['type'] == "Wallet") {
                     $student = SmStudent::where('user_id', $data['user_id'])->first();
-                if(!($student->email)){
-                    $parent = SmParent::find($student->parent_id);
-                    $email =  $parent->guardians_email;
-                }else{
-                    $email =   $student->email;
-                }
+                    if(!($student->email)){
+                        $parent = SmParent::find($student->parent_id);
+                        $email =  $parent->guardians_email;
+                    }else{
+                        $email =   $student->email;
+                    }
                     Xendit::setApiKey($xendit_config->gateway_secret_key);
                     $params = [
-                    'external_id' => $data['wallet_type'],
-                    'payer_email' => $email,
-                    'description' => 'Wallet_Diposit',
-                    'amount' => $data['amount']*1000,
-                    'success_redirect_url'=>url('payment_gateway_success_callback/Xendit'),
-                    'failure_redirect_url'=>url('payment_gateway_cancel_callback/Xendit')
+                        'external_id' => $data['wallet_type'],
+                        'payer_email' => $email,
+                        'description' => 'Wallet_Diposit',
+                        'amount' => $data['amount']*1000,
+                        'success_redirect_url'=>url('payment_gateway_success_callback/Xendit'),
+                        'failure_redirect_url'=>url('payment_gateway_cancel_callback/Xendit')
                     ];   
 
                   $createInvoice = \Xendit\Invoice::create($params);
                     if($createInvoice && $createInvoice['status']  =="PENDING"){
-                        $user = Auth::user();
+                        $user = auth()->user();
                         $addPayment = new WalletTransaction();
                         $addPayment->amount= $data['amount'];
                         $addPayment->payment_method= "Xendit";
                         $addPayment->user_id= $user->id;
                         $addPayment->type= $data['wallet_type'];
-                        $addPayment->school_id= Auth::user()->school_id;
+                        $addPayment->school_id= auth()->user()->school_id;
                         $addPayment->academic_id= getAcademicId();
                         $addPayment->status = 'pending';
                         $addPayment->save();
@@ -75,7 +70,7 @@ class XenditPayment {
                         $url = $createInvoice['invoice_url'];
                         return $url;
                     }
-                }else{
+                }elseif($data['type'] == "Fees"){
                     $email = "";
                     $student = SmStudent::find($data['student_id']);
                     if(!($student->email)){
@@ -102,6 +97,35 @@ class XenditPayment {
                     Session::put('payment_method', $data['payment_method']);
                     Session::put('amount', $data['amount']);
                     
+                    return $createInvoice['invoice_url'];
+                  }
+                }elseif($data['type'] == "Lms"){
+                    $student = SmStudent::where('user_id', $data['user_id'])->first();
+                    if(!($student->email)){
+                        $parent = SmParent::find($student->parent_id);
+                        $email =  $parent->guardians_email;
+                    }else{
+                        $email =   $student->email;
+                    }
+
+                    Xendit::setApiKey($xendit_config->gateway_secret_key);
+                    $params = [
+                        'external_id' => $data['type'],
+                        'payer_email' => $email,
+                        'description' => 'Lms_Fees_Payment',
+                        'amount' => $data['amount']*1000,
+                        'success_redirect_url'=>url('payment_gateway_success_callback/Xendit'),
+                        'failure_redirect_url'=>url('payment_gateway_cancel_callback/Xendit')
+                    ];
+
+                  $createInvoice = \Xendit\Invoice::create($params);
+                  if($createInvoice && $createInvoice['status']  =="PENDING"){
+                    Session::put('student_id', $data['student_id']);
+                    Session::put('type', $data['type']);
+                    Session::put('purchase_log_id', $data['purchase_log_id']);
+                    Session::put('payment_method', $data['payment_method']);
+                    Session::put('amount', $data['amount']);
+
                     return $createInvoice['invoice_url'];
                   }
                 }
@@ -148,8 +172,8 @@ class XenditPayment {
             if($payment_id ){
                 $transcation= FmFeesTransaction::find(Session::get('xendit_payment_id'));
 
-                $addAmount = new FeesController;
-                $addAmount->addFeesAmount(Session::get('xendit_payment_id'), null);
+                $extendedController = new FeesExtendedController();
+                $extendedController->addFeesAmount(Session::get('xendit_payment_id'), null);
 
                 Session::forget('type');
                 Session::forget('xendit_payment_id');

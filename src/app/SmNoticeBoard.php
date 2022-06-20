@@ -10,15 +10,16 @@ use Modules\RolePermission\Entities\InfixRole;
 class SmNoticeBoard extends Model
 {
     use HasFactory;
-	protected static function boot(){
-		parent::boot();
-		static::addGlobalScope(new StatusAcademicSchoolScope);
-	}
-
-    public function users(){
-    	return $this->belongsTo('App\User', 'created_by', 'id');
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope(new StatusAcademicSchoolScope);
     }
 
+    public function users()
+    {
+        return $this->belongsTo('App\User', 'created_by', 'id');
+    }
 
     public static function getRoleName($role_id)
     {
@@ -32,7 +33,7 @@ class SmNoticeBoard extends Model
             } else {
                 return false;
             }
-        } catch (\Exception $e) {
+        } catch (\Exception$e) {
             return false;
         }
     }

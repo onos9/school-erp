@@ -12,6 +12,7 @@ use App\SmAssignSubject;
 use App\SmGeneralSettings;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use App\SmQuestionBankMuOption;
 use App\SmStudentTakeOnlineExam;
 use Illuminate\Support\Facades\DB;
@@ -39,17 +40,9 @@ class SmOnlineExamController extends Controller
             $time_zone_setup = SmGeneralSettings::join('sm_time_zones', 'sm_time_zones.id', '=', 'sm_general_settings.time_zone_id')
                 ->where('school_id', Auth::user()->school_id)->first();
             date_default_timezone_set($time_zone_setup->time_zone);
-
             $student = Auth::user()->student;
-            // $now = date('h:i:s');
-            // return $now;
-            // ->where('start_time', '<', $now)
-            $online_exams = SmOnlineExam::where('active_status', 1)->where('academic_id', getAcademicId())->where('status', 1)->where('class_id', $student->class_id)->where('section_id', $student->section_id)->where('school_id', Auth::user()->school_id)->get();
-        
-            $marks_assigned =  SmStudentTakeOnlineExam::whereIn('online_exam_id', $online_exams->pluck('id')->toArray())->where('academic_id', getAcademicId())
-                ->where('student_id', $student->id)->where('status', 2)->where('school_id', Auth::user()->school_id)->pluck('online_exam_id')->toArray();
-
-            return view('backEnd.studentPanel.online_exam', compact('online_exams', 'marks_assigned', 'student'));
+            $records = studentRecords(null, $student->id)->get();
+            return view('backEnd.studentPanel.online_exam', compact('student', 'records'));
         } catch (\Exception $e) {
             Log::info($e->getMessage());
             Toastr::error('Operation Failed', 'Failed');
@@ -58,15 +51,12 @@ class SmOnlineExamController extends Controller
     }
     public function student_online_exam(Request $request)
     {
-        // return Auth::user()->student->id;
         try {
             $online_exam_info=SmOnlineExam::find($request->online_exam_id);
             $teacher_info=SmAssignSubject::where('class_id',$online_exam_info->class_id)
             ->where('section_id',$online_exam_info->section_id)
             ->where('subject_id',$online_exam_info->subject_id)
             ->first();
-            // return  Auth::user()->student->full_name;
-            // return $online_exam_info;
             $obtain_marks=DB::table('online_exam_student_answer_markings')
                 ->where('online_exam_id',$request->online_exam_id)
                 ->where('student_id', Auth::user()->student->id)
@@ -89,7 +79,7 @@ class SmOnlineExamController extends Controller
                     $online_take_exam_mark->save();
                 }
             }
-            
+           
             $online_take_exam_mark = SmStudentTakeOnlineExam::where('online_exam_id', $request->online_exam_id)
             ->where('student_id', Auth::user()->student->id)->first();
             $online_take_exam_mark->student_done=1;
@@ -108,6 +98,7 @@ class SmOnlineExamController extends Controller
             Toastr::success('Online Exam Taken Successfully', 'Success');
             return redirect('student-online-exam');
         } catch (\Exception $e) {
+           
             Log::info($e->getMessage());
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -186,7 +177,7 @@ class SmOnlineExamController extends Controller
             if ($question_info->answer_type=='radio') {
                 // return $question_info;
                 $currect_answer = $question_info->questionMu->where('status', 1)->first();
-                if ($user_choose == $currect_answer->id) {
+                if ($currect_answer && $user_choose == $currect_answer->id) {
                     $question_answer->answer_status = 1;
                     $question_answer->obtain_marks = $question_info->marks;
                 } else {
@@ -203,7 +194,7 @@ class SmOnlineExamController extends Controller
                     ->first();
                     DB::table('online_exam_student_answer_markings')->delete($user_post->id);
                 }
-                $wrong=OnlineExamStudentAnswerMarking::where('user_answer','=','')->delete();
+                $wrong = OnlineExamStudentAnswerMarking::where('user_answer','=','')->delete();
                 $user_answers = OnlineExamStudentAnswerMarking::where('online_exam_id', $online_exam_id)
                     ->where('student_id', $student_id)
                     ->where('question_id', $question_id)
@@ -303,6 +294,7 @@ class SmOnlineExamController extends Controller
     }
     public function studentOnlineExamSubmit(Request $request)
     {
+        
         $student = Auth::user()->student;
         $exam_status = SmStudentTakeOnlineExam::where('student_id', $student->id)->where('online_exam_id', $request->online_exam_id)->where('school_id', Auth::user()->school_id)->first();
         if (!empty($exam_status) &&  $exam_status->status == 1) {
@@ -312,11 +304,13 @@ class SmOnlineExamController extends Controller
         DB::beginTransaction();
 
         try {
-
-
+            $online_exam = SmOnlineExam::findOrFail($request->$request->online_exam_id);
+            
+            $record_id = studentRecords($request->merge(['class'=>$online_exam->class_id, 'section'=>$online_exam->section_id]), null)->first()->id;
             $take_online_exam = new SmStudentTakeOnlineExam();
             $take_online_exam->online_exam_id = $request->online_exam_id;
             $take_online_exam->student_id = $student->id;
+            $take_online_exam->record_id = $record ?? null;
             $take_online_exam->status = 1;
             $take_online_exam->school_id = Auth::user()->school_id;
             $take_online_exam->academic_id =  getAcademicId();
@@ -411,6 +405,7 @@ class SmOnlineExamController extends Controller
             Toastr::success('Operation successful', 'Success');
             return redirect('student-online-exam');
         } catch (\Exception $e) {
+            dd($e);
             DB::rollBack();
         }
         Toastr::error('Operation Failed', 'Failed');
@@ -436,11 +431,15 @@ class SmOnlineExamController extends Controller
             $msg['type'] = "warning";
         } else {
             $student = Auth::user()->student;
+
+            $record_id = studentRecords($request->merge(['class'=>$online_exam->class_id,'section'=>$online_exam->section_id]), null)->first('id')->id;
+          
             $take_exam = SmStudentTakeOnlineExam::where('student_id', $student->id)
                 ->where('online_exam_id', $request->online_exam_id)->where('school_id', Auth::user()->school_id)->first();
             if (empty($take_exam)) {
                 $take_exam = new SmStudentTakeOnlineExam();
                 $take_exam->student_id = $student->id;
+                $take_exam->record_id = $record_id;
                 $take_exam->online_exam_id = $request->online_exam_id;
                 $take_exam->school_id = Auth::user()->school_id;
                 $take_exam->academic_id = getAcademicId();
@@ -539,8 +538,6 @@ class SmOnlineExamController extends Controller
     public function studentAnswerScript($exam_id, $s_id)
     {
         try {
-            
-
             $assign_questions=SmOnlineExamQuestionAssign::where('online_exam_id', $exam_id)->get();
 
             $take_online_exam = SmStudentTakeOnlineExam::where('online_exam_id', $exam_id)->where('student_id', $s_id)->where('school_id', Auth::user()->school_id)->first();
@@ -552,7 +549,7 @@ class SmOnlineExamController extends Controller
                     $assigned_question_list[]= $value->question_bank_id;
                }
             $answered_question_list=[];
-            $answereds=OnlineExamStudentAnswerMarking::where('online_exam_id', $exam_id)->where('student_id', $s_id)->select('question_id')->distinct()->get();
+            $answereds= OnlineExamStudentAnswerMarking::where('online_exam_id', $exam_id)->where('student_id', $s_id)->select('question_id')->distinct()->get();
                foreach ($answereds as $key => $value) {
                 $answered_question_list[]= $value->question_id;
                }

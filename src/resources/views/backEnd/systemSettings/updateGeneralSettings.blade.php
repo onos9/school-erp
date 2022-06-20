@@ -258,7 +258,7 @@
                                         @endforeach
                                     </select>
                                     @if ($errors->has('currency'))
-                                    <span class="invalid-feedback" role="alert">
+                                    <span class="invalid-feedback invalid-select" role="alert">
                                         <strong>{{ $errors->first('currency') }}</strong>
                                     </span>
                                     @endif
@@ -268,7 +268,7 @@
 
                                 
 
-                                <div class="col-lg-3">
+                                <div class="col-lg-2">
                                     <div class="input-effect">
                                         <input class="primary-input form-control{{ $errors->has('currency_symbol') ? ' is-invalid' : '' }}"
                                         type="text" name="currency_symbol" autocomplete="off" value="{{isset($editData)? @$editData->currency_symbol : old('currency_symbol')}}" id="currency_symbol" readonly="">
@@ -296,7 +296,19 @@
                                 </div>
                             </div>
 
-                         
+                            <div class="col-lg-4 d-flex relation-button">
+                                <p class="text-uppercase mb-0">@lang('student.multiple_roll_number')</p>
+                                <div class="d-flex radio-btn-flex ml-30">
+                                    <div class="mr-20">
+                                        <input type="radio" name="multiple_roll" id="roll_yes" value="1" class="common-radio relationButton" {{@$editData->multiple_roll == "1"? 'checked': ''}}>
+                                        <label for="roll_yes">@lang('common.enable')</label>
+                                    </div>
+                                    <div class="mr-20">
+                                        <input type="radio" name="multiple_roll" id="roll_no" value="0" class="common-radio relationButton" {{@$editData->multiple_roll == "0"? 'checked': ''}}>
+                                        <label for="roll_no">@lang('common.disable')</label>
+                                    </div>
+                                </div>
+                            </div>
                             
 
                         </div>
@@ -305,12 +317,12 @@
                                 <p class="text-uppercase mb-0">@lang('system_settings.promossion_without_exam')</p>
                                 <div class="d-flex radio-btn-flex ml-30">
                                     <div class="mr-20">
-                                        <input type="radio" name="promotionSetting" id="relationFather" value="1" class="common-radio relationButton" {{@$editData->promotionSetting == "1"? 'checked': ''}}>
-                                        <label for="relationFather">@lang('system_settings.enable')</label>
+                                        <input type="radio" name="promotionSetting" id="relationMother" value="0" class="common-radio relationButton" {{@$editData->promotionSetting == "0"? 'checked': ''}}>
+                                        <label for="relationMother">@lang('common.enable')</label>
                                     </div>
                                     <div class="mr-20">
-                                        <input type="radio" name="promotionSetting" id="relationMother" value="0" class="common-radio relationButton" {{@$editData->promotionSetting == "0"? 'checked': ''}}>
-                                        <label for="relationMother">@lang('common.disable')</label>
+                                        <input type="radio" name="promotionSetting" id="relationFather" value="1" class="common-radio relationButton" {{@$editData->promotionSetting == "1"? 'checked': ''}}>
+                                        <label for="relationFather">@lang('common.disable')</label>
                                     </div>
                                 </div>
                             </div>
@@ -349,6 +361,7 @@
                                         </div>
                                 </div>
                             </div>
+                            @if(moduleStatusCheck('Fees'))
                             <div class="col-lg-6 d-flex relation-button">
                                 <p class="text-uppercase mb-0">@lang('fees::feesModule.new_fees_module')</p>
                                 <div class="d-flex radio-btn-flex ml-30">
@@ -386,7 +399,9 @@
                                     </div>
                                 </div>
                              </div>
-                        </div>
+                        
+                            </div>
+                            @endif
                         <div class="row md-30">
                             <div class="col-lg-12">
                                 <div class="input-effect">

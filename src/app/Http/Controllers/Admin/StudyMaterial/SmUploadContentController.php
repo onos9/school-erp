@@ -8,6 +8,7 @@ use App\SmStaff;
 use App\SmSection;
 use App\SmStudent;
 use App\ApiBaseMethod;
+use App\Http\Controllers\Admin\StudentInfo\SmStudentReportController;
 use App\SmContentType;
 use App\SmClassSection;
 use App\SmNotification;
@@ -34,7 +35,6 @@ class SmUploadContentController extends Controller
     public function index(Request $request)
     {
         try {
-            $contentTypes = SmContentType::get();
             $uploadContents = SmTeacherUploadContent::query()->with('classes', 'sections');
             if (teacherAccess()) {
                     $uploadContents->where(function ($q) {
@@ -53,7 +53,7 @@ class SmUploadContentController extends Controller
                 $classes = SmClass::get();
             }
 
-            return view('backEnd.teacher.uploadContentList', compact('contentTypes', 'classes', 'uploadContents'));
+            return view('backEnd.teacher.uploadContentList', compact( 'classes', 'uploadContents'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -88,6 +88,7 @@ class SmUploadContentController extends Controller
             
  
         try {
+            $student_ids = SmStudentReportController::classSectionStudent($request);
             $fileName = "";
             $videomimes = ['video/mp4'];
             $file = $request->file('content_file');
@@ -182,7 +183,7 @@ class SmUploadContentController extends Controller
                 }
                 if ($value == 'student') {
                     if (isset($request->all_classes)) {
-                        $students = SmStudent::select('id', 'user_id')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+                        $students = SmStudent::select('id', 'user_id')->where('school_id', Auth::user()->school_id)->get();
                         foreach ($students as $student) {
                             $notification = new SmNotification;
                             $notification->user_id = $student->user_id;
@@ -210,7 +211,7 @@ class SmUploadContentController extends Controller
                             }
                         }
                     } elseif ((!is_null($request->class)) &&   ($request->section == '')) {
-                        $students = SmStudent::select('id', 'user_id')->where('class_id', $request->class)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+                        $students = SmStudent::select('id', 'user_id')->whereIn('id', $student_ids)->where('school_id', Auth::user()->school_id)->get();
                         foreach ($students as $student) {
                             $notification = new SmNotification;
                             $notification->user_id = $student->user_id;
@@ -238,7 +239,7 @@ class SmUploadContentController extends Controller
                             }
                         }
                     } else {
-                        $students = SmStudent::select('id', 'user_id')->where('class_id', $request->class)->where('section_id', $request->section)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+                        $students = SmStudent::select('id', 'user_id')->whereIn('id', $student_ids)->where('school_id', Auth::user()->school_id)->get();
                         foreach ($students as $student) {
                             $notification = new SmNotification;
                             $notification->user_id = $student->user_id;

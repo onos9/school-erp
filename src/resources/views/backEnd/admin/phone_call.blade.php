@@ -168,25 +168,25 @@
                                                 <p class="text-uppercase fw-500 mb-10">@lang('common.type')</p>
                                                 <div class=" radio-btn-flex ml-20">
                                                     @if (isset($phone_call_log))
-                                                        <div class="mr-30">
+                                                        <div class="mr-30 mb-4">
                                                             <input type="radio" name="call_type" id="relationFather" value="I"
                                                                 {{ @$phone_call_log->call_type == 'I' ? 'checked' : '' }}
                                                                 class="common-radio relationButton">
                                                             <label for="relationFather">@lang('admin.incoming')</label>
                                                         </div><br>
-                                                        <div class="mr-30">
+                                                        <div class="mr-30 mb-2">
                                                             <input type="radio" name="call_type" id="relationMother" value="O"
                                                                 {{ @$phone_call_log->call_type == 'O' ? 'checked' : '' }}
                                                                 class="common-radio relationButton">
                                                             <label for="relationMother">@lang('admin.outgoing')</label>
                                                         </div>
                                                     @else
-                                                        <div class="mr-30">
+                                                        <div class="mr-30 mb-4">
                                                             <input type="radio" name="call_type" id="relationFather" value="I"
                                                                 class="common-radio relationButton" checked>
                                                             <label for="relationFather">@lang('admin.incoming')</label>
                                                         </div>
-                                                        <div class="mr-30">
+                                                        <div class="mr-30 mb-2">
                                                             <input type="radio" name="call_type" id="relationMother" value="O"
                                                                 class="common-radio relationButton">
                                                             <label for="relationMother">@lang('admin.outgoing')</label>

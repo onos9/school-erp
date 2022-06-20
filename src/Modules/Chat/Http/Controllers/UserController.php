@@ -247,7 +247,6 @@ class UserController extends Controller
             Toastr::success(__('Chat method has been updated Successfully'));
             return redirect()->back();
         }catch(\Exception $e){
-            LogActivity::errorLog($e->getMessage());
             Toastr::error('Something went Wrong!', 'Error!!');
             return redirect()->back();
         }
@@ -266,7 +265,7 @@ class UserController extends Controller
         ));
     }
 
-    protected function updateDotEnv($key, $newValue, $delim='')
+    protected function updateDotEnv($key, $newValue, $delim='"')
     {
 
         $path = base_path('.env');

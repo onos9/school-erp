@@ -48,4 +48,5 @@ return [
     'upload_date' => 'Upload date',
     'created_by' => 'Created by',
     'student_study_material_notification' => 'Student study material notification',
+    'study'=>'Study',
 ];

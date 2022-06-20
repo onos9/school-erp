@@ -40,6 +40,8 @@ class CreateSmsTemplatesTable extends Migration
             ['sms', 'user_login_permission', '', 'Dear [name], your login permission is disabled username:[user_name]', '', '[name], [user_name]'],
             ['sms', 'student_promote', '', 'Hi [student_name] , Welcome to [school_name]. Congratulations ! You have promoted in the next class.', '', '[student_name], [school_name]'],
             ['sms', 'communicate_sms', '', 'In Communicate SMS description is: [description]. Thank You.', '', '[description],'],
+            ['sms', 'exam_mark_student', '', 'Hi [student_name] , You are in class [class_name] ([section_name]), Your exam type [exam_type], [subject_marks]. School Name- [school_name]', '', '[student_name], [class_name], [section_name], [exam_type], [subject_names], [total_mark], [school_name], [subject_marks]'],
+            ['sms', 'exam_mark_parent', '', 'Hello, [parent_name], your child [student_name] of class [class_name] ([section_name]) exam type [exam_type], [subject_marks]. School Name- [school_name], Thank You.', '', '[parent_name], [student_name], [class_name], [section_name], [exam_type], [subject_names], [total_mark], [school_name], [subject_marks]'],
             
             ['sms', 'student_attendance', '', 'Dear [student_name], your are came to the school at [attendance_date]', '', '[student_name], [attendance_date]'],
             ['sms', 'student_attendance_for_parent', '', 'Dear Parent [parent_name], your child [student_name] came to the school at [attendance_date]', '', '[parent_name], [student_name], [attendance_date]'],
@@ -1562,6 +1564,522 @@ class CreateSmsTemplatesTable extends Migration
                     </tr>
                 </tbody>
             </table>', 'Lead', '[assign_user], [lead_name], [lead_phone], [lead_email], [lead_date], [lead_time], [lead_description]'],
+
+            ['email', 'student_course_purchase', 'Lms Course Purchase',
+            '<table bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" class="nl-container" style="table-layout:fixed;vertical-align:top;min-width:320px;border-spacing:0;border-collapse:collapse;background-color:#FFFFFF;width:100%;" width="100%">
+                <tbody>
+                    <tr style="vertical-align:top;" valign="top">
+                        <td style="vertical-align:top;" valign="top">
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;background-position:center top;background-repeat:no-repeat;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center fixedwidth" style="padding-right:30px;padding-left:30px;">
+                                                    <a href="#">
+                                                        <img border="0" class="center fixedwidth" src="" style="padding-top:30px;padding-bottom:30px;text-decoration:none;height:auto;border:0;max-width:150px;" width="150" alt="logo.png">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;padding-top:25px;border-top-right-radius:30px;border-top-left-radius:30px;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center autowidth" style="padding-right:20px;padding-left:20px;">
+                                                    <img border="0" class="center autowidth" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU" style="text-decoration:none;height:auto;border:0;max-width:541px;" width="541" alt="images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;border-bottom-right-radius:30px;border-bottom-left-radius:30px;overflow:hidden;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:#ffffff;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <h1 style="line-height:120%;text-align:center;margin-bottom:0px;">
+                                                    <font color="#555555" face="Arial, Helvetica Neue, Helvetica, sans-serif">
+                                                        <span style="font-size:36px;">Lms Course Purchase</span>
+                                                    </font>
+                                                </h1>
+                                                <div style="line-height:1.8;padding:20px 15px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.8;">
+                                                        <h1>Hi [name],</h1>
+                                                        <p style="margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);">
+                                                            Your Course Purchase Sucessfully <br> Thank You.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div style="color:#262b30;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;line-height:1.2;padding-top:30px;padding-right:5px;padding-bottom:5px;padding-left:5px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
+                                                        <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
+                                                            <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
+                                                                © 2020 Infix Education software| 
+                                                            </span>
+                                                            <span style="background-color:transparent;text-align:left;">
+                                                                <font color="#ffffff">
+                                                                    Copyright &copy; 2020 All rights reserved | This application is made by Codethemes
+                                                                </font>
+                                                            </span>
+                                                            <br>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>','Lms','[name]'],
+
+            ['email', 'parent_course_purchase', 'Lms Course Purchase',
+            '<table bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" class="nl-container" style="table-layout:fixed;vertical-align:top;min-width:320px;border-spacing:0;border-collapse:collapse;background-color:#FFFFFF;width:100%;" width="100%">
+                <tbody>
+                    <tr style="vertical-align:top;" valign="top">
+                        <td style="vertical-align:top;" valign="top">
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;background-position:center top;background-repeat:no-repeat;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center fixedwidth" style="padding-right:30px;padding-left:30px;">
+                                                    <a href="#">
+                                                        <img border="0" class="center fixedwidth" src="" style="padding-top:30px;padding-bottom:30px;text-decoration:none;height:auto;border:0;max-width:150px;" width="150" alt="logo.png">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;padding-top:25px;border-top-right-radius:30px;border-top-left-radius:30px;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center autowidth" style="padding-right:20px;padding-left:20px;">
+                                                    <img border="0" class="center autowidth" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU" style="text-decoration:none;height:auto;border:0;max-width:541px;" width="541" alt="images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;border-bottom-right-radius:30px;border-bottom-left-radius:30px;overflow:hidden;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:#ffffff;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <h1 style="line-height:120%;text-align:center;margin-bottom:0px;">
+                                                    <font color="#555555" face="Arial, Helvetica Neue, Helvetica, sans-serif">
+                                                        <span style="font-size:36px;">Lms Course Purchase</span>
+                                                    </font>
+                                                </h1>
+                                                <div style="line-height:1.8;padding:20px 15px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.8;">
+                                                        <h1>Hi [name],</h1>
+                                                        <p style="margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);">
+                                                            Your Course Purchase Sucessfully <br> Thank You.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div style="color:#262b30;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;line-height:1.2;padding-top:30px;padding-right:5px;padding-bottom:5px;padding-left:5px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
+                                                        <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
+                                                            <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
+                                                                © 2020 Infix Education software| 
+                                                            </span>
+                                                            <span style="background-color:transparent;text-align:left;">
+                                                                <font color="#ffffff">
+                                                                    Copyright &copy; 2020 All rights reserved | This application is made by Codethemes
+                                                                </font>
+                                                            </span>
+                                                            <br>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>','Lms','[name]'],
+
+            ['email', 'student_approve_payment', 'Approve Lms Course Payment',
+            '<table bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" class="nl-container" style="table-layout:fixed;vertical-align:top;min-width:320px;border-spacing:0;border-collapse:collapse;background-color:#FFFFFF;width:100%;" width="100%">
+                <tbody>
+                    <tr style="vertical-align:top;" valign="top">
+                        <td style="vertical-align:top;" valign="top">
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;background-position:center top;background-repeat:no-repeat;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center fixedwidth" style="padding-right:30px;padding-left:30px;">
+                                                    <a href="#">
+                                                        <img border="0" class="center fixedwidth" src="" style="padding-top:30px;padding-bottom:30px;text-decoration:none;height:auto;border:0;max-width:150px;" width="150" alt="logo.png">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;padding-top:25px;border-top-right-radius:30px;border-top-left-radius:30px;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center autowidth" style="padding-right:20px;padding-left:20px;">
+                                                    <img border="0" class="center autowidth" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU" style="text-decoration:none;height:auto;border:0;max-width:541px;" width="541" alt="images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;border-bottom-right-radius:30px;border-bottom-left-radius:30px;overflow:hidden;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:#ffffff;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <h1 style="line-height:120%;text-align:center;margin-bottom:0px;">
+                                                    <font color="#555555" face="Arial, Helvetica Neue, Helvetica, sans-serif">
+                                                        <span style="font-size:36px;">Approve Payment</span>
+                                                    </font>
+                                                </h1>
+                                                <div style="line-height:1.8;padding:20px 15px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.8;">
+                                                        <h1>Hi [name],</h1>
+                                                        <p style="margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);">
+                                                            Approve Payment.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div style="color:#262b30;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;line-height:1.2;padding-top:30px;padding-right:5px;padding-bottom:5px;padding-left:5px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
+                                                        <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
+                                                            <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
+                                                                © 2020 Infix Education software| 
+                                                            </span>
+                                                            <span style="background-color:transparent;text-align:left;">
+                                                                <font color="#ffffff">
+                                                                    Copyright &copy; 2020 All rights reserved | This application is made by Codethemes
+                                                                </font>
+                                                            </span>
+                                                            <br>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>','Lms','[name]'],
+
+            ['email', 'parent_approve_payment', 'Approve Lms Course Payment',
+            '<table bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" class="nl-container" style="table-layout:fixed;vertical-align:top;min-width:320px;border-spacing:0;border-collapse:collapse;background-color:#FFFFFF;width:100%;" width="100%">
+                <tbody>
+                    <tr style="vertical-align:top;" valign="top">
+                        <td style="vertical-align:top;" valign="top">
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;background-position:center top;background-repeat:no-repeat;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center fixedwidth" style="padding-right:30px;padding-left:30px;">
+                                                    <a href="#">
+                                                        <img border="0" class="center fixedwidth" src="" style="padding-top:30px;padding-bottom:30px;text-decoration:none;height:auto;border:0;max-width:150px;" width="150" alt="logo.png">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;padding-top:25px;border-top-right-radius:30px;border-top-left-radius:30px;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center autowidth" style="padding-right:20px;padding-left:20px;">
+                                                    <img border="0" class="center autowidth" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU" style="text-decoration:none;height:auto;border:0;max-width:541px;" width="541" alt="images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;border-bottom-right-radius:30px;border-bottom-left-radius:30px;overflow:hidden;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:#ffffff;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <h1 style="line-height:120%;text-align:center;margin-bottom:0px;">
+                                                    <font color="#555555" face="Arial, Helvetica Neue, Helvetica, sans-serif">
+                                                        <span style="font-size:36px;">Approve Payment</span>
+                                                    </font>
+                                                </h1>
+                                                <div style="line-height:1.8;padding:20px 15px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.8;">
+                                                        <h1>Hi [name],</h1>
+                                                        <p style="margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);">
+                                                            Approve Payment.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div style="color:#262b30;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;line-height:1.2;padding-top:30px;padding-right:5px;padding-bottom:5px;padding-left:5px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
+                                                        <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
+                                                            <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
+                                                                © 2020 Infix Education software| 
+                                                            </span>
+                                                            <span style="background-color:transparent;text-align:left;">
+                                                                <font color="#ffffff">
+                                                                    Copyright &copy; 2020 All rights reserved | This application is made by Codethemes
+                                                                </font>
+                                                            </span>
+                                                            <br>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>','Lms','[name]'],
+            
+            ['email', 'student_reject_payment', 'Reject Lms Course Payment',
+            '<table bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" class="nl-container" style="table-layout:fixed;vertical-align:top;min-width:320px;border-spacing:0;border-collapse:collapse;background-color:#FFFFFF;width:100%;" width="100%">
+                <tbody>
+                    <tr style="vertical-align:top;" valign="top">
+                        <td style="vertical-align:top;" valign="top">
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;background-position:center top;background-repeat:no-repeat;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center fixedwidth" style="padding-right:30px;padding-left:30px;">
+                                                    <a href="#">
+                                                        <img border="0" class="center fixedwidth" src="" style="padding-top:30px;padding-bottom:30px;text-decoration:none;height:auto;border:0;max-width:150px;" width="150" alt="logo.png">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;padding-top:25px;border-top-right-radius:30px;border-top-left-radius:30px;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center autowidth" style="padding-right:20px;padding-left:20px;">
+                                                    <img border="0" class="center autowidth" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU" style="text-decoration:none;height:auto;border:0;max-width:541px;" width="541" alt="images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;border-bottom-right-radius:30px;border-bottom-left-radius:30px;overflow:hidden;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:#ffffff;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <h1 style="line-height:120%;text-align:center;margin-bottom:0px;">
+                                                    <font color="#555555" face="Arial, Helvetica Neue, Helvetica, sans-serif">
+                                                        <span style="font-size:36px;">Reject Payment</span>
+                                                    </font>
+                                                </h1>
+                                                <div style="line-height:1.8;padding:20px 15px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.8;">
+                                                        <h1>Hi [name],</h1>
+                                                        <p style="margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);">
+                                                            Reject Payment.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div style="color:#262b30;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;line-height:1.2;padding-top:30px;padding-right:5px;padding-bottom:5px;padding-left:5px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
+                                                        <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
+                                                            <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
+                                                                © 2020 Infix Education software| 
+                                                            </span>
+                                                            <span style="background-color:transparent;text-align:left;">
+                                                                <font color="#ffffff">
+                                                                    Copyright &copy; 2020 All rights reserved | This application is made by Codethemes
+                                                                </font>
+                                                            </span>
+                                                            <br>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>','Lms','[name]'],
+
+            ['email', 'parent_reject_payment', 'Reject Lms Course Payment',
+            '<table bgcolor="#FFFFFF" cellpadding="0" cellspacing="0" class="nl-container" style="table-layout:fixed;vertical-align:top;min-width:320px;border-spacing:0;border-collapse:collapse;background-color:#FFFFFF;width:100%;" width="100%">
+                <tbody>
+                    <tr style="vertical-align:top;" valign="top">
+                        <td style="vertical-align:top;" valign="top">
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;background-position:center top;background-repeat:no-repeat;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center fixedwidth" style="padding-right:30px;padding-left:30px;">
+                                                    <a href="#">
+                                                        <img border="0" class="center fixedwidth" src="" style="padding-top:30px;padding-bottom:30px;text-decoration:none;height:auto;border:0;max-width:150px;" width="150" alt="logo.png">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#415094;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;padding-top:25px;border-top-right-radius:30px;border-top-left-radius:30px;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div align="center" class="img-container center autowidth" style="padding-right:20px;padding-left:20px;">
+                                                    <img border="0" class="center autowidth" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU" style="text-decoration:none;height:auto;border:0;max-width:541px;" width="541" alt="images?q=tbn:ANd9GcRGF00Oi-zJNU_EvYGueBVz_sqXmFjk8pxNtg&amp;usqp=CAU">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:#ffffff;border-bottom-right-radius:30px;border-bottom-left-radius:30px;overflow:hidden;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:#ffffff;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <h1 style="line-height:120%;text-align:center;margin-bottom:0px;">
+                                                    <font color="#555555" face="Arial, Helvetica Neue, Helvetica, sans-serif">
+                                                        <span style="font-size:36px;">Reject Payment</span>
+                                                    </font>
+                                                </h1>
+                                                <div style="line-height:1.8;padding:20px 15px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.8;">
+                                                        <h1>Hi [name],</h1>
+                                                        <p style="margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);">
+                                                            Reject Payment.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background-color:#7c32ff;">
+                                <div class="block-grid" style="min-width:320px;max-width:600px;margin:0 auto;background-color:transparent;">
+                                    <div style="border-collapse:collapse;width:100%;background-color:transparent;">
+                                        <div class="col num12" style="min-width:320px;max-width:600px;vertical-align:top;width:600px;">
+                                            <div class="col_cont" style="width:100%;">
+                                                <div style="color:#262b30;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;line-height:1.2;padding-top:30px;padding-right:5px;padding-bottom:5px;padding-left:5px;">
+                                                    <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
+                                                        <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
+                                                            <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
+                                                                © 2020 Infix Education software| 
+                                                            </span>
+                                                            <span style="background-color:transparent;text-align:left;">
+                                                                <font color="#ffffff">
+                                                                    Copyright &copy; 2020 All rights reserved | This application is made by Codethemes
+                                                                </font>
+                                                            </span>
+                                                            <br>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>','Lms','[name]'],
 
             // end lead reminder
 

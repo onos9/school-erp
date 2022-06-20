@@ -20,51 +20,60 @@
     </div>
 </section>
 
-<section class="admin-visitor-area">
+<section class="admin-visitor-area up_admin_visitor">
     <div class="container-fluid p-0">
         <div class="row">
-
-            <div class="col-lg-12">
-                <div class="row">
-                    <div class="col-lg-4 no-gutters">
-                        <div class="main-title">
-                            <h3 class="mb-0">@lang('exam.online_active_exams')</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-lg-12">
-
-                        <table id="table_id" class="display school-table" cellspacing="0" width="100%">
-
-                            <thead>
-                            
+            <div class="col-lg-12 student-details up_admin_visitor">
+                <ul class="nav nav-tabs tabs_scroll_nav" role="tablist">
+                    @foreach($records as $key => $record) 
+                        <li class="nav-item">
+                            <a class="nav-link @if($key== 0) active @endif " href="#tab{{$key}}" role="tab" data-toggle="tab">{{$record->class->class_name}} ({{$record->section->section_name}}) </a>
+                        </li>
+                    @endforeach
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    @foreach($records as $key => $record) 
+                        <div role="tabpanel" class="tab-pane fade  @if($key== 0) active show @endif" id="tab{{$key}}">
+                            <table id="table_id" class="display school-table" cellspacing="0" width="100%">
+                                <thead>
                                 <tr>
-                                    <th>@lang('common.title')</th>
-                                    <th>@lang('common.class_Sec')</th>
-                                    <th>@lang('common.subject')</th>
+                                    <th>@lang('exam.title')</th>
+                                    <th>@lang('exam.subject')</th>
                                     <th>@lang('exam.exam_date')</th>
+                                    <th>@lang('exam.duration')</th>
+                                    <th>@lang('common.action')</th>
                                     <th>@lang('common.status')</th>
                                 </tr>
-                            </thead>
-  
-                            <tbody>
-                                @foreach($online_exams as $online_exam)
+                                </thead>
+                                <tbody>
+                                @foreach($record->OnlineExam  as $online_exam)
                                     @php
-                                        $submitted_answer = $user->studentOnlineExam->where('online_exam_id',$online_exam->id)->first();
+                                        @$submitted_answer = $student->studentOnlineExam->where('online_exam_id',$online_exam->id)->first();
                                     @endphp
-                                  
-                                    @if(!in_array($online_exam->id, $marks_assigned))
-                                    <tr>
-                                        <td>{{$online_exam->title}}</td>
-                                        <td>{{$online_exam->class->class_name.'  ('.$online_exam->section->section_name.')'}}</td>
-                                        <td>{{$online_exam->subject !=""?$online_exam->subject->subject_name:""}}</td>
-                                        <td  data-sort="{{strtotime($online_exam->date)}}" >
-                                           {{$online_exam->date != ""? dateConvert($online_exam->date):''}}
+                                    @if(!in_array(@$online_exam->id, @$marks_assigned))
+                                        <tr>
+                                            <td>{{@$online_exam->title}}</td>
+                                            <td>{{@$online_exam->subject !=""?@$online_exam->subject->subject_name:""}}</td>
+                                            <td data-sort="{{strtotime(@$online_exam->date)}}">
+                                                {{@$online_exam->date != ""? dateConvert(@$online_exam->date):''}}
 
-                                            <br> Time: {{date('h:i A', strtotime(@$online_exam->start_time)).' - '.date('h:i A', strtotime(@$online_exam->end_time))}}</td>
-                                        <td>
+                                                <br>
+                                                Time: {{date('h:i A', strtotime(@$online_exam->start_time)).' - '.date('h:i A', strtotime(@$online_exam->end_time))}}
+                                            </td>
+                                            @php
+
+                                                $totalDuration = $online_exam->end_time !='NULL' ? Carbon::parse($online_exam->end_time)->diffinminutes( Carbon::parse($online_exam->start_time) ) : 0;
+
+                                            @endphp
+                                            <td>
+                                                {{  $online_exam->end_time !='NULL' ? gmdate($totalDuration) : 'Unlimited'}}  @lang('exam.minutes')
+                                            </td>
+                                            <td>
+                                                {{ $online_exam->total_durations }} @lang('exam.minutes')
+                                            </td>
+
+                                            <td>
                                             @if( !empty( $submitted_answer))
                                                 @if(@$submitted_answer->status == 1)
                                                     <span class="btn primary-btn small  fix-gr-bg"
@@ -107,12 +116,13 @@
 
                                             @endif
                                         </td>
-                                    </tr>
+                                        </tr>
                                     @endif
                                 @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                </tbody>
+                            </table>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>

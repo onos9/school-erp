@@ -81,6 +81,7 @@ class SmPayrollController extends Controller
             $staffDetails = SmStaff::find($id);
             // return $staffDetails;
             $month = date('m', strtotime($payroll_month));
+           
             $attendances = SmStaffAttendence::where('staff_id', $id)->where('attendence_date', 'like', $payroll_year . '-' . $month . '%')->where('school_id', Auth::user()->school_id)->get();
 
             $staff_leaves = SmLeaveDefine::where('user_id', $staffDetails->user_id)->where('role_id', $staffDetails->role_id)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
@@ -121,10 +122,25 @@ class SmPayrollController extends Controller
                     $h++;
                 }
             }
-
+            // for teacher commission Lms module-abu nayem
+             if (moduleStatusCheck('Lms')==true) {
+                $data['courses'] = \Modules\Lms\Entities\CourseTeacher::where('staff_id', $id)->get(['id','course_id']);
+                $data['courseIds'] = $data['courses']->pluck('course_id')->toArray();
+                $data['totalCourse'] = $data['courses']->count();
+                $totalSellCourse = \Modules\Lms\Entities\CoursePurchaseLog::whereIn('course_id', $data['courseIds'])->where('active_status', 'approve');
+                $data['totalSellCourseCount'] = $totalSellCourse->count();
+                $data['thisMonthSell'] = $totalSellCourse->whereMonth('created_at', $month)
+                                                         ->whereYear('created_at', $payroll_year)
+                                                         ->count();
+                $thisMonthSellAmount =  $totalSellCourse->sum('amount');
+                $teacher_commission = \Modules\Lms\Entities\CourseSetting::first()->teacher_commission;
+                $data['thisMonthRevenue'] = earnRevenue($thisMonthSellAmount, $teacher_commission);
+                return view('backEnd.humanResource.payroll.generatePayroll', compact('staffDetails', 'payroll_month', 'payroll_year', 'p', 'l', 'a', 'f', 'h', 'extra_days'))->with($data);
+             }
+             //end teacher commission 
             return view('backEnd.humanResource.payroll.generatePayroll', compact('staffDetails', 'payroll_month', 'payroll_year', 'p', 'l', 'a', 'f', 'h', 'extra_days'));
         } catch (\Exception $e) {
-
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -132,6 +148,7 @@ class SmPayrollController extends Controller
 
     public function savePayrollData(Request $request)
     {
+        // return $request->all();
         $request->validate([
             'net_salary' => "required",
 
@@ -172,6 +189,18 @@ class SmPayrollController extends Controller
                 $earnings = count($request->earningsType);
                 for ($i = 0; $i < $earnings; $i++) {
                     if (!empty($request->earningsType[$i]) && !empty($request->earningsValue[$i])) {
+                         // for teacher commission Lms module-abu nayem                      
+                            if ($request->earningsType[0]=='lms_balance' && moduleStatusCheck('Lms')==true) {
+                                $payable_amount =  $request->earningsValue[0];
+                                $staff = SmStaff::findOrFail($request->staff_id);
+                                $lms_balance = $staff->lms_balance;
+                                if ($payable_amount>0) {
+                                    $balance = $lms_balance - $payable_amount;
+                                    $staff->lms_balance = $balance;
+                                    $staff->save();
+                                }
+                            }
+                        //end    
                         $payroll_earn_deducs = new SmHrPayrollEarnDeduc;
                         $payroll_earn_deducs->payroll_generate_id = $payrollGenerate->id;
                         $payroll_earn_deducs->type_name = $request->earningsType[$i];
@@ -187,6 +216,8 @@ class SmPayrollController extends Controller
                 $deductions = count($request->deductionstype);
                 for ($i = 0; $i < $deductions; $i++) {
                     if (!empty($request->deductionstype[$i]) && !empty($request->deductionsValue[$i])) {
+                       
+                     
                         $payroll_earn_deducs = new SmHrPayrollEarnDeduc;
                         $payroll_earn_deducs->payroll_generate_id = $payrollGenerate->id;
                         $payroll_earn_deducs->type_name = $request->deductionstype[$i];

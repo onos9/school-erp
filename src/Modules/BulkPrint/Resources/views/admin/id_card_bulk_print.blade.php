@@ -64,9 +64,9 @@
                                         <div class="horizontal__card" style="line-height:1.02; background-image: url({{ @$id_card->background_img != "" ? asset(@$id_card->background_img) : asset('public/backEnd/id_card/img/vertical_bg.png') }}); width: {{!empty($id_card->pl_width) ? $id_card->pl_width : 57.15}}mm; height: {{!empty($id_card->pl_height) ? $id_card->pl_height : 88.89999999999999}}mm; margin: auto; background-size: 100% 100%; background-position: center center; position: relative; background-color: #fff;">
                                             <div class="horizontal_card_header" style="line-height:1.02; display: flex; align-items:center; justify-content:space-between; padding:8px 12px">
                                                 <div class="logo__img logoImage hLogo" style="line-height:1.02; width: 80px; background-image: url({{$id_card->logo !=''? asset($id_card->logo) : asset('public/backEnd/img/logo.png')}});height: 30px; background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
-                                                <div class="qr__img" style="line-height:1.02; width: 30px;">
+<!--                                                <div class="qr__img" style="line-height:1.02; width: 30px;">
                                                     <img src="{{asset('public/backEnd/id_card/img/qr.png')}}" alt="" style="line-height:1.02; width: 100%; width: 38px; position: absolute; right: 4px; top: 4px;">
-                                                </div>
+                                                </div>-->
                                             </div>
 
                                             <div class="horizontal_card_body" style="line-height:1.02; display:flex; padding-top:{{!empty($id_card->t_space) ? $id_card->t_space : 2.5}}mm ; padding-bottom: {{!empty($id_card->b_space) ? $id_card->b_space : 2.5}}mm ; padding-right: {{!empty($id_card->r_space) ? $id_card->r_space : 3}}mm ; padding-left: {{!empty($id_card->l_space) ? $id_card->l_space : 3}}mm ; flex-direction: column;">
@@ -100,8 +100,10 @@
                                                             @endif
                                                             @if($id_card->class==1 && $role_id==2)
                                                                 <div id="hClass">
-                                                                    <h3 style="line-height:1.02; margin-top: 0; margin-bottom: 3px; font-size:10px; font-weight:500">@lang('common.class') : {{ @$staff_student->class!=""?@$staff_student->class->class_name:""}} 
-                                                                        ({{ @$staff_student->section!=""?@$staff_student->section->section_name:""}})
+                                                                    <h3 style="line-height:1.02; margin-top: 0; margin-bottom: 3px; font-size:10px; font-weight:500">@lang('common.class') :
+                                                                        @foreach($staff_student->getClassRecord as $record)
+                                                                            {{ $record->class->class_name}} ({{$record->section->section_name}}),
+                                                                        @endforeach
                                                                     </h3>
                                                                 </div>
                                                             @endif
@@ -159,9 +161,9 @@
                                         <div class="vertical__card" style="line-height:1.02; background-image: url({{ @$id_card->background_img != "" ? asset(@$id_card->background_img) : asset('public/backEnd/id_card/img/horizontal_bg.png') }}); width: {{!empty($id_card->pl_width) ? $id_card->pl_width : 86}}mm; height: {{!empty($id_card->pl_height) ? $id_card->pl_height : 54}}mm; margin: auto; background-size: 100% 100%; background-position: center center; position: relative;">
                                             <div class="horizontal_card_header" style="line-height:1.02; display: flex; align-items:center; justify-content:space-between; padding: 12px">
                                                 <div class="logo__img logoImage vLogo" style="line-height:1.02; width: 80px; background-image: url({{$id_card->logo !=''? asset($id_card->logo) : asset('public/backEnd/img/logo.png')}});background-size: cover; height: 30px;background-position: center center; background-repeat: no-repeat;"></div>
-                                                <div class="qr__img" style="line-height:1.02; width: 48px; position: absolute; right: 4px; top: 4px;">
+<!--                                                <div class="qr__img" style="line-height:1.02; width: 48px; position: absolute; right: 4px; top: 4px;">
                                                     <img src="{{asset('public/backEnd/id_card/img/qr.png')}}" alt="" style="line-height:1.02; width: 100%;">
-                                                </div>
+                                                </div>-->
                                             </div>
                                             <div class="vertical_card_body" style="line-height:1.02; display:flex; padding-top: {{!empty($id_card->t_space) ? $id_card->t_space : 2.5}}mm; padding-bottom: {{!empty($id_card->b_space) ? $id_card->b_space : 2.5}}mm; padding-right: {{!empty($id_card->r_space) ? $id_card->r_space : 3}}mm ; padding-left: {{!empty($id_card->l_space) ? $id_card->l_space : 3}}mm; align-items: center;">
                                                 <div class="thumb vSize vSizeX photo vImg vRoundImg" style="
@@ -194,8 +196,10 @@
                                                             @endif
                                                             @if($id_card->class==1 &&  $role_id==2)
                                                                 <div id="vClass">
-                                                                    <h4 style="line-height:1.02; margin-top: 0; margin-bottom: 0; font-size:10px;">@lang('common.class') : {{ @$staff_student->class!=""?@$staff_student->class->class_name:""}} 
-                                                                        ({{ @$staff_student->section!=""?@$staff_student->section->section_name:""}})
+                                                                    <h4 style="line-height:1.02; margin-top: 0; margin-bottom: 0; font-size:10px;">@lang('common.class') :
+                                                                        @foreach($staff_student->getClassRecord as $record)
+                                                                            {{ $record->class->class_name}} ({{$record->section->section_name}}),
+                                                                        @endforeach
                                                                     </h4>
                                                                 </div>
                                                             @endif
@@ -260,9 +264,9 @@
                                         <div class="horizontal__card" style="line-height:1.02; background-image: url({{ @$id_card->background_img != "" ? asset(@$id_card->background_img) : asset('public/backEnd/id_card/img/vertical_bg.png') }}); width: {{!empty($id_card->pl_width) ? $id_card->pl_width : 57.15}}mm; height: {{!empty($id_card->pl_height) ? $id_card->pl_height : 88.89999999999999}}mm; margin: auto; background-size: 100% 100%; background-position: center center; position: relative; background-color: #fff;">
                                             <div class="horizontal_card_header" style="line-height:1.02; display: flex; align-items:center; justify-content:space-between; padding:8px 12px">
                                                 <div class="logo__img logoImage hLogo" style="line-height:1.02; width: 80px; background-image: url({{$id_card->logo !=''? asset($id_card->logo) : asset('public/backEnd/img/logo.png')}});height: 30px; background-size: cover; background-repeat: no-repeat; background-position: center center;"></div>
-                                                <div class="qr__img" style="line-height:1.02; width: 30px;">
-                                                    <img src="{{asset('public/backEnd/id_card/img/qr.png')}}" alt="" style="line-height:1.02; width: 100%; width: 38px; position: absolute; right: 4px; top: 4px;">
-                                                </div>
+{{--                                                <div class="qr__img" style="line-height:1.02; width: 30px;">--}}
+{{--                                                    <img src="{{asset('public/backEnd/id_card/img/qr.png')}}" alt="" style="line-height:1.02; width: 100%; width: 38px; position: absolute; right: 4px; top: 4px;">--}}
+{{--                                                </div>--}}
                                             </div>
                                     
                                             <div class="horizontal_card_body" style="line-height:1.02; display:block; padding-top:{{!empty($id_card->t_space) ? $id_card->t_space : 2.5}}mm ; padding-bottom: {{!empty($id_card->b_space) ? $id_card->b_space : 2.5}}mm ; padding-right: {{!empty($id_card->r_space) ? $id_card->r_space : 3}}mm ; padding-left: {{!empty($id_card->l_space) ? $id_card->l_space : 3}}mm; flex-direction: column;">
@@ -346,9 +350,9 @@
                                         <div class="vertical__card" style="line-height:1.02; background-image: url({{ @$id_card->background_img != "" ? asset(@$id_card->background_img) : asset('public/backEnd/id_card/img/horizontal_bg.png') }}); width: {{!empty($id_card->pl_width) ? $id_card->pl_width : 86}}mm; height: {{!empty($id_card->pl_height) ? $id_card->pl_height : 54}}mm; margin: auto; background-size: 100% 100%; background-position: center center; position: relative;">
                                             <div class="horizontal_card_header" style="line-height:1.02; display: flex; align-items:center; justify-content:space-between; padding: 12px">
                                                 <div class="logo__img logoImage vLogo" style="line-height:1.02; width: 80px; background-image: url({{$id_card->logo !=''? asset($id_card->logo) : asset('public/backEnd/img/logo.png')}});background-size: cover; height: 30px;background-position: center center; background-repeat: no-repeat;"></div>
-                                                <div class="qr__img" style="line-height:1.02; width: 48px; position: absolute; right: 4px; top: 4px;">
+<!--                                                <div class="qr__img" style="line-height:1.02; width: 48px; position: absolute; right: 4px; top: 4px;">
                                                     <img src="{{asset('public/backEnd/id_card/img/qr.png')}}" alt="" style="line-height:1.02; width: 100%;">
-                                                </div>
+                                                </div>-->
                                             </div>
                                             <div class="vertical_card_body" style="line-height:1.02; display:flex; padding-top:{{!empty($id_card->t_space) ? $id_card->t_space : 2.5}}mm ; padding-bottom: {{!empty($id_card->b_space) ? $id_card->b_space : 2.5}}mm ; padding-right: {{!empty($id_card->r_space) ? $id_card->r_space : 3}}mm ; padding-left: {{!empty($id_card->l_space) ? $id_card->l_space : 3}}mm; align-items: center;">
                                                 <div class="thumb vSize vSizeX photo vImg vRoundImg" style="

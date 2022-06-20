@@ -1,11 +1,15 @@
 
 @if(userPermission(1130) && menuStatus(1130))
     <li data-position="{{menuPosition(1130)}}" class="sortable_li">
-        <a href="#subMenuFees" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-            <span class="flaticon-test"></span>
-            @lang('fees.fees')
+        <a href="javascript:void(0)" class="has-arrow" aria-expanded="false">
+            <div class="nav_icon_small">
+                <span class="flaticon-test"></span>
+            </div>
+            <div class="nav_title">
+                @lang('fees.fees')
+            </div>
         </a>
-        <ul class="collapse list-unstyled" id="subMenuFees">
+        <ul class="list-unstyled" id="subMenuFees">
             @if(userPermission(1131) && menuStatus(1131))
                 <li data-position="{{menuPosition(1131)}}">
                     <a href="{{ route('fees.fees-group') }}">@lang('fees.fees_group')</a>
@@ -36,11 +40,48 @@
                 </li>
             @endif
 
-            @if(userPermission(1154) && menuStatus(1154))
-                <li data-position="{{menuPosition(1154)}}">
-                    <a href="{{ route('fees.due-fees') }}">@lang('fees::feesModule.fees_due')</a>
-                </li>
-            @endif
+            <li>
+                <a href="javascript:void(0)" class="has-arrow" aria-expanded="false">
+                    @lang('reports.report')
+                </a>
+                <ul class="list-unstyled">
+                    @if(userPermission(1155) && menuStatus(1155))
+                        <li data-position="{{menuPosition(1155)}}">
+                            <a href="{{ route('fees.due-fees') }}">
+                                @lang('fees::feesModule.fees_due_report')
+                            </a>
+                        </li>
+                    @endif
+                    @if(userPermission(1158) && menuStatus(1158))
+                        <li data-position="{{menuPosition(1158)}}">
+                            <a href="{{ route('fees.fine-report')}}">
+                                @lang('accounts.fine_report')
+                            </a>
+                        </li>
+                    @endif
+                    @if(userPermission(1159) && menuStatus(1159))
+                        <li data-position="{{menuPosition(1159)}}">
+                            <a href="{{ route('fees.payment-report')}}">
+                                @lang('fees::feesModule.payment_report')
+                            </a>
+                        </li>
+                    @endif
+                    @if(userPermission(1160) && menuStatus(1160))
+                        <li data-position="{{menuPosition(1160)}}">
+                            <a href="{{ route('fees.balance-report')}}">
+                                @lang('fees::feesModule.balance_report')
+                            </a>
+                        </li>
+                    @endif
+                    @if(userPermission(1161) && menuStatus(1161))
+                        <li data-position="{{menuPosition(1161)}}">
+                            <a href="{{ route('fees.waiver-report')}}">
+                                @lang('fees::feesModule.waiver_report')
+                            </a>
+                        </li>
+                    @endif
+                </ul>
+            </li>
         </ul>
     </li>
 @endif

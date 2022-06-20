@@ -50,4 +50,9 @@ class FmFeesTransaction extends Model
     {
         return $this->belongsTo('App\SmStudent', 'student_id', 'id');
     }
+
+    public function recordDetail()
+    {
+        return $this->belongsTo('App\Models\StudentRecord', 'record_id', 'id');
+    }
 }

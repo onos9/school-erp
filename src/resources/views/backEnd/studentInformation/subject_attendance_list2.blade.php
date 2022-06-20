@@ -1,17 +1,17 @@
 @extends('backEnd.master')
 @section('mainContent')
 @section('title') 
-@lang('lang.subject_wise_attendance')
+@lang('student.subject_wise_attendance')
 @endsection
 <link rel="stylesheet" href="{{asset('public/backEnd/css/login_access_control.css')}}"/>
 <section class="sms-breadcrumb mb-40 up_breadcrumb white-box">
     <div class="container-fluid">
         <div class="row justify-content-between">
-            <h1>@lang('lang.student_attendance')</h1>
+            <h1>@lang('student.student_attendance')</h1>
             <div class="bc-pages">
                 <a href="{{route('dashboard')}}">@lang('common.dashboard')</a>
-                <a href="#">@lang('lang.student_information')</a>
-                <a href="#">@lang('lang.student_attendance')</a>
+                <a href="#">@lang('student.student_information')</a>
+                <a href="#">@lang('student.student_attendance')</a>
             </div>
         </div>
     </div>
@@ -78,7 +78,7 @@
                                         <div class="input-effect">
                                             <input class="primary-input date form-control{{ $errors->has('attendance_date') ? ' is-invalid' : '' }} {{isset($date)? 'read-only-input': ''}}" id="startDate" type="text"
                                                 name="attendance_date" autocomplete="off" value="{{isset($date)? $date: date('m/d/Y')}}">
-                                            <label for="startDate">@lang('lang.attendance_date')*</label>
+                                            <label for="startDate">@lang('student.attendance_date')*</label>
                                             <span class="focus-border"></span>
                                             
                                             @if ($errors->has('attendance_date'))
@@ -109,21 +109,21 @@
             </div>
 
 
-            @if(isset($already_assigned_students))
+        
                 {{-- {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'subject-attendance-store-second', 'method' => 'POST', 'enctype' => 'multipart/form-data'])}} --}}
 
  
-        <input class="subject_class" type="hidden" name="class" value="{{$input['class']}}">
-        <input class="subject_section" type="hidden" name="section" value="{{$input['section']}}">
-        <input class="subject" type="hidden" name="subject" value="{{$input['subject']}}">
-        <input class="subject_attendance_date" type="hidden" name="attendance_date" value="{{$input['attendance_date']}}">
+                    <input class="subject_class" type="hidden" name="class" value="{{$input['class']}}">
+                    <input class="subject_section" type="hidden" name="section" value="{{$input['section']}}">
+                    <input class="subject" type="hidden" name="subject" value="{{$input['subject']}}">
+                    <input class="subject_attendance_date" type="hidden" name="attendance_date" value="{{$input['attendance_date']}}">
                     <div class="row mt-40">
                         <div class="col-lg-12 ">
                             <div class=" white-box mb-40">
                                 <div class="row"> 
                                     <div class="col-lg-12">
                                         <div class="main-title">
-                                            <h3 class="mb-30 text-center">@lang('lang.subject_wise_attendance') </h3>
+                                            <h3 class="mb-30 text-center">@lang('student.subject_wise_attendance') </h3>
                                         </div>
 
                                     </div>
@@ -145,9 +145,9 @@
                             <div class="row">
                                 <div class="col-lg-12 col-md-12 no-gutters">
                                     @if($attendance_type != "" && $attendance_type == "H")
-                                    <div class="alert alert-warning">@lang('lang.attendance_already_submitted_as_holiday')</div>
+                                    <div class="alert alert-warning">@lang('student.attendance_already_submitted_as_holiday')</div>
                                     @elseif($attendance_type != "" && $attendance_type != "H")
-                                    <div class="alert alert-success">@lang('lang.attendance_already_submitted')</div>
+                                    <div class="alert alert-success">@lang('student.attendance_already_submitted')</div>
                                     @endif
                                 </div>
                             </div>
@@ -162,7 +162,7 @@
                                     <input type="hidden" name="subject_id" value="{{$input['subject']}}">
                                     <input type="hidden" name="attendance_date" value="{{$input['attendance_date']}}">
                                         <button type="submit" class="primary-btn fix-gr-bg mb-20">
-                                            @lang('lang.mark_holiday')
+                                            @lang('student.mark_holiday')
                                         </button>
                                 </form>
                                 @else
@@ -174,7 +174,7 @@
                                     <input type="hidden" name="subject_id" value="{{$input['subject']}}">
                                     <input type="hidden" name="attendance_date" value="{{$input['attendance_date']}}">
                                         <button type="submit" class="primary-btn fix-gr-bg mb-20">
-                                            @lang('lang.unmark_holiday')
+                                            @lang('student.unmark_holiday')
                                         </button>
                                 </form>
                                 @endif
@@ -194,84 +194,54 @@
                                     <form name="frm-example" id="frm-example" method="POST">
                                       
                                         @csrf
-                                        
+                                    
                                     <table id="default_table" class="display school-table" cellspacing="0" width="100%">
+                                        <input type="hidden" name="attendance_date" value="{{$input['attendance_date']}}">
+                                        <input type="hidden" name="subject" value="{{$input['subject']}}">
+                                        <input type="hidden" name="class" value="{{$input['class']}}">
+                                        <input type="hidden" name="section" value="{{$input['section']}}">
                                         <thead>
                                             <tr>
                                                 <th>@lang('common.sl')</th>
                                                 <th>@lang('student.admission_no')</th>
                                                 <th>@lang('student.student_name')</th>
-                                                <th>@lang('lang.roll_number')</th>
-                                                <th>@lang('lang.attendance')</th>
+                                                <th>@lang('student.id_number')</th>
+                                                <th>@lang('student.attendance')</th>
                                                 <th>@lang('common.note')</th>
                                             </tr>
                                         </thead>
 
                                         <tbody>
                                             @php $count=1; @endphp
-                                            @foreach($already_assigned_students as $already_assigned_student)
-                                            @php
-                                                $studentInfo=App\SmStudent::where('id','=',$already_assigned_student->student_id)->first();
-                                            @endphp
+                                           
+                                            @foreach($students as $student)
                                             <tr>
-                                                <td> STD- {{$count++}}
-                                                    <input type="text" hidden name="class_id" value="{{$input['class']}}">
-                                                    <input type="text" hidden name="section_id" value="{{$input['section']}}">
-                                                    <input type="text" hidden name="subject_id" value="{{$input['subject']}}">
-                                                    <input type="text" hidden name="attendance_date" value="{{$input['attendance_date']}}">
+                                                <td>{{$count++}}                                                  
+                                                    
+                                                    <input type="hidden" name="attendance[{{$student->id}}]" value="{{$student->id}}">
+                                                    <input type="hidden" name="attendance[{{$student->id}}][student]" value="{{$student->student_id}}">
+                                                    <input type="hidden" name="attendance[{{$student->id}}][class]" value="{{$student->class_id}}">
+                                                    <input type="hidden" name="attendance[{{$student->id}}][section]" value="{{$student->section_id}}">
+
                                                  </td>
-                                                <td>{{$studentInfo->admission_no}}<input type="hidden" name="id[]" value="{{$studentInfo->id}}"></td>
-                                                <td>
-                                                    @if(!empty($studentInfo))
-                                                    {{$studentInfo->first_name.' '.$studentInfo->last_name}}
-                                                    @endif
-                                                </td>
-                                                <td>{{$studentInfo!=""?$studentInfo->roll_no:""}}</td>
-                                                <td>
-                                                   
-                                                    <label class="switch">
-                                                        <input type="checkbox" value="P" name="status[{{$studentInfo->id}}]" {{$already_assigned_student->attendance_type == "P"? 'checked':''}}  class="switch-input11">
-                                                        <span class="slider round"></span>
-                                                      </label>
-                                                </td>
-                                                <td>
-                                                    <div class="input-effect">
-                                                        <textarea class="primary-input form-control note_{{$studentInfo->id}}" cols="0" rows="2" name="note[{{$studentInfo->id}}]" id="">{{$already_assigned_student->notes}}</textarea>
-                                                        <label>@lang('lang.add_note_here')</label>
-                                                        <span class="focus-border textarea"></span>
-                                                        <span class="invalid-feedback">
-                                                            <strong>@lang('lang.error')</strong>
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            @endforeach
-                                            @foreach($new_students as $student)
-                                            <tr>
-                                                <td>{{$count++}}
-                                                    <input type="text" hidden name="class_id" value="{{$input['class']}}">
-                                                    <input type="text" hidden name="section_id" value="{{$input['section']}}">
-                                                    <input type="text" hidden name="subject_id" value="{{$input['subject']}}">
-                                                    <input type="text" hidden name="attendance_date" value="{{$input['attendance_date']}}">
-                                                 </td>
-                                                <td>{{$student->admission_no}}<input type="hidden" name="id[]" value="{{$student->id}}"></td>
-                                                <td>{{$student->first_name.' '.$student->last_name}}</td>
+                                                <td>{{$student->studentDetail->admission_no}}</td>
+                                                <td>{{$student->studentDetail->first_name.' '.$student->studentDetail->last_name}}</td>
                                                 <td>{{$student->roll_no}}</td>
                                                 <td>
                                                 
 
                                                     <label class="switch">
-                                                        <input type="checkbox" value="P" name="status[{{$student->id}}]" checked  class="switch-input11">
+                                                        <input type="checkbox" value="P" name="attendance[{{$student->id}}][attendance_type]" {{ $student->studentDetail->DateSubjectWiseAttendances !=null ? ($student->studentDetail->DateSubjectWiseAttendances->attendance_type == "P" ? 'checked' :'') : '' }}  class="switch-input11">
                                                         <span class="slider round"></span>
                                                       </label>
                                                 </td>
                                                 <td>
                                                     <div class="input-effect">
-                                                        <textarea class="primary-input form-control note_{{$student->id}}" cols="0" rows="2" name="note[{{$student->id}}]" id=""></textarea>
-                                                        <label>@lang('lang.add_note_here')</label>
+                                                        <textarea class="primary-input form-control note_{{$student->id}}" cols="0" rows="2" name="attendance[{{$student->id}}][note]" id="">{{$student->studentDetail->DateSubjectWiseAttendances !=null ? $student->studentDetail->DateSubjectWiseAttendances->notes :''}}</textarea>
+                                                        <label>@lang('student.add_note_here')</label>
                                                         <span class="focus-border textarea"></span>
                                                         <span class="invalid-feedback">
-                                                            <strong>@lang('lang.error')</strong>
+                                                            <strong>@lang('student.error')</strong>
                                                         </span>
                                                     </div>
                                                 </td>
@@ -288,7 +258,7 @@
                                     <div class="row mt-40">
                                         <div class="col-lg-12 text-center">
                 
-                                                <button type="submit" class="primary-btn fix-gr-bg">
+                                                <button type="submit" class="primary-btn fix-gr-bg save-template">
                                                     <span class="ti-check"></span>
                                                     @lang('common.save')
                                                 </button>
@@ -303,7 +273,7 @@
                 {{-- {{ Form::close() }} --}}
 
             
-            @endif
+           
 
     </div>
 </section>
@@ -318,16 +288,22 @@
    // Handle form submission event 
    $('#frm-example').on('submit', function(e){
       e.preventDefault();
-
+      $(".save-template").html('Saving...')
 
       // Serialize form data
-      var data = table.$('input,select,textarea').serialize();
+      const formData = new FormData($('#frm-example')[0]);
+      console.log(formData);
+    //   var data = table.$('input,select,textarea').serialize();
       // Submit form data via Ajax
       $.ajax({
         url : "{{route('subject-attendance-store-second')}}",
         method : "POST",
-         data: data,
+        data: formData,
+        contentType: false, // The content type used when sending data to the server.
+        cache: false, // To unable request pages to be cached
+        processData: false,
          success : function (result){
+            $(".save-template").html('Save')
              console.log(result);
                     toastr.success('Attendance Has Been Saved', 'Successful', {
                     timeOut: 5000

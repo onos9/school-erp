@@ -28,6 +28,9 @@ use App\SmExamAttendance;
 use App\SmGeneralSettings;
 use App\SmStudentPromotion;
 use App\CustomResultSetting;
+use App\Http\Controllers\Admin\StudentInfo\SmStudentAttendanceController;
+use App\Http\Controllers\Admin\StudentInfo\SmStudentReportController;
+use App\Models\StudentRecord;
 use App\SmStudentAttendance;
 use Illuminate\Http\Request;
 use App\SmTemporaryMeritlist;
@@ -1753,6 +1756,7 @@ class SmExaminationController extends Controller
         }
         return view('backEnd.examination.send_marks_by_sms', compact('exams', 'classes'));
     }
+
     public function sendMarksBySmsStore(Request $request)
     {
         $request->validate([
@@ -1761,23 +1765,48 @@ class SmExaminationController extends Controller
             'receiver' => 'required',
         ]);
         try {
-            $exams = SmExamType::where('school_id', Auth::user()->school_id)->get();
-            if (teacherAccess()) {
-                $teacher_info = SmStaff::where('user_id', Auth::user()->id)->first();
-                $classes = SmAssignSubject::where('teacher_id', $teacher_info->id)->join('sm_classes', 'sm_classes.id', 'sm_assign_subjects.class_id')
-                    ->where('sm_assign_subjects.academic_id', getAcademicId())
-                    ->where('sm_assign_subjects.active_status', 1)
-                    ->where('sm_assign_subjects.school_id', Auth::user()->school_id)
-                    ->select('sm_classes.id', 'class_name')
-                    ->groupBy('sm_classes.id')
-                    ->get();
-            } else {
-                $classes = SmClass::where('active_status', 1)
-                    ->where('academic_id', getAcademicId())
-                    ->where('school_id', Auth::user()->school_id)
-                    ->get();
-            }
-            return view('backEnd.examination.send_marks_by_sms', compact('exams', 'classes'));
+                $examType = SmExamType::find($request->exam);
+                $students = StudentRecord::where('class_id',$request->class)
+                        ->where('academic_id', getAcademicId())
+                        ->where('school_id', auth()->user()->school_id)
+                        ->with('student')
+                        ->get();
+
+                $marks = SmMarkStore::where('exam_term_id', $request->exam)
+                        ->whereIn('student_record_id', $students->pluck('id')->toArray())
+                        ->get();
+
+                $subjectMarkinfos = [];
+                foreach($marks as $mark){
+                    $subjectMarkinfos [$mark->student_record_id][]= ['subject'=>$mark->subjectName->subject_name, 'mark'=>$mark->total_marks];
+                }
+
+                foreach($subjectMarkinfos as $key => $subjectMarkinfo){
+                    $students = StudentRecord::with('student')->find($key);
+                    $subjects = '';
+                    $marks = '';
+                    $subjectMarks = '';
+                    foreach($subjectMarkinfo as $subjectMarkinf){
+                        $subjects .= $subjectMarkinf['subject']. ',';
+                        $marks .= $subjectMarkinf['mark']. ',';
+                        $subjectMarks .= $subjectMarkinf['subject'] . "-" . $subjectMarkinf['mark']. ',';
+                    }
+                    $compact['class_name'] = $students->class->class_name;
+                    $compact['section_name'] = $students->section->section_name;
+                    $compact['user_email'] = $students->student->email;
+                    $compact['marks'] = $marks;
+                    $compact['subject_marks'] = $subjectMarks;
+                    $compact['exam_type'] = $examType->title;
+                    $compact['school_name'] = generalSetting()->school_name;
+                    if($request->receiver == 'students'){
+                        @send_sms($students->student->mobile, 'exam_mark_student', $compact);
+                    }else{
+                        $compact['parent_name'] = $students->student->parents->guardians_name;
+                        @send_sms($students->student->parents->guardians_mobile, 'exam_mark_parent', $compact);
+                    }
+                }
+                Toastr::success('Operation successful', 'Success');
+                return redirect()->route('send_marks_by_sms');
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -2098,14 +2127,31 @@ class SmExaminationController extends Controller
                     ->where('school_id', Auth::user()->school_id)
                     ->whereIn('subject_id', $examSubjectIds)
                     ->get();
-
-                $eligible_students = SmStudent::where('class_id', $InputClassId)->where('section_id', $InputSectionId)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->where('active_status', 1)->get();
+                $student_ids = SmStudentReportController::classSectionStudent($request);
+                $eligible_students = SmStudent::whereIn('id', $student_ids)->where('school_id', Auth::user()->school_id)
+                ->where('active_status', 1)->get();
 
                 //all subject list in a specific class/section
                 $subject_ids = [];
                 $subject_strings = '';
                 $subject_id_strings = '';
                 $marks_string = '';
+                $subject_total_mark = 0;
+                $failgpa = SmMarksGrade::where('active_status', 1)
+                    ->where('academic_id', getAcademicId())
+                    ->where('school_id', Auth::user()->school_id)
+                    ->min('gpa');
+
+                $failgpaname = SmMarksGrade::where('active_status', 1)
+                    ->where('academic_id', getAcademicId())
+                    ->where('school_id', Auth::user()->school_id)
+                    ->where('gpa', $failgpa)
+                    ->first();
+
+                $maxGpa = SmMarksGrade::where('active_status', 1)
+                    ->where('academic_id', getAcademicId())
+                    ->where('school_id', Auth::user()->school_id)
+                    ->max('gpa');
                 foreach ($eligible_students as $SingleStudent) {
                     foreach ($eligible_subjects as $subject) {
                         $subject_ids[] = $subject->subject_id;
@@ -2123,7 +2169,7 @@ class SmExaminationController extends Controller
                             return redirect()->back();
                         }
 
-                        $subject_total_mark = subjectFullMark($InputExamId, $subject->subject_id);
+                        $subject_total_mark += subjectFullMark($InputExamId, $subject->subject_id);
 
                         if ($marks_string == "") {
                             if ($getMark->total_marks == 0) {
@@ -2136,21 +2182,7 @@ class SmExaminationController extends Controller
                         }
                     }
 
-                    $failgpa = SmMarksGrade::where('active_status', 1)
-                        ->where('academic_id', getAcademicId())
-                        ->where('school_id', Auth::user()->school_id)
-                        ->min('gpa');
 
-                    $failgpaname = SmMarksGrade::where('active_status', 1)
-                        ->where('academic_id', getAcademicId())
-                        ->where('school_id', Auth::user()->school_id)
-                        ->where('gpa', $failgpa)
-                        ->first();
-
-                    $maxGpa = SmMarksGrade::where('active_status', 1)
-                        ->where('academic_id', getAcademicId())
-                        ->where('school_id', Auth::user()->school_id)
-                        ->max('gpa');
 
                     //end subject list for specific section/class
 
@@ -2610,7 +2642,7 @@ class SmExaminationController extends Controller
                 ->where('school_id',Auth::user()->school_id)
                 ->get();
 
-            $student_detail = $studentDetails = SmStudent::find($request->student);
+            $student_detail = $studentDetails = StudentRecord::where('student_id',$request->student)->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->first();
 
             
 
@@ -2743,6 +2775,7 @@ class SmExaminationController extends Controller
 
             return view('backEnd.reports.mark_sheet_report_student', compact( 'optional_subject', 'classes', 'studentDetails', 'exams', 'classes', 'marks_register', 'subjects', 'class', 'section', 'exam_detail', 'grades', 'exam_id', 'class_id', 'student_detail', 'input'));
         } catch (\Exception $e) {
+          
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -2754,7 +2787,7 @@ class SmExaminationController extends Controller
             $total_class_days=0;
             $student_attendance=0;
 
-            $student_detail =   $studentDetails = SmStudent::find($student_id);
+            $student_detail =   $studentDetails = StudentRecord::where('student_id',$student_id)->where('academic_id', getAcademicId())->where('school_id',Auth::user()->school_id)->first();
 
             $examSubjects = SmExam::where([['exam_type_id', $exam_id], ['section_id', $section_id], ['class_id', $class_id]])
                 ->where('school_id',Auth::user()->school_id)
@@ -2925,6 +2958,7 @@ class SmExaminationController extends Controller
                 }
             }
         }catch (\Exception $e) {
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

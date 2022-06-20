@@ -37,6 +37,8 @@
             </td>
                <td>
                 <h3 style="font-size:20px !important; margin: 5px 0 0 0" class="text-white mb-0"> @lang('exam.exam_routine') </h3>
+                <span style="font-size:14px !important;" 
+                class="text-white">@lang('common.academic_year') : {{ @$academic_year->title}} ({{ @$academic_year->year}}) </span> </br>
                 <span style="font-size:14px !important;margin-right:10px;" align="left"
                 class="text-white">@lang('exam.exam'): {{ @$exam_type}} </span>
 
@@ -106,7 +108,7 @@
     </table>
 </div>
 
-<script src="{{ asset('vendor/spondonit/js/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ asset('public/vendor/spondonit/js/jquery-3.6.0.min.js') }}"></script>
 <script src="{{ asset('public/backEnd/js/pdf/html2pdf.bundle.min.js') }}"></script>
 <script src="{{ asset('public/backEnd/js/pdf/html2canvas.min.js') }}"></script>
 

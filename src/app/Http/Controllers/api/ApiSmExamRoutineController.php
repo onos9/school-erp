@@ -17,6 +17,7 @@ use App\SmAcademicYear;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\StudentRecord;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -243,7 +244,7 @@ class ApiSmExamRoutineController extends Controller
     public function studentRoutine($user_id)
     {
         try {
-            $student_detail = SmStudent::select('id', 'full_name', 'class_id', 'section_id', 'user_id')
+            $student_detail = SmStudent::select('id', 'full_name', 'user_id')
                                         ->where('user_id', $user_id)
                                         ->first();
             $exam_types = SmExamType::where('school_id', Auth::user()->school_id)
@@ -270,14 +271,14 @@ class ApiSmExamRoutineController extends Controller
                 }
             }
             
-            $student_detail = SmStudent::select('id', 'full_name', 'class_id', 'section_id', 'school_id', 'academic_id')
+            $student_detail = SmStudent::select('id', 'full_name')
                                         ->where('user_id', $request->student_id)
                                         ->first();
-
-            $class_id = $student_detail->class_id;
-            $section_id = $student_detail->section_id;
-            $school_id = $student_detail->school_id;
-            $academic_id = $student_detail->academic_id;
+            $record = StudentRecord::where('student_id', $request->student_id)->first();
+            $class_id = $record->class_id;
+            $section_id = $record->section_id;
+            $school_id = $record->school_id;
+            $academic_id = $record->academic_id;
             $routines = SmExamSchedule::where('exam_term_id', $request->exam)
                                         ->where('class_id', $class_id)->where('section_id', $section_id)
                                         ->where('school_id', $school_id)->where('academic_id', $academic_id)

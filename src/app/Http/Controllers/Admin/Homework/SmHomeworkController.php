@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Homework;
 
+use App\Http\Controllers\Admin\StudentInfo\SmStudentReportController;
 use App\User;
 use Response;
 use ZipArchive;
@@ -15,6 +16,7 @@ use App\SmNotification;
 use App\SmAssignSubject;
 use App\SmHomeworkStudent;
 use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use App\SmUploadHomeworkContent;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -27,6 +29,7 @@ use Illuminate\Support\Facades\Notification;
 use App\Http\Requests\Admin\Homework\SmHomeworkRequest;
 use App\Http\Requests\Admin\Homework\SearchHomeworkRequest;
 use App\Http\Requests\Admin\Homework\SearchHomeworkEvaluationRequest;
+use App\Notifications\EvalutionHomeworkNotification;
 
 class SmHomeworkController extends Controller
 {
@@ -146,15 +149,24 @@ class SmHomeworkController extends Controller
                 $homeworks->submission_date = date('Y-m-d', strtotime($request->submission_date));
                 $homeworks->marks = $request->marks;
                 $homeworks->description = $request->description;
-                $homeworks->file =fileUpload($request->homework_file,$destination);
+                $homeworks->file =fileUpload($request->homework_file, $destination);
                 $homeworks->created_by = Auth()->user()->id;
                 $homeworks->school_id = Auth::user()->school_id;
                 $homeworks->academic_id = getAcademicId();
                 $homeworks->save();
             }
+
+            $student_ids = StudentRecord::when($request->class, function ($query) use ($request) {
+                $query->where('class_id', $request->class_id);
+            })
+            ->when($request->section_id, function ($query) use ($sections) {
+                $query->whereIn('section_id', $sections);
+            })
+            ->when(!$request->academic_year, function ($query) use ($request) {
+                $query->where('academic_id', getAcademicId());
+            })->where('school_id', auth()->user()->school_id)->pluck('student_id')->unique();
             
-            $students = SmStudent::where('class_id', $request->class_id)
-                        ->whereIn('section_id', $sections)
+            $students = SmStudent::whereIn('id',$student_ids)
                         ->get();
 
             foreach ($students as $student) {
@@ -254,14 +266,17 @@ class SmHomeworkController extends Controller
     {
 
         try {
+            $student_ids = SmStudentReportController::classSectionStudent($request->merge([
+                'class'=>$class_id,
+                'section'=>$section_id,
+            ]));
+           
             $homeworkDetails = SmHomework::where('class_id', $class_id)
                             ->where('section_id', $section_id)
-                            ->where('id', $homework_id)                           
+                            ->where('id', $homework_id) 
                             ->first();
 
-            $students = SmStudent::where('class_id', $class_id)
-                        ->where('section_id', $section_id)
-                        ->get();
+            $students = SmStudent::whereIn('id', $student_ids)->where('school_id', auth()->user()->school_id)->get();
 
             return view('backEnd.homework.evaluationHomework', compact('homeworkDetails', 'students', 'homework_id'));
         } catch (\Exception $e) {
@@ -301,6 +316,41 @@ class SmHomeworkController extends Controller
                         $homeworkstudent->school_id = Auth::user()->school_id;
                         $homeworkstudent->academic_id = getAcademicId();
                         $results = $homeworkstudent->save();
+                        
+                        $student = SmStudent::find($request->student_id[$i]);
+                        $notification = new SmNotification;
+                        $notification->user_id = $student->user_id;
+                        $notification->role_id = 2;
+                        $notification->date = date('Y-m-d');
+                        $notification->message = app('translator')->get('common.homework_evalute');
+                        $notification->school_id = Auth::user()->school_id;
+                        $notification->academic_id = getAcademicId();
+                        $notification->save();
+                        
+                        try{
+                            $user=User::find($student->user_id);
+                            Notification::send($user, new EvalutionHomeworkNotification($notification));
+                        }catch (\Exception $e) {
+                            Log::info($e->getMessage());
+                        }
+
+                        $parent = SmParent::find($student->parent_id);
+                        $notification = new SmNotification();
+                        $notification->role_id = 3;
+                        $notification->message = app('translator')->get('common.homework_evalute_child');
+                        $notification->date = date('Y-m-d');
+                        $notification->user_id = $parent->user_id;
+                        $notification->url = "homework-list";
+                        $notification->school_id = Auth::user()->school_id;
+                        $notification->academic_id = getAcademicId();
+                        $notification->save();
+
+                        try{
+                            $user=User::find($parent->user_id);
+                            Notification::send($user, new EvalutionHomeworkNotification($notification));
+                        }catch (\Exception $e) {
+                            Log::info($e->getMessage());
+                        }
                     }
                     $homeworks = SmHomework::find($request->homework_id);
                     $homeworks->evaluation_date = date('Y-m-d');
@@ -322,7 +372,7 @@ class SmHomeworkController extends Controller
     {
         try {
             if (teacherAccess()) {
-                $teacher_info=SmStaff::where('user_id',Auth::user()->id)->first();
+                $teacher_info=SmStaff::where('user_id', Auth::user()->id)->first();
                 $classes= $teacher_info->classes;
             } else {
                 $classes = SmClass::get();

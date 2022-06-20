@@ -124,7 +124,28 @@
                                         <td>{{$student->admission_no}}</td>
                                         <td>{{$student->roll_no}}</td>
                                         <td>{{$student->first_name.' '.$student->last_name}}</td>
-                                        <td>{{$student->class !=""?$student->class->class_name:""}}</td>
+                                        <td>
+                                            @php
+                                                $class_sec=[];
+                                                foreach ($student->studentRecords as $classSec) {
+                                                    $class_sec[]=$classSec->class->class_name.'('. $classSec->section->section_name .'), ' ;
+                                                }
+                                                if (request()->class) {
+                                                    $sections = [];
+                                                    $class =  $student->recordClass ? $student->recordClass->class->class_name : '';
+                                                    if (request()->section) {
+                                                        $sections [] = $student->recordSection != "" ? $student->recordSection->section->section_name:"";
+                                                    } else {
+                                                        foreach ($student->recordClasses as $section) {
+                                                            $sections [] = $section->section->section_name;
+                                                        }
+                                                    }
+                                                    echo  $class .'('.implode(', ', $sections).'), ';
+                                                } else{
+                                                    echo implode(', ', $class_sec);
+                                                }
+                                            @endphp
+                                        </td>
                                         <td>{{$student->parents !=""?$student->parents->fathers_name:""}}</td>
                                         <td  data-sort="{{strtotime($student->date_of_birth)}}" >
                                            {{$student->date_of_birth != ""? dateConvert($student->date_of_birth):''}} 

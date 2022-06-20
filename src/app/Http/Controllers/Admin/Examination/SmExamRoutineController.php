@@ -451,6 +451,7 @@ class SmExamRoutineController extends Controller
             return redirect()->back();
         }
     }
+    
 
     public function examRoutineReportSearchPrint($exam_id)
     {
@@ -462,19 +463,6 @@ class SmExamRoutineController extends Controller
             $academic_year = SmAcademicYear::find(getAcademicId());
 
 
-            $exam_term_id = $exam_id;
-
-            $pdf = PDF::loadView(
-                'backEnd.reports.exam_routine_report_print',
-                [
-                    'exam_types' => $exam_types,
-                    'exam_routines' => $exam_routines,
-                    'exam_periods' => $exam_periods,
-                    'exam_term_id' => $exam_term_id,
-                    'academic_year'=>$academic_year
-                ]
-            )->setPaper('A4', 'landscape');
-            return $pdf->stream('exam_routine.pdf');
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -781,7 +769,6 @@ class SmExamRoutineController extends Controller
             )->setPaper('A4', 'landscape');
             return $pdf->stream('EXAM_SCHEDULE.pdf');
         } catch (\Exception $e) {
-
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

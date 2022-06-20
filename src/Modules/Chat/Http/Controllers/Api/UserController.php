@@ -210,7 +210,8 @@ class UserController extends Controller
     public function blockedUsers()
     {
         $users = $this->userService->allBlockedUsers();
-        return view('chat::user.blocked', compact('users'));
+       
+        return response()->json(compact('users'));
     }
 
     public function settings()

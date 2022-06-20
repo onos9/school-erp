@@ -98,32 +98,33 @@
                                    @if($status->competed_date !="" && $status->completed_status !="") 
                                    {{$status->competed_date}} <br>
                                    @else
-                                        @if(date('Y-m-d')< $status->lesson_date)Assign
+                                        @if(date('Y-m-d')< $status->lessonDetail->lesson_date)
+                                        Assign
                                         @else
                                         Assigned
                                         @endif
 
-                                     Date ({{$status->lesson_date}})<br>
+                                     Date ({{$status->lessonDetail->lesson_date}})<br>
                                    @endif
                                @endforeach
                             </td>
                              <td>
                             @foreach($data->lessonPlan as $status)
-                                   @if($status->competed_date !="" && $status->completed_status !="") 
+                                   @if($status->lessonDetail->competed_date !="" && $status->lessonDetail->completed_status !="") 
                                    
                                   <strong>
-                                     {{$status->teacherName->full_name}}
+                                     {{$status->lessonDetail->teacherName->full_name}}
                                     </strong> <br>
                                    @else
                                    <span> 
-                                    {{$status->teacherName->full_name}}
+                                    {{$status->lessonDetail->teacherName->full_name}}
                                     </span><br>
                                    @endif
                                @endforeach
                             </td>
                             <td>
                             @foreach($data->lessonPlan as $status)
-                                   @if($status->competed_date !="" && $status->completed_status !="") 
+                                   @if($status->lessonDetail->competed_date !="" && $status->lessonDetail->completed_status !="") 
                                    
                                   <strong class="gradient-color2">@lang('lesson::lesson.completed')</strong> <br>
                                    @else

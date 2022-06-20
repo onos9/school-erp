@@ -22,11 +22,12 @@ class TeacherLessonPlanController extends Controller
     public function teacherLessonPlan(Request $request)
     {
 
-        
-
             try {
-                  $this_week= $weekNumber = date("W");    
-                $period =  CarbonPeriod::create(Carbon::now()->startOfWeek(Carbon::SATURDAY)->format('Y-m-d'), Carbon::now()->endOfWeek(Carbon::FRIDAY)->format('Y-m-d'));
+                  $this_week= $weekNumber = date("W");
+                  $week_end = SmWeekend::where('id',generalSetting()->week_start_id)->order_id;
+                  $start_day = WEEK_DAYS[$week_end ?? 1];
+                $end_day = $start_day==0 ? 6 : $start_day-1;
+                $period = CarbonPeriod::create(Carbon::now()->startOfWeek($start_day)->format('Y-m-d'), Carbon::now()->endOfWeek($end_day)->format('Y-m-d'));
                 $dates=[];
                 foreach ($period as $date){
                         $dates[] = $date->format('Y-m-d');

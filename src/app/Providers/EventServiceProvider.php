@@ -6,6 +6,7 @@ use App\Events\ClassTeacherGetAllStudent;
 use App\Events\CreateClassGroupChat;
 use App\Events\StudentPromotion;
 use App\Events\StudentPromotionGroupDisable;
+use App\Listeners\InstituteRegisteredListener;
 use App\Listeners\ListenClassTeacherGetAllStudent;
 use App\Listeners\ListenCreateClassGroupChat;
 use App\Listeners\ListenStudentPromotion;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Modules\Saas\Events\InstituteRegistration;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -54,5 +56,14 @@ class EventServiceProvider extends ServiceProvider
             StudentPromotionGroupDisable::class,
             [ListenStudentPromotionGroupDisable::class, 'handle']
         );
+
+        if (moduleStatusCheck('Saas')){
+            Event::listen(
+                InstituteRegistration::class,
+                [InstituteRegisteredListener::class, 'handle']
+            );
+        }
+
     }
+
 }

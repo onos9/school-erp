@@ -334,7 +334,7 @@ hr{
                                                                         foreach ($subject_mark as $key => $mark) {
                                                                             if ($additioncheck['0'] != $mark) {                                                                     
                                                                                 $grade_gpa = DB::table('sm_marks_grades')->where('percent_from','<=',$mark)->where('percent_upto','>=',$mark)->where('academic_id', getAcademicId())->first();
-                                                                                $total_grade_point = $total_grade_point + $grade_gpa->gpa;
+                                                                                $total_grade_point = $total_grade_point + optional($grade_gpa)->gpa ?? 0;
                                                                                 $c++;
                                                                             }
                                                                         }
@@ -375,7 +375,7 @@ hr{
                                                                             foreach ($subject_mark as $mark) {
                 
                                                                                 $grade_gpa = DB::table('sm_marks_grades')->where('percent_from','<=',$mark)->where('percent_upto','>=',$mark)->where('academic_id', getAcademicId())->first();
-                                                                                $total_grade_point = $total_grade_point + $grade_gpa->gpa;
+                                                                                $total_grade_point = $total_grade_point + optional($grade_gpa)->gpa;
                                             
                                                                                 
                                                                             }
@@ -408,7 +408,7 @@ hr{
                                                                         $number_of_subject = count($subject_mark)-1; 
                                                                         foreach ($subject_mark as $mark) {
                                                                             $grade_gpa = DB::table('sm_marks_grades')->where('percent_from','<=',$mark)->where('percent_upto','>=',$mark)->where('academic_id', getAcademicId())->first();
-                                                                            $total_grade_point = $total_grade_point + $grade_gpa->gpa;
+                                                                            $total_grade_point = $total_grade_point + optional($grade_gpa)->gpa ?? 0;
                                                                         }
                                                                         if($total_grade_point==0){
                                                                             echo $failgpa;

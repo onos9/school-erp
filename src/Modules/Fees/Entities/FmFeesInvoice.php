@@ -52,4 +52,8 @@ class FmFeesInvoice extends Model
     {
         return $this->invoiceDetails()->sum('sub_total');
     }
+
+    public function recordDetail(){
+        return $this->belongsTo('App\Models\StudentRecord', 'record_id', 'id');
+    }
 }

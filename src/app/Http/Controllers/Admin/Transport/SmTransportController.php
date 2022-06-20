@@ -6,6 +6,7 @@ use App\SmStudent;
 use App\SmVehicle;
 use App\YearCheck;
 use App\ApiBaseMethod;
+use App\Http\Controllers\Admin\StudentInfo\SmStudentReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -54,14 +55,10 @@ class SmTransportController extends Controller
                 ->withInput();
         }
         try{
+            $student_ids = SmStudentReportController::classSectionStudent($request);
             $students = SmStudent::query();
             $students->where('active_status', 1);
-            if($request->class != ""){
-                $students->where('class_id', $request->class);
-            }
-             if($request->section != ""){
-                $students->where('section_id', $request->section);
-            }
+          
             if($request->route != ""){
                 $students->where('route_list_id', $request->route);
             }else{
@@ -72,7 +69,7 @@ class SmTransportController extends Controller
             }else{
                 $students->where('vechile_id', '!=', '');
             }
-            $students = $students->where('school_id',Auth::user()->school_id)->get();
+            $students = $students->whereIn('id', $student_ids)->where('school_id',Auth::user()->school_id)->get();
 
             $classes = SmClass::where('active_status', 1)->where('school_id',Auth::user()->school_id)->get();
             $classes = SmClass::where('active_status', 1)->where('school_id',Auth::user()->school_id)->get();
@@ -81,6 +78,7 @@ class SmTransportController extends Controller
 
 
             $class_id = $request->class;
+            $section_id = $request->section;
             $route_id = $request->route;
             $vechile_id = $request->vehicle;
 
@@ -95,7 +93,7 @@ class SmTransportController extends Controller
                 $data['vechile_id'] = $vechile_id;
                 return ApiBaseMethod::sendResponse($data, null);
             }
-            return view('backEnd.transport.student_transport_report', compact('classes', 'routes', 'vehicles', 'students', 'class_id', 'route_id', 'vechile_id'));
+            return view('backEnd.transport.student_transport_report', compact('classes', 'routes', 'vehicles', 'students', 'class_id', 'route_id', 'section_id', 'vechile_id'));
         }catch (\Exception $e) {
            Toastr::error('Operation Failed', 'Failed');
            return redirect()->back();

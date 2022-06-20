@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Chat\Http\Controllers;
+namespace Modules\Chat\Http\Controllers\Api;
 
 use App\Models\User;
 use App\ApiBaseMethod;

@@ -346,12 +346,6 @@ class SmExamRoutineController extends Controller
             $academic_year = SmAcademicYear::find(getAcademicId());
 
             $class_id = $request->class_id;
-
-            // if($request->section_id==0){
-            //     $section_id='All Sections';
-            // }else{
-            //     $section_id = $request->section_id;
-            // }
             $exam_id = $request->exam_id;
 
             $pdf = PDF::loadView(
@@ -361,7 +355,6 @@ class SmExamRoutineController extends Controller
                     'exam_periods' => $exam_periods,
                     'class_id' => $request->class_id,
                     'academic_year' => $academic_year,
-
                     'section_id' => $request->section_id,
                     'exam_id' => $request->exam_id,
                 ]
@@ -695,26 +688,13 @@ class SmExamRoutineController extends Controller
                     ->where('exam_term_id', $exam_type_id)->orderBy('date', 'ASC')->get();
             }
 
-            // return view('backEnd.examination.exam_schedule_print', [
-            //     'exam_schedules' => $exam_schedules,
-            //     'exam_type' => $exam_type,
-            //     'class_name' => $class_name,
-            //     'academic_year' => $academic_year,
-            //     'section_name' => $section_name,
-            // ]);
-
-            $pdf = PDF::loadView(
-                'backEnd.examination.exam_schedule_print',
-                [
-                    'exam_schedules' => $exam_schedules,
-                    'exam_type' => $exam_type,
-                    'class_name' => $class_name,
-                    'academic_year' => $academic_year,
-                    'section_name' => $section_name,
-
-                ]
-            )->setPaper('A4', 'landscape');
-            return $pdf->stream('EXAM_SCHEDULE.pdf');
+             return view('backEnd.examination.exam_schedule_print', [
+                 'exam_schedules' => $exam_schedules,
+                 'exam_type' => $exam_type,
+                 'class_name' => $class_name,
+                 'academic_year' => $academic_year,
+                 'section_name' => $section_name,
+             ]);
 
         } catch (\Exception $e) {
           

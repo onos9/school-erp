@@ -17,6 +17,7 @@ use App\SmFeesAssignDiscount;
 use App\SmPaymentGatewaySetting;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\StudentRecord;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use Unicodeveloper\Paystack\Paystack;
@@ -45,16 +46,14 @@ class SmFeesController extends Controller
     {
         try {
             $student = Auth::user()->student;
-
             $payment_gateway = SmPaymentMethhod::first();
-
-            $fees_assigneds = SmFeesAssign::with('feesGroupMaster')->where('student_id', $student->id)->get();
-            $fees_discounts = SmFeesAssignDiscount::where('student_id', $student->id)->get();
-
+            $records = studentRecords(null, $student->id)->with('fees.feesGroupMaster', 'class','section')->get();
+            $fees_discounts = SmFeesAssignDiscount::where('student_id', $student->id)->where('school_id',Auth::user()->school_id)->get();
             $applied_discount = [];
             foreach ($fees_discounts as $fees_discount) {
                 $fees_payment = SmFeesPayment::select('fees_discount_id')
                                     ->where('fees_discount_id', $fees_discount->id)
+                                    ->whereIn('record_id',$records->pluck('id')->toArray())
                                     ->first();
                 if (isset($fees_payment->fees_discount_id)) {
                     $applied_discount[] = $fees_payment->fees_discount_id;
@@ -68,8 +67,9 @@ class SmFeesController extends Controller
             $data['bank_info'] = SmPaymentMethhod::where('method', 'Bank')->first();
             $data['cheque_info'] = SmPaymentMethhod::where('method', 'Cheque')->first();
 
-            return view('backEnd.studentPanel.fees_pay', compact('student', 'fees_assigneds', 'fees_discounts', 'applied_discount', 'payment_gateway', 'paystack_info', 'data'));
+            return view('backEnd.studentPanel.fees_pay', compact('student', 'fees_discounts', 'applied_discount', 'payment_gateway', 'paystack_info', 'data','records'));
         } catch (\Exception $e) {
+           
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -91,6 +91,7 @@ class SmFeesController extends Controller
             Session::put('amount', $request->amount);
             Session::put('payment_mode', $request->payment_mode);
             Session::put('assign_id',$request->assign_id);
+            Session::put('record_id',$request->record_id);
 
             $payStackData= [
                 "amount" => intval($request->amount),
@@ -131,6 +132,7 @@ class SmFeesController extends Controller
             $fees_payment->assign_id = Session::get('assign_id');
             $fees_payment->payment_date = date('Y-m-d', strtotime(date('Y-m-d')));
             $fees_payment->payment_mode = 'PS';
+            $fees_payment->record_id = Session::get('record_id');
             $fees_payment->school_id = Auth::user()->school_id;
             $result = $fees_payment->save();
 
@@ -157,7 +159,7 @@ class SmFeesController extends Controller
 
           
 
-            $fees_assign=SmFeesAssign::where('fees_master_id',$get_master_id->fees_master_id)->where('student_id',$fees_payment->student_id)->first();
+            $fees_assign=SmFeesAssign::where('fees_master_id',$get_master_id->fees_master_id)->where('student_id',$fees_payment->student_id)->where('school_id',Auth::user()->school_id)->first();
             $fees_assign->fees_amount-=$amount;
             $fees_assign->save();
             // $notification=new SmNotification();
@@ -192,10 +194,10 @@ class SmFeesController extends Controller
         }
     }
 
-    public function feesPaymentStripe($fees_type, $student_id, $amount,$assign_id)
+    public function feesPaymentStripe($fees_type, $student_id, $amount,$assign_id,$record_id)
     {
         $stripe_info = SmPaymentGatewaySetting::where('gateway_name', 'stripe')->where('school_id', Auth::user()->school_id)->first();
-        return view('backEnd.studentPanel.stripe_payment', compact('stripe_info', 'fees_type', 'student_id', 'amount','assign_id'));
+        return view('backEnd.studentPanel.stripe_payment', compact('stripe_info', 'fees_type', 'student_id', 'amount','assign_id','record_id'));
     }
 
     public function feesPaymentStripeStore(Request $request)
@@ -225,6 +227,7 @@ class SmFeesController extends Controller
         $fees_payment->amount = $request->amount;
         $fees_payment->assign_id = $request->assign_id;
         $fees_payment->payment_date = date('Y-m-d', strtotime(date('Y-m-d')));
+        $fees_payment->record_id = $request->record_id;
         $fees_payment->payment_mode = 'ST';
         $fees_payment->school_id = Auth::user()->school_id;
         $result = $fees_payment->save();
@@ -252,7 +255,7 @@ class SmFeesController extends Controller
             ->where('sm_fees_masters.fees_type_id',$request->fees_type)
             ->where('sm_fees_assigns.student_id',$request->student_id)->first();
 
-        $fees_assign=SmFeesAssign::where('fees_master_id',$get_master_id->fees_master_id)->where('student_id',$fees_payment->student_id)->first();
+        $fees_assign=SmFeesAssign::where('fees_master_id',$get_master_id->fees_master_id)->where('student_id',$fees_payment->student_id)->where('school_id',Auth::user()->school_id)->first();
         $fees_assign->fees_amount-=$request->amount;
         $fees_assign->save();
 
@@ -284,15 +287,14 @@ class SmFeesController extends Controller
 
     }
 
-    public function feesGenerateModalChild(Request $request, $amount, $student_id, $type,$assign_id)
+    public function feesGenerateModalChild(Request $request, $amount, $student_id, $type,$assign_id, $record_id)
     {
         try {
             $amount = $amount;
             $fees_type_id = $type;
-            $student_id = $student_id;
-            $std_info = SmStudent::where('id',$student_id)->select('class_id','section_id')->first();
+            $std_info = StudentRecord::where('id',$record_id)->where('student_id',$student_id)->select('class_id','section_id')->first();
 
-            $discounts = SmFeesAssignDiscount::where('student_id', $student_id)->where('school_id', Auth::user()->school_id)->get();
+            $discounts = SmFeesAssignDiscount::where('student_id', $student_id)->where('record_id',$record_id)->where('school_id', Auth::user()->school_id)->get();
             
             $banks = SmBankAccount::where('active_status', '=', 1)
                     ->where('school_id', Auth::user()->school_id)
@@ -300,7 +302,7 @@ class SmFeesController extends Controller
 
                 $applied_discount = [];
                 foreach ($discounts as $fees_discount) {
-                    $fees_payment = SmFeesPayment::where('active_status',1)->select('fees_discount_id')->where('fees_discount_id', $fees_discount->id)->where('school_id', Auth::user()->school_id)->first();
+                    $fees_payment = SmFeesPayment::where('record_id',$record_id)->where('active_status',1)->select('fees_discount_id')->where('fees_discount_id', $fees_discount->id)->where('school_id', Auth::user()->school_id)->first();
                     if (isset($fees_payment->fees_discount_id)) {
                         $applied_discount[] = $fees_payment->fees_discount_id;
                     }
@@ -314,7 +316,7 @@ class SmFeesController extends Controller
             $method['bank_info'] = SmPaymentMethhod::where('method', 'Bank')->where('school_id', Auth::user()->school_id)->first();
             $method['cheque_info'] = SmPaymentMethhod::where('method', 'Cheque')->where('school_id', Auth::user()->school_id)->first();
 
-            return view('backEnd.studentPanel.fees_generate_modal_child', compact('amount','assign_id', 'discounts', 'fees_type_id', 'student_id', 'std_info','applied_discount', 'data', 'method','banks'));
+            return view('backEnd.studentPanel.fees_generate_modal_child', compact('amount','assign_id', 'discounts', 'fees_type_id', 'student_id', 'std_info','applied_discount', 'data', 'method','banks','record_id'));
         } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
@@ -375,6 +377,7 @@ class SmFeesController extends Controller
             $payment->assign_id=$request->assign_id;
             $payment->class_id = $request->class_id;
             $payment->section_id = $request->section_id;
+            $payment->record_id = $request->record_id;
             $payment->school_id = Auth::user()->school_id;
             $payment->academic_id = getAcademicId();
             $payment->save();
@@ -382,6 +385,7 @@ class SmFeesController extends Controller
             Toastr::success('Payment Added, Please Wait for approval', 'Success');
             return redirect()->back();
         } catch (\Exception $e) {
+            dd($e);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

@@ -21,12 +21,15 @@ class SmAcademicYearFactory extends Factory
      */
     public function definition()
     {
-        $year = $this->faker->year(now());
+        static $i;
+        $i = $i ?? 0;
+        $year = date('Y') + $i +1;
+        $i++;
         $starting_date = $year . '-01-01';
         $ending_date = $year . '-12-31';
         return [
             'year' => $year,
-            'title' => 'Academic Year ' . $year,
+            'title' => 'Jan-Dec',
             'starting_date' => $starting_date,
             'ending_date' => $ending_date,
         ];

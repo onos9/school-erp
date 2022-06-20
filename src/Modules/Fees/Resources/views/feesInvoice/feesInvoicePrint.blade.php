@@ -423,8 +423,8 @@
                                                             <div class="addressleft_text">
                                                                 <p><span>@lang('fees.fees_invoice_issued_to')</p>
                                                                 <p><span><strong>@lang('student.student_name') </span> <span class="nowrap">: {{$invoiceInfo->studentInfo->full_name}}</span> </strong></p>
-                                                                <p><span>@lang('common.class')</span> <span>: {{$invoiceInfo->studentInfo->class->class_name}} ({{$invoiceInfo->studentInfo->section->section_name}})</span> </p>
-                                                                <p><span>@lang('student.roll_no')</span> <span>: {{$invoiceInfo->studentInfo->roll_no}}</span> </p>
+                                                                <p><span>@lang('student.class_section')</span> <span>: {{$invoiceInfo->recordDetail->class->class_name}} ({{$invoiceInfo->recordDetail->section->section_name}})</span> </p>
+                                                                <p><span>@lang('student.roll_no')</span> <span>: {{$invoiceInfo->recordDetail->roll_no}}</span> </p>
                                                                 <p><span>@lang('student.admission_no')</span> <span>: {{$invoiceInfo->studentInfo->admission_no}}</span> </p>
                                                             </div>
                                                         </td>
@@ -514,7 +514,7 @@
                             @endphp
                             <tr>
                                 <td>{{$key+1}}</td>
-                                <td>{{$invoiceDetail->feesType->name}}</td>
+                                <td>{{@$invoiceDetail->feesType->name}}</td>
                                 <td>{{($invoiceDetail)? $invoiceDetail->amount : 0.00}}</td>
                                 <td>{{($invoiceDetail->weaver)? $invoiceDetail->weaver : 0}}</td>
                                 <td>{{($invoiceDetail->fine)? $invoiceDetail->fine : 0}}</td>

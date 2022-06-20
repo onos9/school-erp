@@ -125,12 +125,10 @@
    </div>
 </section>
 <div class="row">
-   <div class="col-lg-10 col-xs-6 col-md-6 col-6 no-gutters ">
+   <div class="col-lg-12 d-flex align-items-center gap_5 justify-content-between flex-wrap ">
        <div class="main-title sm_mb_20 sm2_mb_20 md_mb_20 mb-30 ">
            <h3 class="mb-0"> @lang('menumanage::menuManage.menu_position')</h3>
        </div>
-   </div>
-   <div class="col-lg-2 col-xs-6 col-md-6 col-6 no-gutters ">
        <a href="{{route('menumanage.reset')}}" class="primary-btn fix-gr-bg small pull-right"> <i
                    class="ti-reload"> </i> @lang('menumanage::menuManage.reset')</a>
    </div>

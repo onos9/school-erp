@@ -14,113 +14,51 @@
         </div>
     </div>
 </section>
-<section class="admin-visitor-area">
+<section class="admin-visitor-area up_admin_visitor">
     <div class="container-fluid p-0">
-       <div class="row mt-40">
-            <div class="col-lg-6 col-md-6">
-                <div class="main-title">
-                    <h3 class="mb-30">@lang('student.student_information')</h3>
-                </div>
-            </div>
-        </div>
+       
         <div class="row">
-            <div class="col-lg-3 mb-30">
-                <!-- Start Student Meta Information -->
-                <div class="student-meta-box">
-                    <div class="student-meta-top"></div>
-                    <img class="student-meta-img img-100" src="{{asset($student_detail->student_photo)}}" alt="">
-                    <div class="white-box radius-t-y-0">
-                        <div class="single-meta mt-10">
-                            <div class="d-flex justify-content-between">
-                                <div class="name">
-                                    @lang('student.student_name')
-                                </div>
-                                <div class="value">
-                                    {{$student_detail->first_name.' '.$student_detail->last_name}}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="single-meta">
-                            <div class="d-flex justify-content-between">
-                                <div class="name">
-                                    @lang('student.admission_no')
-                                </div>
-                                <div class="value">
-                                    {{$student_detail->admission_no}}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="single-meta">
-                            <div class="d-flex justify-content-between">
-                                <div class="name">
-                                    @lang('student.roll_number')
-                                </div>
-                                <div class="value">
-                                     {{$student_detail->roll_no}}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="single-meta">
-                            <div class="d-flex justify-content-between">
-                                <div class="name">
-                                    @lang('common.class')
-                                </div>
-                                <div class="value">
-                                   {{$student_detail->class !=""?$student_detail->class->class_name:""}} ({{$student_detail->session !=""?$student_detail->session->session:""}})
-                                </div>
-                            </div>
-                        </div>
-                        <div class="single-meta">
-                            <div class="d-flex justify-content-between">
-                                <div class="name">
-                                    @lang('common.section')
-                                </div>
-                                <div class="value">
-                                    {{$student_detail->section !=""?$student_detail->section->section_name:""}}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="single-meta">
-                            <div class="d-flex justify-content-between">
-                                <div class="name">
-                                    @lang('common.gender')
-                                </div>
-                                <div class="value">
-                                    {{$student_detail->gender !=""?$student_detail->gender->base_setup_name:""}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- End Student Meta Information -->
+            <div class="col-lg-12 student-details up_admin_visitor">
+                <ul class="nav nav-tabs tabs_scroll_nav" role="tablist">
 
-            </div>
-            <div class="col-lg-9">
+                @foreach($records as $key => $record) 
+                    <li class="nav-item">
+                        <a class="nav-link @if($key== 0) active @endif " href="#tab{{$key}}" role="tab" data-toggle="tab">{{$record->class->class_name}} ({{$record->section->section_name}}) </a>
+                    </li>
+                    @endforeach
 
-                <div class="row">
-                    <div class="col-lg-12">
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    @foreach($records as $key => $record) 
+                        <div role="tabpanel" class="tab-pane fade  @if($key== 0) active show @endif" id="tab{{$key}}">
+                            <table id="table_id" class="display school-table" cellspacing="0" width="100%">
 
-                        <table class="display school-table school-table-style" cellspacing="0" width="100%">
-
-                            <thead>
-                                <tr>
-                                    <th>@lang('common.subjects')</th>
-                                    <th>@lang('student.teachers')</th>
-                                    <th>@lang('academics.subject_type')</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @foreach($assignSubjects as $assignSubject)
-                                <tr>
-                                    <td>{{$assignSubject->subject_id != ""? $assignSubject->subject->subject_name:''}}</td>
-                                    <td>{{$assignSubject->teacher_id != ""? $assignSubject->teacher->full_name:''}}</td>
-                                    <td>{{$assignSubject->subject->subject_type == "T"? 'Theory': 'Practical'}}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                <thead>
+                                    <tr>
+                                        <th>@lang('common.subject')</th>
+                                        <th>@lang('common.teacher')</th>
+                                        <th>@lang('academics.subject_type')</th>
+                                    </tr>
+                                </thead>
+    
+                                <tbody>
+                                    @foreach($record->AssignSubject as $assignSubject)
+                                    <tr>
+                                        <td>{{@$assignSubject->subject!=""?@$assignSubject->subject->subject_name:""}}</td>
+                                        <td>{{@$assignSubject->teacher!=""?@$assignSubject->teacher->full_name:""}}</td>
+                                        <td>
+                                            @if(!empty(@$assignSubject->subject))
+                                            {{@$assignSubject->subject->subject_type == "T"? 'Theory': 'Practical'}}
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>

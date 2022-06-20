@@ -5,3 +5,7 @@
 @section('mainContent')
     @include('fees::_addFeesPayment',['role'=>'student'])
 @endsection
+
+@push('scripts')
+
+@endpush

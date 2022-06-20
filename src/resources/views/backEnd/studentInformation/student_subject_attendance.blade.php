@@ -123,7 +123,7 @@
                                         @foreach($values as $value)
                                             @php $student++; @endphp
                                             @if($student == 1)
-                                                {{@$value->full_name}}
+                                                {{@$value->student->full_name}}
                                             @endif
                                         @endforeach
                                        
@@ -133,7 +133,7 @@
                                         @foreach($values as $value)
                                             @php $student++; @endphp
                                             @if($student == 1)
-                                                {{@$value->admission_no}}
+                                                {{@$value->student->admission_no}}
                                             @endif
                                         @endforeach
                                         

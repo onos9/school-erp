@@ -27,6 +27,16 @@ class SmWeekend extends Model
         ->where('academic_id', getAcademicId())
         ->where('school_id', auth()->user()->school_id);
     }
+    public static function studentClassRoutineFromRecord($class_id, $section_id, $day_id)
+    {
+         
+        $routine = SmClassRoutineUpdate::where('day', $day_id)
+                                    ->where('class_id', $class_id)
+                                    ->where('section_id', $section_id)
+                                    ->where('academic_id', getAcademicId())
+                                    ->where('school_id', auth()->user()->school_id)->get();
+        return  $routine;
+    }
 
     public function teacherClassRoutine()
     {

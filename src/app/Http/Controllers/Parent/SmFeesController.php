@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers\Parent;
 
-use App\SmGeneralSettings;
+use DB;
 use App\SmStudent;
 use App\YearCheck;
 use App\SmFeesAssign;
 use App\ApiBaseMethod;
-use DB;
 use App\SmFeesPayment;
 use App\SmPaymentMethhod;
 use App\SmBankPaymentSlip;
+use App\SmGeneralSettings;
+use Illuminate\Http\Request;
+use App\Models\StudentRecord;
 use App\SmFeesAssignDiscount;
 use App\SmPaymentGatewaySetting;
 use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
 
 class SmFeesController extends Controller
 {
@@ -30,10 +31,15 @@ class SmFeesController extends Controller
     {
         try {
             $student = SmStudent::where('id', $id)->first();
+            $records = studentRecords(null, $student->id)->with('fees.feesGroupMaster', 'class', 'section')->get();
             $fees_assigneds = SmFeesAssign::where('student_id', $student->id)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
-            $fees_discounts = SmFeesAssignDiscount::where('student_id', $student->id)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+            $fees_discounts = SmFeesAssignDiscount::where('student_id', $student->id)
+                            ->where('record_id', $records->pluck('id')->toArray())
+                            ->where('academic_id', getAcademicId())
+                            ->where('school_id', Auth::user()->school_id)
+                            ->get();
 
-            $applied_discount = SmFeesPayment::where('active_status',1)->whereIn('fees_discount_id', $fees_discounts->pluck('id')->toArray())->where('student_id', $student->id)
+            $applied_discount = SmFeesPayment::where('active_status',1)->where('record_id', $records->pluck('id')->toArray())->whereIn('fees_discount_id', $fees_discounts->pluck('id')->toArray())->where('student_id', $student->id)
                 ->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->pluck('id')->toArray();
 
             $stripe_info = SmPaymentGatewaySetting::where('gateway_name', 'stripe')->where('school_id', Auth::user()->school_id)->first();
@@ -45,7 +51,7 @@ class SmFeesController extends Controller
             $is_stripe = DB::table('sm_payment_methhods')->where('method','Stripe')->where('active_status',1)->where('school_id', Auth::user()->school_id)->first();
             $razorpay_info = DB::table('sm_payment_gateway_settings')->where('gateway_name', 'RazorPay')->where('school_id', Auth::user()->school_id)->first();
 
-            return view('backEnd.parentPanel.childrenFees', compact('student','is_paystack','is_stripe','razorpay_info', 'razorpay_info', 'is_RazorPay', 'fees_assigneds', 'fees_discounts', 'applied_discount', 'stripe_info', 'data'));
+            return view('backEnd.parentPanel.childrenFees', compact('student','records','is_paystack','is_stripe','razorpay_info', 'razorpay_info', 'is_RazorPay', 'fees_assigneds', 'fees_discounts', 'applied_discount', 'stripe_info', 'data'));
         } catch (\Exception $e) {
             
             Toastr::error('Operation Failed', 'Failed');

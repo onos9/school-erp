@@ -9,9 +9,11 @@ use App\SmExamType;
 use App\SmAcademicYear;
 use App\SmStudentPromotion;
 use App\CustomResultSetting;
+use App\Http\Controllers\Admin\StudentInfo\SmStudentAdmissionController;
 use Illuminate\Http\Request;
 use App\SmTemporaryMeritlist;
 use App\Http\Controllers\Controller;
+use App\Models\StudentRecord;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
 use App\Scopes\StatusAcademicSchoolScope;
@@ -31,8 +33,8 @@ class SmStudentPromoteController extends Controller
                 ->where('school_id', Auth::user()->school_id)->get();
             $exams = SmExamType::where('active_status', 1)->where('academic_id', getAcademicId())
                 ->where('school_id', Auth::user()->school_id)->get();
-          
-            
+
+
             if ($generalSetting->promotionSetting == 0) {
                 return view('backEnd.studentInformation.student_promote_new', compact('sessions', 'classes'));
             } else {
@@ -55,25 +57,24 @@ class SmStudentPromoteController extends Controller
             'current_session' => 'required',
             'promote_session' => 'required',
             'current_class' => 'required',
-            'current_section' => 'sometimes',
+            'current_section' => 'required',
         ]);
 
         try {
+            $student_ids = StudentRecord::when($request->current_session, function ($query) use ($request) {
+                $query->where('academic_id', $request->current_session);
+            })
+                ->when($request->current_class, function ($query) use ($request) {
+                    $query->where('class_id', $request->current_class);
+                })
+                ->when($request->current_section, function ($query) use ($request) {
+                    $query->where('section_id', $request->current_section);
+                })
+                ->where('is_promote', 0)->where('school_id', Auth::user()->school_id)
+                ->pluck('student_id')->unique();
 
             $students = SmStudent::query()->with('class', 'section');
-
-            if ($request->current_session) {
-                $students->where('session_id', '=', $request->current_session);
-            }
-            if ($request->current_class) {
-                $students->where('class_id', '=', $request->current_class);
-            }
-            if ($request->current_section) {
-                $students->Where('section_id', $request->current_section);
-            }
-            $students = $students->where('active_status', 1)
-                ->orderBy('roll_no', 'ASC')
-                ->where('academic_id', $request->current_session)
+            $students = $students->whereIn('id', $student_ids)->where('active_status', 1)
                 ->where('school_id', Auth::user()->school_id)
                 ->withOutGlobalScope(StatusAcademicSchoolScope::class)
                 ->get();
@@ -105,9 +106,12 @@ class SmStudentPromoteController extends Controller
             }
 
             $next_class = $classes->except($current_class)->first();
+            $next_sections = collect();
+            if($next_class){
+                $next_sections = SmClassSection::with('sectionWithoutGlobal')->where('class_id', '=', $next_class->id)->where('academic_id', $request->promote_session)
+                    ->where('school_id', Auth::user()->school_id)->withoutGlobalScope(StatusAcademicSchoolScope::class)->get();
+            }
 
-            $next_sections = SmClassSection::with('sectionWithoutGlobal')->where('class_id', '=', $next_class->id)->where('academic_id', $request->promote_session)
-                ->where('school_id', Auth::user()->school_id)->withoutGlobalScope(StatusAcademicSchoolScope::class)->get();
 
             $search_current_class = SmClass::withoutGlobalScope(StatusAcademicSchoolScope::class)->findOrFail($request->current_class);
             $search_current_section = SmSection::withoutGlobalScope(StatusAcademicSchoolScope::class)->find($request->current_section);
@@ -121,7 +125,7 @@ class SmStudentPromoteController extends Controller
                 return redirect('student-promote');
             }
 
-            return view('backEnd.studentInformation.student_promote_new', compact('currrent_academic_class','next_class', 'sessions', 'classes', 'students', 'current_session', 'current_class', 'current_section', 'promote_session', 'search_current_class', 'search_current_section', 'search_current_academic_year', 'search_promote_academic_year', 'sections', 'next_sections'));
+            return view('backEnd.studentInformation.student_promote_new', compact('currrent_academic_class', 'next_class', 'sessions', 'classes', 'students', 'current_session', 'current_class', 'current_section', 'promote_session', 'search_current_class', 'search_current_section', 'search_current_academic_year', 'search_promote_academic_year', 'sections', 'next_sections'));
 
         } catch (\Exception $e) {
 
@@ -146,13 +150,12 @@ class SmStudentPromoteController extends Controller
     public function promote(Request $request)
     {
 
-        // return $request->all();
+        //   return $request->all();
         $request->validate([
             'promote_session' => 'required',
             'promote.*.class' => 'required',
             'promote.*.section' => 'required_with:promote.*.student',
             'promote.*.roll_number' => 'sometimes|nullable|integer',
-
         ]);
 
         // $validator=Validator::make()
@@ -169,58 +172,83 @@ class SmStudentPromoteController extends Controller
                 if (!gv($student_data, 'student') || !gv($student_data, 'class') || !gv($student_data, 'section')) {
                     continue;
                 }
-                $roll_number = gv($student_data, 'roll_number');
 
+                $roll_number = gv($student_data, 'roll_number');
+                $student_record = StudentRecord::where('student_id', $student_id)
+                    ->where('class_id', gv($student_data, 'class'))
+                    ->where('section_id', gv($student_data, 'section'))
+                    ->where('academic_id', $request->promote_session)
+                    ->where('school_id', Auth::user()->school_id)
+                    ->where('is_promote', 0)
+                    ->first();
+
+                $exit_record = $student_record;
                 if ($roll_number) {
-                    $exist_roll_number = SmStudent::withoutGlobalScope(StatusAcademicSchoolScope::class)->where('class_id', gv($student_data, 'class'))->where('section_id', gv($student_data, 'section'))->where('roll_no', $roll_number)->where('academic_id', getAcademicId())
-                        ->where('school_id', Auth::user()->school_id)->count();
+                    $exist_roll_number = $exit_record;
 
                     if ($exist_roll_number) {
                         throw ValidationException::withMessages(['promote.' . $student_id . '.roll_number' => 'Roll no already exist']);
                     }
                 } else {
-                    $roll_number = SmStudent::withoutGlobalScope(StatusAcademicSchoolScope::class)->where('class_id', (int) gv($student_data, 'class'))
-                            ->where('section_id', (int) gv($student_data, 'section'))->where('academic_id', getAcademicId())
+                    $roll_number = StudentRecord::where('class_id', (int)gv($student_data, 'class'))
+                            ->where('section_id', (int)gv($student_data, 'section'))->where('academic_id', $request->promote_session)
                             ->where('school_id', Auth::user()->school_id)->max('roll_no') + 1;
                 }
 
-                $student_details = SmStudent::withoutGlobalScope(StatusAcademicSchoolScope::class)->findOrFail($student_id);
+                $current_student = SmStudent::where('id', $student_id)->first();
+                $pre_record = StudentRecord::where('student_id', $student_id)
+                    ->where('class_id', $request->pre_class)
+                    ->where('section_id', $request->pre_section)
+                    ->where('academic_id', $request->current_session)
+                    ->where('school_id', Auth::user()->school_id)
+                    ->first();
 
-                $student_promote = new SmStudentPromotion();
-                $student_promote->student_id = $student_id;
 
-                $student_promote->previous_class_id = $student_details->class_id;
-                $student_promote->current_class_id = gv($student_data, 'class');
+                if (!$exit_record) {
 
-                $student_promote->previous_session_id = $request->current_session;
-                $student_promote->current_session_id = $request->promote_session;
+                    $student_promote = new SmStudentPromotion();
+                    $student_promote->student_id = $student_id;
 
-                $student_promote->previous_section_id = $student_details->section_id;
-                $student_promote->current_section_id = gv($student_data, 'section');
+                    $student_promote->previous_class_id = $request->pre_class;
+                    $student_promote->current_class_id = gv($student_data, 'class');
 
-                $student_promote->admission_number = $student_details->admission_no;
-                $student_promote->student_info = $student_details->toJson();
-                $student_promote->merit_student_info = $student_details->toJson();
-                $student_promote->previous_roll_number = $student_details->roll_no;
-                $student_promote->current_roll_number = $roll_number;
-                $student_promote->academic_id = $request->promote_session;
-                $student_promote->result_status = gv($student_data, 'result') ? gv($student_data, 'result') : 'F';
-                $student_promote->save();
+                    $student_promote->previous_session_id = $request->current_session;
+                    $student_promote->current_session_id = $request->promote_session;
 
-                $student_details->session_id = $request->promote_session;
-                $student_details->class_id = gv($student_data, 'class');
-                $student_details->academic_id = $request->promote_session;
-                $student_details->section_id = gv($student_data, 'section');
-                $student_details->roll_no = $roll_number;
-                $student_details->created_at = $promote_year->starting_date . ' 12:00:00';
-                $student_details->save();
+                    $student_promote->previous_section_id = $request->pre_section;
+                    $student_promote->current_section_id = gv($student_data, 'section');
+
+                    $student_promote->admission_number = $current_student->admission_no;
+                    $student_promote->student_info = $current_student->toJson();
+                    $student_promote->merit_student_info = $current_student->toJson();
+                    $student_promote->previous_roll_number = optional($pre_record)->roll_no;
+                    $student_promote->current_roll_number = $roll_number;
+                    $student_promote->academic_id = $request->promote_session;
+                    $student_promote->result_status = gv($student_data, 'result') ? gv($student_data, 'result') : 'F';
+                    $student_promote->save();
+
+
+                    $insertStudentRecord = new SmStudentAdmissionController;
+                    $insertStudentRecord->insertStudentRecord($request->merge([
+                        'student_id' => gv($student_data, 'student'),
+                        'roll_number' => $roll_number,
+                        'class' => gv($student_data, 'class'),
+                        'section' => gv($student_data, 'section'),
+                        'session' => $request->promote_session,
+
+                    ]));
+
+                    $pre_record->is_promote = 1;
+                    $pre_record->save();
+
+
+                }
             }
 
             Toastr::success('Operation successful', 'Success');
             return back();
 
         } catch (\Throwable $th) {
-
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
@@ -242,32 +270,32 @@ class SmStudentPromoteController extends Controller
 
             $meritListSettings = CustomResultSetting::first('merit_list_setting')->merit_list_setting;
 
-            $merit_list = $this->meritList($request);
+            // $merit_list = $this->meritList($request);
 
-            $student_ids = SmStudent::query()->with('class', 'section');
+            $student_ids = StudentRecord::query()->with('class', 'section');
 
             if ($request->current_session) {
-                $student_ids->where('session_id', '=', $request->current_session);
+                $student_ids->where('academic_id', $request->current_session);
             }
             if ($request->current_class) {
                 $student_ids->where('class_id', '=', $request->current_class);
             }
             if ($request->current_section) {
-                $student_ids->Where('section_id', $request->current_section);
+                $student_ids->where('section_id', $request->current_section);
             }
-            $student_ids = $student_ids->where('active_status', 1)
+            $student_ids = $student_ids->where('is_promote', 0)
                 ->orderBy('roll_no', 'ASC')
-                ->where('academic_id', getAcademicId())
                 ->where('school_id', Auth::user()->school_id)
-                ->get()->pluck('id')->toArray();
+                ->get()->pluck('student_id')->toArray();
 
             $students = SmTemporaryMeritlist::query()->with('class', 'studentinfo', 'section');
 
+
             if ($request->current_session) {
-                $students->where('academic_id', '=', $request->current_session);
+                $students->where('academic_id', $request->current_session);
             }
             if ($request->current_class) {
-                $students->where('class_id', '=', $request->current_class);
+                $students->where('class_id', $request->current_class);
             }
             if ($request->current_section) {
                 $students->Where('section_id', $request->current_section);
@@ -277,14 +305,14 @@ class SmStudentPromoteController extends Controller
             } else {
                 $students->orderBy('total_marks', 'DESC');
             }
-
             $students = $students->whereIn('student_id', $student_ids)
                 ->where('school_id', Auth::user()->school_id)
                 ->get();
 
+
             if (count($students) == 0) {
                 Toastr::error('Please Check Your Merit List First', 'Failed');
-                return back();
+                return redirect('student-promote');
             }
 
             $current_session = $request->current_session;
@@ -324,8 +352,7 @@ class SmStudentPromoteController extends Controller
             }
             return view('backEnd.studentInformation.student_promote_with_exam', compact('next_class', 'sessions', 'classes', 'students', 'current_session', 'current_class', 'current_section', 'promote_session', 'search_current_class', 'search_current_section', 'search_current_academic_year', 'search_promote_academic_year', 'sections', 'exams', 'exam_id', 'search_exams'));
 
-        } catch (\Throwable $th) {
-           
+        } catch (\Exception $e) {
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }

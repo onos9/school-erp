@@ -45,7 +45,7 @@ return  [
         'fees_type_list'=> 'Fees Type List',
         'enable'=> 'Enable',
         'disable'=> 'Disable',
-        'fees_due'=> 'Fees Due',
+        'fees_due_report'=> 'Fees Due Report',
         'due_date'=> 'Due Date',
         'paid'=> 'Paid',
         'balance'=> 'Balance',
@@ -57,4 +57,13 @@ return  [
         'delete_fees_invoice'=> 'Delete Fees Invoice',
         'view_payments'=> 'View Payments',
         'wallet_money'=> 'Wallet Money',
+        'change_method'=> 'Change Method',
+        'payment_report'=> 'Payment Report',
+        'balance_report'=> 'Balance Report',
+        'fees_due'=> 'Fees Due',
+        'fine_report'=> 'Fine Report',
+        'report'=> 'Report',
+        'waiver_report'=> 'Waiver Report',
+        'group_fees_generate_seperate_invoice'=> 'Group Fees Generate Seperate Invoice',
+        'max_10_characters' => 'Max 10 characters'
  ];

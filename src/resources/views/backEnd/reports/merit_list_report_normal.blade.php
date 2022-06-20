@@ -223,7 +223,7 @@
                                                                 <div class="col-md-6">
                                                                     <h3>@lang('reports.order_of_merit_list')</h3>
                                                                     <p class="mb-0 font-14 line_grid">
-                                                                        @lang('common.academic_year')  <span class="primary-color fw-500 "> : {{generalSetting()->academic_Year->year}}</span>
+                                                                        @lang('common.academic_year')  <span class="primary-color fw-500 "> : {{optional(generalSetting()->academic_Year)->year}}</span>
                                                                     </p>
                                                                     <p class="mb-0 font-14 line_grid">
                                                                         @lang('exam.exam') <span class="primary-color fw-500">: {{$exam_name}}</span>

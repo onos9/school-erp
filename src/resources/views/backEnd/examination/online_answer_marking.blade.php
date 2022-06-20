@@ -39,7 +39,7 @@
                                         <h3>{{@$take_online_exam->onlineExam !=""?$take_online_exam->onlineExam->question:""}}</h3>
                                                     <h4><strong>@lang('common.subjects'): </strong>{{@$take_online_exam->onlineExam!=""?@$take_online_exam->onlineExam->subject->subject_name:""}}</h4>
                                                     <h4><strong>@lang('exam.total_marks'): {{@$total_mark}} </strong></h4>
-                                                    <h4><strong>@lang('onlineexam::minimum_percentage.exam_title') : {{@$online_exam_info->percentage}} </strong></h4>
+                                                    <h4><strong>@lang('exam.minimum_percentage') : {{@$online_exam_info->percentage}} </strong></h4>
                                                     
                                     <p><strong>@lang('exam.instruction') : </strong>{{@$take_online_exam->onlineExam->instruction}}</p>
                                     </div>

@@ -215,6 +215,7 @@ class SmFeesMasterController extends Controller
             try {
                 if ($tables == null) {
                     $check_fees_assign = SmFeesAssign::where('fees_master_id', $request->id)
+                    ->where('school_id',Auth::user()->school_id)
                         ->join('sm_students','sm_students.id','=','sm_fees_assigns.student_id')->first();
                     if ($check_fees_assign != null) {
                         $msg = 'This data already used in  : ' . $tables . ' Please remove those data first';
@@ -267,7 +268,7 @@ class SmFeesMasterController extends Controller
             $tables = tableList::getTableList($id_key, $request->id);
             try {
                 $assigned_master_id=[];
-                $fees_group_master=SmFeesAssign::get();
+                $fees_group_master=SmFeesAssign::where('school_id',Auth::user()->school_id)->get();
                 foreach ($fees_group_master as $key => $value) {
                     $assigned_master_id[]=$value->fees_master_id;
                 }
@@ -374,7 +375,7 @@ class SmFeesMasterController extends Controller
 
             foreach ($students as $student) {
                 foreach ($fees_masters as $fees_master) {
-                    $assigned_student = SmFeesAssign::select('student_id')->where('student_id', $student->id)->where('fees_master_id', $fees_master->id)->first();
+                    $assigned_student = SmFeesAssign::select('student_id')->where('student_id', $student->id)->where('fees_master_id', $fees_master->id)->where('school_id',Auth::user()->school_id)->first();
 
                     if ($assigned_student != "") {
                         if (!in_array($assigned_student->student_id, $pre_assigned)) {
@@ -417,7 +418,7 @@ class SmFeesMasterController extends Controller
                     foreach ($fees_masters as $fees_master) {
                         $payment_info=SmFeesPayment::where('active_status',1)->where('fees_type_id',$fees_master->fees_type_id)->where('student_id',$student)->first();
                         if ($payment_info==null) {
-                            $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->delete();
+                            $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->where('school_id',Auth::user()->school_id)->delete();
                         }
                     }
                 }
@@ -428,7 +429,7 @@ class SmFeesMasterController extends Controller
                     foreach ($fees_masters as $fees_master) {
                         $payment_info=SmFeesPayment::where('active_status',1)->where('fees_type_id',$fees_master->fees_type_id)->where('student_id',$student)->first();
                         if ($payment_info==null) {
-                            $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->delete();
+                            $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->where('school_id',Auth::user()->school_id)->delete();
                         }
                     }
                 }
@@ -437,7 +438,7 @@ class SmFeesMasterController extends Controller
                 foreach ($request->checked_ids as $student) {
 
                     foreach ($fees_masters as $fees_master) {
-                        $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->first();
+                        $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->where('school_id',Auth::user()->school_id)->first();
 
                         if ( $assign_fees) {
                             continue;
@@ -453,7 +454,7 @@ class SmFeesMasterController extends Controller
 
                         //Yearly Discount assign
 
-                        $check_yearly_discount=SmFeesAssignDiscount::where('fees_group_id',$request->fees_group_id)->where('student_id',$student)->first();
+                        $check_yearly_discount=SmFeesAssignDiscount::where('fees_group_id',$request->fees_group_id)->where('student_id',$student)->where('school_id',Auth::user()->school_id)->first();
 
                         if ($check_yearly_discount) {
                             if ($assign_fees->fees_amount>$check_yearly_discount->applied_amount) {
@@ -609,7 +610,8 @@ class SmFeesMasterController extends Controller
                 foreach ($student_ids as $student) {
                     foreach ($fees_masters as $fees_master) {
                         $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)
-                        ->where('student_id', $student)           
+                        ->where('student_id', $student)
+                        ->where('school_id',Auth::user()->school_id)           
                         ->delete();
                     }
                 }
@@ -619,7 +621,7 @@ class SmFeesMasterController extends Controller
             if ($request->checked_ids != "") {
                 foreach ($request->checked_ids as $student) {
                     foreach ($fees_masters as $fees_master) {
-                        $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->first();
+                        $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->where('school_id',Auth::user()->school_id)->first();
 
                         if ( $assign_fees) {
                             continue;
@@ -635,7 +637,7 @@ class SmFeesMasterController extends Controller
 
                         //Yearly Discount assign
 
-                        $check_yearly_discount=SmFeesAssignDiscount::where('fees_group_id',$request->fees_group_id)->where('student_id',$student)->first();
+                        $check_yearly_discount=SmFeesAssignDiscount::where('fees_group_id',$request->fees_group_id)->where('student_id',$student)->where('school_id',Auth::user()->school_id)->first();
 
                         if ($check_yearly_discount) {
                             if ($assign_fees->fees_amount>$check_yearly_discount->applied_amount) {

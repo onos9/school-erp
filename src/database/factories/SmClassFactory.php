@@ -21,11 +21,11 @@ class SmClassFactory extends Factory
      */
     public $class = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
     public $i = 0;
-    public function definition()
+    public function definition(): array
     {
-        
         return [
             'class_name' => $this->class[$this->i++] ?? $this->faker->word,
+            'school_id' => 1
         ];
     }
 }

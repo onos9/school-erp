@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\FeesCollection;
 use App\ApiBaseMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\FeesCollection\SmFeesMasterRequest;
+use App\Models\StudentRecord;
 use App\Notifications\FeesAssignNotification;
 use App\SmClass;
 use App\SmFeesAssign;
@@ -162,7 +163,7 @@ class SmFeesMasterController extends Controller
             try {
                 if ($tables == null) {
                     $check_fees_assign = SmFeesAssign::where('fees_master_id', $request->id)
-                        ->join('sm_students', 'sm_students.id', '=', 'sm_fees_assigns.student_id')->first();
+                        ->join('sm_students', 'sm_students.id', '=', 'sm_fees_assigns.student_id')->where('school_id',Auth::user()->school_id)->first();
                     if ($check_fees_assign != null) {
                         $msg = 'This data already used in  : ' . $tables . ' Please remove those data first';
                         Toastr::error($msg, 'Failed');
@@ -205,7 +206,7 @@ class SmFeesMasterController extends Controller
             $tables = tableList::getTableList($id_key, $request->id);
             try {
                 $assigned_master_id = [];
-                $fees_group_master = SmFeesAssign::get();
+                $fees_group_master = SmFeesAssign::where('school_id',Auth::user()->school_id)->get();
                 foreach ($fees_group_master as $key => $value) {
                     $assigned_master_id[] = $value->fees_master_id;
                 }
@@ -256,30 +257,20 @@ class SmFeesMasterController extends Controller
             return redirect()->back();
         }
     }
+
     public function feesAssignSearch(Request $request)
     {
-        $input = $request->all();
-        $validator = Validator::make($input, [
+        $request->validate([
             'class' => "required",
         ]);
-// return $request;
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
         try {
             $section_id = 0;
-
             $classes = SmClass::get();
             $groups = SmStudentGroup::get();
             $categories = SmStudentCategory::get();
-
             $fees_group_id = $request->fees_group_id;
 
-            $students = SmStudent::query();
-
+            $students = StudentRecord::query();
             if ($request->class != "") {
                 $students->where('class_id', $request->class);
             }
@@ -287,19 +278,21 @@ class SmFeesMasterController extends Controller
                 $students->where('section_id', $request->section);
                 $section_id = $request->section;
             }
-            if ($request->category != "") {
-                $students->where('student_category_id', $request->category);
-            }
-            if ($request->group != "") {
-                $students->where('student_group_id', $request->group);
-            }
+            // if ($request->category != "") {
+            //     $students->where('student_category_id', $request->category);
+            // }
+            // if ($request->group != "") {
+            //     $students->where('student_group_id', $request->group);
+            // }
 
-            $students = $students->with('gender', 'parents', 'category', 'class', 'section')->get();
+            $students = $students->with('studentDetail.gender', 'studentDetail.parents', 'studentDetail.category', 'class', 'section','studentDetail')
+            
+            ->get();
             $student_ids = $students->pluck('id')->toArray();
 
             $fees_master_ids = SmFeesMaster::where('fees_group_id', $request->fees_group_id)->pluck('id')->toArray();
 
-            $pre_assigned = SmFeesAssign::whereIn('student_id', $student_ids)->whereIn('fees_master_id', $fees_master_ids)->pluck('student_id')->toArray();
+            $pre_assigned = SmFeesAssign::whereIn('record_id', $student_ids)->where('school_id',Auth::user()->school_id)->whereIn('fees_master_id', $fees_master_ids)->pluck('record_id')->toArray();
             // foreach ($students as $student) {
             //     foreach ($fees_masters as $fees_master) {
             //         $assigned_student = SmFeesAssign::select('student_id')->where('student_id', $student->id)->where('fees_master_id', $fees_master->id)->first();
@@ -333,98 +326,107 @@ class SmFeesMasterController extends Controller
     }
     public function feesAssignStore(Request $request)
     {
-        // return $request->all();
         try {
+            $datas= collect($request->data);
+            $student_ids = $datas->unique('student_id')->pluck('student_id')->toArray();
+
             $fees_masters = SmFeesMaster::where('fees_group_id', $request->fees_group_id)
-                ->where('school_id', Auth::user()->school_id)
-                ->get();
-            $checked_ids = collect($request->checked_ids);
-            $students = SmStudent::with(['feesAssign', 'feesPayment', 'feesAssignDiscount', 'forwardBalance', 'user', 'parents', 'parents.parent_user'])->whereIn('id', $request->students)->get();
+                            ->where('school_id', Auth::user()->school_id)
+                            ->get();
 
-            foreach ($students as $student) {
-                if (!$student) {
-                    continue;
-                }
+            $students = SmStudent::with(['feesAssign', 'feesPayment', 
+                        'feesAssignDiscount', 'forwardBalance', 
+                        'user', 'parents', 'parents.parent_user'])
+                        ->whereIn('id', $student_ids)
+                        ->get();
 
-                foreach ($fees_masters as $fees_master) {
-                    //check payment
-                    $payment_info = $student->feesPayment->where('active_status', 1)
-                        ->where('fees_type_id', $fees_master->fees_type_id)->count();
-                    if (!$payment_info) {
-                        // delete assign fees if no payament
-                        if ($student->feesAssign->where('fees_master_id', $fees_master->id)->count()) {
-                            $student->feesAssign()->where('fees_master_id', $fees_master->id)->delete();
-                        }
+            foreach ($students as $key=>$student) {
+                
+                $studentRecords = $datas->where('student_id',$student->id)->toArray();
+                foreach($studentRecords as $studentRecord){
 
-                    }
-
-                    $checked_student = $checked_ids->first(function ($value) use ($student) {
-                        return $value == $student->id;
-                    });
-
-                    if (!$checked_student) {
-                        continue;
-                    }
-
-                    $assign_fees = $student->feesAssign()->where('fees_master_id', $fees_master->id)->first();
-
-                    if ($assign_fees) {
-                        continue;
-                    }
-
-                    $assign_fees = new SmFeesAssign();
-                    $assign_fees->student_id = $student->id;
-                    $assign_fees->fees_amount = $fees_master->amount;
-                    $assign_fees->fees_master_id = $fees_master->id;
-                    $assign_fees->school_id = Auth::user()->school_id;
-                    $assign_fees->academic_id = getAcademicId();
-
-                    $check_yearly_discount = $student->feesAssignDiscount()->where('fees_group_id', $request->fees_group_id)->first();
-
-                    if ($check_yearly_discount) {
-                        if ($assign_fees->fees_amount > $check_yearly_discount->applied_amount) {
-                            $payable_fees = $assign_fees->fees_amount - $check_yearly_discount->applied_amount;
-                            $assign_fees->applied_discount = $check_yearly_discount->applied_amount;
-                            $assign_fees->fees_discount_id = $check_yearly_discount->fees_discount_id;
-                            $assign_fees->fees_amount = $payable_fees;
-                        }
-
-                    }
-
-                    $assign_fees->save();
-
-                    $forward = $student->forwardBalance;
-                    if ($forward) {
-                        $forwardAmount = $forward->balance;
-
-                        if ($forwardAmount) {
-                            $fees_payment = new SmFeesPayment();
-                            $fees_payment->student_id = $student->id;
-                            $fees_payment->fees_type_id = $fees_master->fees_type_id;
-                            $fees_payment->discount_amount = 0;
-                            $fees_payment->fine = 0;
-                            $fees_payment->payment_date = date('Y-m-d');
-                            $fees_payment->payment_mode = @$forward->notes;
-                            $fees_payment->created_by = Auth::id();
-                            $fees_payment->note = @$forward->notes;
-                            $fees_payment->academic_id = getAcademicId();
-                            $fees_payment->school_id = Auth::user()->school_id;
-
-                            if ($forwardAmount > 0 && $fees_master->amount < $forwardAmount) {
-                                $fees_payment->amount = $fees_master->amount;
-                                $extra_forword = $forwardAmount - $fees_master->amount;
-                            } else {
-                                $fees_payment->amount = $forwardAmount;
-                                $extra_forword = 0;
+                    foreach ($fees_masters as $fees_master) {
+                        $payment_info = $student->feesPayment->where('active_status', 1)
+                                        ->where('fees_type_id', $fees_master->fees_type_id)
+                                        ->where('record_id',gv($studentRecord, 'record_id')) //record
+                                        ->count();
+                                        
+                        if (!$payment_info) {
+                            // delete assign fees if no payament
+                            if ($student->feesAssign->where('fees_master_id', $fees_master->id)->where('record_id',gv($studentRecord, 'record_id'))->count()) {
+                                $student->feesAssign()->where('fees_master_id', $fees_master->id)->where('record_id',gv($studentRecord, 'record_id'))->delete();
                             }
-
-                            $fees_payment->save();
-                            $forward->balance = $extra_forword;
-                            $forward->save();
                         }
+    
+                        if (!gbv($studentRecord, 'checked')) {
+                            continue;
+                        }
+    
+                        $assign_fees = $student->feesAssign()->where('fees_master_id', $fees_master->id)->where('record_id',gv($studentRecord, 'record_id'))->first();//record
+    
+                        if ($assign_fees) {
+                            continue;
+                        }
+
+                        $assign_fees = new SmFeesAssign();
+                        $assign_fees->student_id = $student->id;
+                        $assign_fees->fees_amount = $fees_master->amount;
+                        $assign_fees->fees_master_id = $fees_master->id;
+                        $assign_fees->record_id = gv($studentRecord, 'record_id');
+                        $assign_fees->school_id = Auth::user()->school_id;
+                        $assign_fees->academic_id = getAcademicId();
+    
+                        $check_yearly_discount = $student->feesAssignDiscount()->where('fees_group_id', $request->fees_group_id)->first();
+    
+                        if ($check_yearly_discount) {
+                            if ($assign_fees->fees_amount > $check_yearly_discount->applied_amount) {
+                                $payable_fees = $assign_fees->fees_amount - $check_yearly_discount->applied_amount;
+                                $assign_fees->applied_discount = $check_yearly_discount->applied_amount;
+                                $assign_fees->fees_discount_id = $check_yearly_discount->fees_discount_id;
+                                $assign_fees->fees_amount = $payable_fees;
+                            }
+    
+                        }
+    
+                        $assign_fees->save();
+    
+                        $forward = $student->forwardBalance;
+                        if ($forward) {
+                            $forwardAmount = $forward->balance;
+    
+                            if ($forwardAmount) {
+                                $fees_payment = new SmFeesPayment();
+                                $fees_payment->student_id = $student->id;
+                                $fees_payment->fees_type_id = $fees_master->fees_type_id;
+                                $fees_payment->discount_amount = 0;
+                                $fees_payment->fine = 0;
+                                $fees_payment->payment_date = date('Y-m-d');
+                                $fees_payment->payment_mode = @$forward->notes;
+                                $fees_payment->record_id = gv($studentRecord, 'record_id');
+                                $fees_payment->created_by = Auth::id();
+                                $fees_payment->note = @$forward->notes;
+                                $fees_payment->academic_id = getAcademicId();
+                                $fees_payment->school_id = Auth::user()->school_id;
+    
+                                if ($forwardAmount > 0 && $fees_master->amount < $forwardAmount) {
+                                    $fees_payment->amount = $fees_master->amount;
+                                    $extra_forword = $forwardAmount - $fees_master->amount;
+                                } else {
+                                    $fees_payment->amount = $forwardAmount;
+                                    $extra_forword = 0;
+                                }
+    
+                                $fees_payment->save();
+                                $forward->balance = $extra_forword;
+                                $forward->save();
+                            }
+                        }
+    
                     }
 
                 }
+
+
 
                 $notification = new SmNotification;
                 $notification->user_id = $student->user_id;
@@ -438,231 +440,40 @@ class SmFeesMasterController extends Controller
                 try {
                     $user = $student->user;
                     Notification::send($user, new FeesAssignNotification($notification));
-                } catch (\Exception $e) {
+                }catch (\Exception $e) {
                     Log::info($e->getMessage());
                 }
 
                 $parent = $student->parents;
 
-                $notification2 = new SmNotification();
-                $notification2->user_id = $parent->user_id;
-                $notification2->role_id = 3;
-                $notification2->date = date('Y-m-d');
-                $notification2->message = app('translator')->get('fees.fees_assigned_for') . ' ' . $student->full_name;
-                $notification2->school_id = Auth::user()->school_id;
-                $notification2->academic_id = getAcademicId();
-                $notification2->save();
+                if($parent){
+                    $notification2 = new SmNotification();
+                    $notification2->user_id = $parent->user_id;
+                    $notification2->role_id = 3;
+                    $notification2->date = date('Y-m-d');
+                    $notification2->message = app('translator')->get('fees.fees_assigned_for') . ' ' . $student->full_name;
+                    $notification2->school_id = Auth::user()->school_id;
+                    $notification2->academic_id = getAcademicId();
+                    $notification2->save();
 
-                try {
-                    $user = $parent->parent_user;
-                    Notification::send($user, new FeesAssignNotification($notification2));
-                } catch (\Exception $e) {
-                    Log::info($e->getMessage());
+                    try {
+                        $user = $parent->parent_user;
+                        if($user){
+                            Notification::send($user, new FeesAssignNotification($notification2));
+                        }
+
+                    } catch (\Exception $e) {
+                        Log::info($e->getMessage());
+                    }
                 }
 
             }
-            $html = "";
-            return response()->json([$html]);
+            Toastr::success('Operation successful', 'Success');
+            return redirect()->route('fees_assign',$request->fees_group_id);
         } catch (\Exception $e) {
-            return response()->json("", 404);
+            Toastr::error('Operation Failed', 'Failed');
+            return redirect()->route('fees_assign',$request->fees_group_id);
         }
-
-        // //student many to many fees assign
-        // // fees asign has many payment
-        // try {
-        //     $fees_masters = SmFeesMaster::where('fees_group_id', $request->fees_group_id)
-        //         ->where('school_id', Auth::user()->school_id)
-        //         ->get();
-
-        //     if ($request->checked_ids != "") {
-        //         foreach ($request->students as $student) {
-        //             foreach ($fees_masters as $fees_master) {
-        //                 $payment_info = SmFeesPayment::where('active_status', 1)
-        //                     ->where('fees_type_id', $fees_master->fees_type_id)
-        //                     ->where('student_id', $student)
-        //                     ->first();
-        //                 if ($payment_info == null) {
-        //                     $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)
-        //                         ->where('student_id', $student)
-        //                         ->delete();
-        //                 }
-
-        //                 $checked_ids = collect($request->checked_ids);
-
-        //                 if (!$checked_ids->find($student->id)) {
-        //                     continue;
-        //                 }
-        //                 $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)
-        //                     ->where('student_id', $student)
-        //                     ->first();
-
-        //             }
-
-        //             // if student id is not checked
-
-        //         }
-        //     }
-        //     if (!isset($request->checked_ids)) {
-        //         foreach ($request->students as $student) {
-
-        //             foreach ($fees_masters as $fees_master) {
-        //                 $payment_info = SmFeesPayment::where('active_status', 1)->where('fees_type_id', $fees_master->fees_type_id)->where('student_id', $student)->first();
-        //                 if ($payment_info == null) {
-        //                     $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->delete();
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     if ($request->checked_ids != "") {
-        //     foreach ($request->checked_ids as $student) {
-
-        //         foreach ($fees_masters as $fees_master) {
-        //             $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->first();
-
-        //             if ($assign_fees) {
-        //                 continue;
-        //             }
-        //             $assign_fees = new SmFeesAssign();
-        //             $assign_fees->student_id = $student;
-        //             $assign_fees->fees_amount = $fees_master->amount;
-        //             $assign_fees->fees_master_id = $fees_master->id;
-        //             $assign_fees->school_id = Auth::user()->school_id;
-        //             $assign_fees->academic_id = getAcademicId();
-        //             $assign_fees->save();
-
-        //             //Yearly Discount assign
-
-        //             $check_yearly_discount = SmFeesAssignDiscount::where('fees_group_id', $request->fees_group_id)->where('student_id', $student)->first();
-
-        //             if ($check_yearly_discount) {
-        //                 if ($assign_fees->fees_amount > $check_yearly_discount->applied_amount) {
-
-        //                     $payable_fees = $assign_fees->fees_amount - $check_yearly_discount->applied_amount;
-
-        //                     $assign_fees->applied_discount = $check_yearly_discount->applied_amount;
-        //                     $assign_fees->fees_discount_id = $check_yearly_discount->fees_discount_id;
-        //                     $assign_fees->fees_amount = $payable_fees;
-        //                     $assign_fees->save();
-        //                 }
-
-        //             }
-        //         }
-
-        //         //fees carry forward
-
-        //         $forward = SmFeesCarryForward::where('student_id', $student)->first();
-        //         if ($forward) {
-        //             $forwardAmount = $forward->balance;
-
-        //             if ((!is_null($forwardAmount))) {
-        //                 $students_info = SmStudent::find($student);
-        //                 if ($forwardAmount > 0 && $assign_fees->fees_amount >= $forwardAmount) {
-        //                     $fees_payment = new SmFeesPayment();
-        //                     $fees_payment->student_id = $student;
-        //                     $fees_payment->fees_type_id = $fees_master->fees_type_id;
-        //                     $fees_payment->discount_amount = 0;
-        //                     $fees_payment->fine = 0;
-        //                     $fees_payment->amount = $forwardAmount;
-        //                     $fees_payment->payment_date = date('Y-m-d');
-        //                     $fees_payment->payment_mode = @$forward->notes;
-        //                     $fees_payment->created_by = Auth::id();
-        //                     $fees_payment->note = @$forward->notes;
-        //                     $fees_payment->academic_id = getAcademicId();
-        //                     $fees_payment->school_id = Auth::user()->school_id;
-        //                     $result = $fees_payment->save();
-        //                     if ($result) {
-        //                         $forwardAmount = 0;
-        //                         $fees_balance = SmFeesCarryForward::where('student_id', $student)->first();
-        //                         $fees_balance->balance = $forwardAmount;
-        //                         $fees_balance->save();
-        //                     }
-        //                 } elseif ($forwardAmount > 0 && $fees_master->amount < $forwardAmount) {
-        //                     $fees_payment = new SmFeesPayment();
-        //                     $fees_payment->student_id = $student;
-        //                     $fees_payment->fees_type_id = $fees_master->fees_type_id;
-        //                     $fees_payment->discount_amount = 0;
-        //                     $fees_payment->fine = 0;
-        //                     $fees_payment->amount = $fees_master->amount;
-        //                     $fees_payment->payment_date = date('Y-m-d');
-        //                     $fees_payment->payment_mode = @$forward->notes;
-        //                     $fees_payment->created_by = Auth::id();
-        //                     $fees_payment->note = @$forward->notes;
-        //                     $fees_payment->academic_id = getAcademicId();
-        //                     $fees_payment->school_id = Auth::user()->school_id;
-        //                     $result = $fees_payment->save();
-        //                     if ($result) {
-        //                         $forwardAmount = $forwardAmount - $fees_master->amount;
-        //                         $fees_balance = SmFeesCarryForward::where('student_id', $student)->first();
-        //                         $fees_balance->balance = $forwardAmount;
-        //                         $fees_balance->save();
-        //                     }
-
-        //                 } elseif ($forwardAmount < 0) {
-        //                     $fees_payment = new SmFeesPayment();
-        //                     $fees_payment->student_id = $student;
-        //                     $fees_payment->fees_type_id = $fees_master->fees_type_id;
-        //                     $fees_payment->discount_amount = 0;
-        //                     $fees_payment->fine = 0;
-        //                     $fees_payment->amount = $forwardAmount;
-        //                     $fees_payment->payment_date = date('Y-m-d');
-        //                     $fees_payment->payment_mode = @$forward->notes;
-        //                     $fees_payment->created_by = Auth::id();
-        //                     $fees_payment->note = @$forward->notes;
-        //                     $fees_payment->academic_id = getAcademicId();
-        //                     $fees_payment->school_id = Auth::user()->school_id;
-        //                     $result = $fees_payment->save();
-        //                     if ($result) {
-        //                         $forwardAmount = 0;
-        //                         $fees_balance = SmFeesCarryForward::where('student_id', $student)->first();
-        //                         $fees_balance->balance = $forwardAmount;
-        //                         $fees_balance->save();
-        //                     }
-
-        //                 }
-        //             }
-        //         }
-        //         $students_info = SmStudent::find($student);
-        //         $notification = new SmNotification;
-        //         $notification->user_id = $students_info->user_id;
-        //         $notification->role_id = 2;
-        //         $notification->date = date('Y-m-d');
-        //         $notification->message = app('translator')->get('lang.fees_assigned');
-        //         $notification->school_id = Auth::user()->school_id;
-        //         $notification->academic_id = getAcademicId();
-        //         $notification->save();
-
-        //         try {
-        //             $user = User::find($students_info->user_id);
-        //             Notification::send($user, new FeesAssignNotification($notification));
-        //         } catch (\Exception $e) {
-        //             Log::info($e->getMessage());
-        //         }
-
-        //         $parent = SmParent::find($students_info->parent_id);
-        //         $notification2 = new SmNotification;
-        //         $notification2->user_id = $parent->user_id;
-        //         $notification2->role_id = 3;
-        //         $notification2->date = date('Y-m-d');
-        //         $notification2->message = app('translator')->get('lang.fees_assigned_for') . ' ' . $students_info->full_name;
-        //         $notification2->school_id = Auth::user()->school_id;
-        //         $notification2->academic_id = getAcademicId();
-        //         $notification2->save();
-
-        //         try {
-        //             $user = User::find($parent->user_id);
-        //             Notification::send($user, new FeesAssignNotification($notification2));
-        //         } catch (\Exception $e) {
-        //             Log::info($e->getMessage());
-        //         }
-        //     }
-        // }
-
-        //     $html = "";
-        //     return response()->json([$html]);
-        // } catch (\Exception $e) {
-
-        //     return response()->json("", 404);
-        // }
     }
     public function feesAssignStoreOld(Request $request)
     {
@@ -674,7 +485,7 @@ class SmFeesMasterController extends Controller
             if ($request->checked_ids != "") {
                 foreach ($request->checked_ids as $student) {
                     foreach ($fees_masters as $fees_master) {
-                        $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->delete();
+                        $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('school_id',Auth::user()->school_id)->delete();
                     }
                 }
             }
@@ -682,7 +493,7 @@ class SmFeesMasterController extends Controller
             if ($request->checked_ids != "") {
                 foreach ($request->checked_ids as $student) {
                     foreach ($fees_masters as $fees_master) {
-                        $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->first();
+                        $assign_fees = SmFeesAssign::where('fees_master_id', $fees_master->id)->where('student_id', $student)->where('school_id',Auth::user()->school_id)->first();
 
                         if ($assign_fees) {
                             continue;
@@ -697,7 +508,7 @@ class SmFeesMasterController extends Controller
 
                         //Yearly Discount assign
 
-                        $check_yearly_discount = SmFeesAssignDiscount::where('fees_group_id', $request->fees_group_id)->where('student_id', $student)->first();
+                        $check_yearly_discount = SmFeesAssignDiscount::where('fees_group_id', $request->fees_group_id)->where('student_id', $student)->where('school_id',Auth::user()->school_id)->first();
 
                         if ($check_yearly_discount) {
                             if ($assign_fees->fees_amount > $check_yearly_discount->applied_amount) {

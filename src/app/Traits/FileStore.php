@@ -2,10 +2,11 @@
 
 namespace App\Traits;
 
+use File;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Intervention\Image\Facades\Image;
-use Carbon\Carbon;
-use File;
+use Illuminate\Support\Facades\Storage;
 
 trait FileStore
 {
@@ -20,8 +21,11 @@ trait FileStore
             }
 
             $file_name = uniqid().'.'.$file->extension();
-            $file->storeAs('uploads/file/'.$current_date.'/', $file_name);
-            return 'uploads/file/'.$current_date.'/'.$file_name;
+            // $file->storeAs('uploads/file/'.$current_date.'/', $file_name);
+            // $s = Storage::disk('custom')->put('file/'.$current_date, $file);
+            // return 'uploads/file/'.$current_date.'/'.$file_name;
+            $s = Storage::disk('custom')->put('file/'.$current_date, $file);
+            return 'uploads/'.$s;
         }else{
             return null ;
         }

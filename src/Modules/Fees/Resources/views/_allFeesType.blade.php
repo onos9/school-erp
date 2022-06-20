@@ -3,10 +3,11 @@
         <tr>
             <td></td>
             <td>{{$feesGroup->name}} ({{$feesGroup->fessGroup->name}})</td>
-            <input type="hidden" name="feesType[]" value="{{$feesGroup->id}}">
+            <input type="hidden" name="groups[{{$key}}][feesType]" value="{{$feesGroup->id}}">
+            <input type="hidden" name="groupId" value="{{$feesGroup->fessGroup->id}}">
             <td>
                 <div class="input-effect">
-                    <input class="primary-input form-control amount{{ $errors->has('amount') ? ' is-invalid' : '' }}" type="text" name="amount[]" autocomplete="off" value="{{old('amount')}}">
+                    <input class="primary-input form-control amount{{ $errors->has('amount') ? ' is-invalid' : '' }}" type="text" name="groups[{{$key}}][amount]" autocomplete="off" value="{{old('amount')}}">
                     <span class="focus-border"></span>
                     @if ($errors->has('amount'))
                     <span class="invalid-feedback" role="alert">
@@ -17,7 +18,7 @@
             </td>
             <td>
                 <div class="input-effect">
-                    <input class="primary-input form-control weaver{{ $errors->has('weaver') ? ' is-invalid' : '' }}" type="text" name="weaver[]" autocomplete="off" value="{{old('weaver')}}">
+                    <input class="primary-input form-control weaver{{ $errors->has('weaver') ? ' is-invalid' : '' }}" type="text" name="groups[{{$key}}][weaver]" autocomplete="off" value="{{old('weaver')}}">
                     <span class="focus-border"></span>
                     @if ($errors->has('weaver'))
                     <span class="invalid-feedback" role="alert">
@@ -27,9 +28,9 @@
                 </div>
             </td>
             <td class="subTotal"></td>
-            <input type="hidden" name="sub_total[]" class="inputSubTotal">
+            <input type="hidden" name="groups[{{$key}}][sub_total]" class="inputSubTotal">
             <td>
-                <input class="primary-input form-control paidAmount{{ $errors->has('paid_amount') ? ' is-invalid' : '' }}" type="text" name="paid_amount[]" autocomplete="off" disabled>
+                <input class="primary-input form-control paidAmount{{ $errors->has('paid_amount') ? ' is-invalid' : '' }}" type="text" name="groups[{{$key}}][paid_amount]" autocomplete="off" disabled>
             </td>
             <td>
                 <button class="primary-btn icon-only fix-gr-bg" data-toggle="modal" data-target="#addNotesModal{{$feesGroup->id}}" type="button"
@@ -50,7 +51,7 @@
 
                             <div class="modal-body">
                                 <div class="input-effect">
-                                    <input class="primary-input form-control has-content" type="text" name="note[]" autocomplete="off">
+                                    <input class="primary-input form-control has-content" type="text" name="groups[{{$key}}][note]" autocomplete="off">
                                     <label>@lang('common.note')</label>
                                     <span class="focus-border"></span>
                                 </div>
@@ -75,10 +76,10 @@
     <tr>
         <td></td>
         <td>{{$feesType->name}}</td>
-        <input type="hidden" name="feesType[]" value="{{$feesType->id}}">
+        <input type="hidden" name="types[{{$feesType->id}}][feesType]" value="{{$feesType->id}}">
         <td>
             <div class="input-effect">
-                <input class="primary-input form-control amount{{ $errors->has('amount') ? ' is-invalid' : '' }}" type="text" name="amount[]" autocomplete="off" value="{{old('amount')}}">
+                <input class="primary-input form-control amount{{ $errors->has('amount') ? ' is-invalid' : '' }}" type="text" name="types[{{$feesType->id}}][amount]" autocomplete="off" value="{{old('amount')}}">
                 <span class="focus-border"></span>
                 @if ($errors->has('amount'))
                 <span class="invalid-feedback" role="alert">
@@ -89,7 +90,7 @@
         </td>
         <td>
             <div class="input-effect">
-                <input class="primary-input form-control weaver{{ $errors->has('weaver') ? ' is-invalid' : '' }}" type="text" name="weaver[]" autocomplete="off" value="{{old('weaver')}}">
+                <input class="primary-input form-control weaver{{ $errors->has('weaver') ? ' is-invalid' : '' }}" type="text" name="types[{{$feesType->id}}][weaver]" autocomplete="off" value="{{old('weaver')}}">
                 <span class="focus-border"></span>
                 @if ($errors->has('weaver'))
                 <span class="invalid-feedback" role="alert">
@@ -99,9 +100,9 @@
             </div>
         </td>
         <td class="subTotal"></td>
-        <input type="hidden" name="sub_total[]" class="inputSubTotal">
+        <input type="hidden" name="types[{{$feesType->id}}][sub_total]" class="inputSubTotal">
         <td>
-            <input class="primary-input form-control paidAmount{{ $errors->has('paid_amount') ? ' is-invalid' : '' }}" type="text" name="paid_amount[]" autocomplete="off" disabled>
+            <input class="primary-input form-control paidAmount{{ $errors->has('paid_amount') ? ' is-invalid' : '' }}" type="text" name="types[{{$feesType->id}}][paid_amount]" autocomplete="off" disabled>
         </td>
         <td>
             <button class="primary-btn icon-only fix-gr-bg" data-toggle="modal" data-target="#addNotesModal{{$feesType->id}}" type="button"
@@ -122,7 +123,7 @@
 
                         <div class="modal-body">
                             <div class="input-effect">
-                                <input class="primary-input form-control has-content" type="text" name="note[]" autocomplete="off">
+                                <input class="primary-input form-control has-content" type="text" name="types[{{$feesType->id}}][note]" autocomplete="off">
                                 <label>@lang('common.note')</label>
                                 <span class="focus-border"></span>
                             </div>
@@ -141,6 +142,6 @@
         </td>
     </tr>
 @endif
-<script>
+{{-- <script>
     $('[data-tooltip="tooltip"]').tooltip();
-</script>
+</script> --}}
