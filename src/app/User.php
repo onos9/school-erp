@@ -137,11 +137,11 @@ class User extends Authenticatable
         $role_id = Auth::user()->role_id;
 
         if ($role_id == 2)
-            $profile = $this->student ? $this->student->student_photo : 'public/backEnd/img/admin/message-thumb.png';
+            $profile = $this->student ? $this->student->student_photo : 'backEnd/img/admin/message-thumb.png';
         elseif ($role_id == 3)
-            $profile = $this->parent ? $this->parent->fathers_photo : 'public/backEnd/img/admin/message-thumb.png';
+            $profile = $this->parent ? $this->parent->fathers_photo : 'backEnd/img/admin/message-thumb.png';
         else
-            $profile = $this->staff ? $this->staff->staff_photo : 'public/backEnd/img/admin/message-thumb.png';
+            $profile = $this->staff ? $this->staff->staff_photo : 'backEnd/img/admin/message-thumb.png';
 
         return $profile;
     }

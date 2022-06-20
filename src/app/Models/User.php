@@ -112,11 +112,11 @@ class User extends Authenticatable
         $parent = SmParent::where('user_id', Auth::user()->id)->first();
         $staff = SmStaff::where('user_id', Auth::user()->id)->first();
         if ($role_id == 2)
-            $profile = $student ? $student->student_photo : 'public/backEnd/img/admin/message-thumb.png';
+            $profile = $student ? $student->student_photo : 'backEnd/img/admin/message-thumb.png';
         elseif ($role_id == 3)
-            $profile = $parent ? $parent->fathers_photo : 'public/backEnd/img/admin/message-thumb.png';
+            $profile = $parent ? $parent->fathers_photo : 'backEnd/img/admin/message-thumb.png';
         else
-            $profile = $staff ? $staff->staff_photo : 'public/backEnd/img/admin/message-thumb.png';
+            $profile = $staff ? $staff->staff_photo : 'backEnd/img/admin/message-thumb.png';
         return $profile;
     }
 

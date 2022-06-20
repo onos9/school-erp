@@ -248,7 +248,7 @@
                                                     </div>
                                                 @else
                                                     <div id="waiting_loader" class="waiting_loader{{$module->name}}">
-                                                        <img src="{{asset('public/backEnd/img/demo_wait.gif')}}"
+                                                        <img src="{{asset('backEnd/img/demo_wait.gif')}}"
                                                              width="44" height="44"/><br>Installing..
                                                     </div>
                                                     @if(! Illuminate\Support\Facades\Config::get('app.app_sync'))

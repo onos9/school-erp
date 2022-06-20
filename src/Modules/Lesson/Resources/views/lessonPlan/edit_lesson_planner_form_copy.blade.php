@@ -1,4 +1,4 @@
-<script src="{{asset('public/backEnd/')}}/js/main.js"></script>
+<script src="{{asset('backEnd/')}}/js/main.js"></script>
 
 <div class="container-fluid">
     {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'update-lesson-plan',

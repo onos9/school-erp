@@ -23,7 +23,7 @@ class SmBackgroundSettingsTableSeeder extends Seeder
                
                 'title'         => 'Dashboard Background',
                 'type'          => 'image',
-                'image'         => 'public/backEnd/img/body-bg.jpg',
+                'image'         => 'backEnd/img/body-bg.jpg',
                 'color'         => '',
                 'is_default'    => 1,
                 'school_id'     => $school_id,
@@ -34,7 +34,7 @@ class SmBackgroundSettingsTableSeeder extends Seeder
                
                 'title'         => 'Login Background',
                 'type'          => 'image',
-                'image'         => 'public/backEnd/img/login-bg.jpg',
+                'image'         => 'backEnd/img/login-bg.jpg',
                 'color'         => '',
                 'is_default'    => 0,
                 'school_id'     => $school_id,

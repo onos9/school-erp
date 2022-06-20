@@ -1,6 +1,6 @@
 @extends('backEnd.master')
 @section('css')
-    <link rel="stylesheet" type="text/css" href="{{ asset('public/backEnd/') }}/css/croppie.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('backEnd/') }}/css/croppie.css">
 @endsection
 @section('title')
     @lang('student.profile_update')
@@ -574,6 +574,6 @@
 
 @endsection
 @section('script')
-    <script src="{{ asset('public/backEnd/') }}/js/croppie.js"></script>
-    <script src="{{ asset('public/backEnd/') }}/js/st_addmision.js"></script>
+    <script src="{{ asset('backEnd/') }}/js/croppie.js"></script>
+    <script src="{{ asset('backEnd/') }}/js/st_addmision.js"></script>
 @endsection

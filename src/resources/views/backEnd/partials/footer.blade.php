@@ -98,44 +98,44 @@
     }
 </script>
 
-<script src="{{asset('public/backEnd/')}}/vendors/js/jquery-ui.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/jquery.data-tables.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/dataTables.buttons.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/buttons.flash.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/jszip.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/pdfmake.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/vfs_fonts.js"></script>
-<script src="{{asset('public/backEnd/js/vfs_fonts.js')}}"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/buttons.html5.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/buttons.print.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/dataTables.rowReorder.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/dataTables.responsive.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/buttons.colVis.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/popper.js"></script>
-{{--<script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap.min.js">--}}
+<script src="{{asset('backEnd/')}}/vendors/js/jquery-ui.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/jquery.data-tables.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/dataTables.buttons.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/buttons.flash.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/jszip.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/pdfmake.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/vfs_fonts.js"></script>
+<script src="{{asset('backEnd/js/vfs_fonts.js')}}"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/buttons.html5.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/buttons.print.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/dataTables.rowReorder.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/dataTables.responsive.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/buttons.colVis.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/popper.js"></script>
+{{--<script src="{{asset('backEnd/')}}/vendors/js/bootstrap.min.js">--}}
 {{--</script>--}}
-<script src="{{asset('public/backEnd/js/metisMenu.js')}}"></script>
-<script src="{{asset('public/backEnd/')}}/css/rtl/bootstrap.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/nice-select.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/jquery.magnific-popup.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/fastselect.standalone.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/raphael-min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/morris.min.js"></script>
-<script type="text/javascript" src="{{asset('public/backEnd/')}}/vendors/js/toastr.min.js"></script>
-<script type="text/javascript" src="{{asset('public/backEnd/')}}/vendors/js/moment.min.js"></script>
-{{-- <script src="{{ asset('public/backEnd/vendors/editor/ckeditor/ckeditor.js') }}"></script> --}}
-<script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap_datetimepicker.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap-datepicker.min.js"></script>
-<script type="text/javascript" src="{{asset('public/backEnd/')}}/vendors/js/fullcalendar.min.js"></script>
-<script src="{{asset('public/backEnd/vendors/js/fullcalendar-locale-all.js')}}"></script>
-<script type="text/javascript" src="{{asset('public/backEnd/')}}/js/jquery.validate.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/select2/select2.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/js/main.js"></script>
-<script src="{{asset('public/backEnd/')}}/js/lesson_plan.js"></script>
-<script src="{{asset('public/backEnd/')}}/js/custom.js"></script>
+<script src="{{asset('backEnd/js/metisMenu.js')}}"></script>
+<script src="{{asset('backEnd/')}}/css/rtl/bootstrap.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/nice-select.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/jquery.magnific-popup.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/fastselect.standalone.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/raphael-min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/morris.min.js"></script>
+<script type="text/javascript" src="{{asset('backEnd/')}}/vendors/js/toastr.min.js"></script>
+<script type="text/javascript" src="{{asset('backEnd/')}}/vendors/js/moment.min.js"></script>
+{{-- <script src="{{ asset('backEnd/vendors/editor/ckeditor/ckeditor.js') }}"></script> --}}
+<script src="{{asset('backEnd/')}}/vendors/js/bootstrap_datetimepicker.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript" src="{{asset('backEnd/')}}/vendors/js/fullcalendar.min.js"></script>
+<script src="{{asset('backEnd/vendors/js/fullcalendar-locale-all.js')}}"></script>
+<script type="text/javascript" src="{{asset('backEnd/')}}/js/jquery.validate.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/select2/select2.min.js"></script>
+<script src="{{asset('backEnd/')}}/js/main.js"></script>
+<script src="{{asset('backEnd/')}}/js/lesson_plan.js"></script>
+<script src="{{asset('backEnd/')}}/js/custom.js"></script>
 <script src="{{asset('public/')}}/js/registration_custom.js"></script>
-<script src="{{asset('public/backEnd/')}}/js/developer.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/daterangepicker.min.js"></script>
+<script src="{{asset('backEnd/')}}/js/developer.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/daterangepicker.min.js"></script>
 <script>
     pdfMake.fonts = {
         DejaVuSans: {
@@ -161,11 +161,11 @@
     }(jQuery));
 
 </script>
-<script src="{{asset('public/backEnd/')}}/vendors/editor/summernote-bs4.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/editor/summernote-bs4.js"></script>
 <script src="{{url('Modules\Wallet\Resources\assets\js\wallet.js')}}"></script>
 
-<script src="{{asset('public/backEnd/')}}/js/lesson_plan.js"></script>
-{{-- <script src="{{asset('public/backEnd/')}}/saas/js1/custom.js"></script> --}}
+<script src="{{asset('backEnd/')}}/js/lesson_plan.js"></script>
+{{-- <script src="{{asset('backEnd/')}}/saas/js1/custom.js"></script> --}}
 
 <script type="text/javascript">
     //$('table').parent().addClass('table-responsive pt-4');
@@ -214,7 +214,7 @@
         return true;
     }
 </script>
-<script src="{{asset('public/backEnd/')}}/js/search.js"></script>
+<script src="{{asset('backEnd/')}}/js/search.js"></script>
 {{-- <script src="{{asset('public/landing/js/toastr.js')}}"></script> --}}
 
 {!! Toastr::message() !!}

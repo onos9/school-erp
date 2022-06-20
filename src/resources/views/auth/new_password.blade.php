@@ -8,9 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>@lang('auth.reset_password') </title>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/bootstrap.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/themify-icons.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/style.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/bootstrap.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/themify-icons.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/css/style.css" />
 	<style>
     html {
     visibility: visible;
@@ -30,7 +30,7 @@
                             	$setting = generalSetting();
                         	@endphp
 							<a href="#">
-								{{-- <img src="{{asset('public/backEnd/img/logo.png')}}" alt=""> --}}
+								{{-- <img src="{{asset('backEnd/img/logo.png')}}" alt=""> --}}
 								<img src="{{asset($setting->logo)}}" alt="" width="170px" height="68px">
 							</a>
 						</div>
@@ -107,9 +107,9 @@
 	<!--================ End Footer Area =================-->
 
 
-    <script src="{{asset('public/backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script>
-    <script src="{{asset('public/backEnd/')}}/vendors/js/popper.js"></script>
-	<script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap.min.js"></script>
+    <script src="{{asset('backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script>
+    <script src="{{asset('backEnd/')}}/vendors/js/popper.js"></script>
+	<script src="{{asset('backEnd/')}}/vendors/js/bootstrap.min.js"></script>
 	<script>
 		$('.primary-btn').on('click', function(e) {
 		// Remove any old one

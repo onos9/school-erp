@@ -76,7 +76,7 @@
                                             @endforeach
                                             </select>
                                                <div class="pull-right loader loader_style" id="select_section_loader">
-                                                    <img src="{{asset('public/backEnd/image/pre-loader.gif')}}" alt="" class="loader_img_style">
+                                                    <img src="{{asset('backEnd/image/pre-loader.gif')}}" alt="" class="loader_img_style">
                                                 </div>   
                                                 @if ($errors->has('section'))
                                                 <span class="invalid-feedback invalid-select" role="alert">
@@ -95,7 +95,7 @@
                                              @endforeach
                                         </select>
                                         <div class="pull-right loader" id="select_subject_loader" style="margin-top: -30px;padding-right: 21px;">
-                                            <img src="{{asset('public/backEnd/image/pre-loader.gif')}}" alt="" style="width: 28px;height:28px;">
+                                            <img src="{{asset('backEnd/image/pre-loader.gif')}}" alt="" style="width: 28px;height:28px;">
                                         </div> 
                                         @if ($errors->has('subject'))
                                         <span class="invalid-feedback invalid-select" role="alert">

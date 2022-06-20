@@ -43,35 +43,35 @@
     <meta name="_token" content="{!! csrf_token() !!}"/>
     <!-- Bootstrap CSS -->
     @if( $setting->site_title == 1)
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/bootstrap.min.css"/>
+        <link rel="stylesheet" href="{{asset('backEnd/')}}/css/rtl/bootstrap.min.css"/>
     @else
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/bootstrap.css"/>
     @endif
 
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/jquery-ui.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/jquery-ui.css"/>
 
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/bootstrap-datepicker.min.css"/>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/bootstrap-datetimepicker.min.css"/>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/themify-icons.css"/>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/font-awesome.min.css"/>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/nice-select.css"/>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/magnific-popup.css"/>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/fastselect.min.css"/>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/owl.carousel.min.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/bootstrap-datepicker.min.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/themify-icons.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/nice-select.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/magnific-popup.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/fastselect.min.css"/>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/owl.carousel.min.css"/>
     <!-- main css -->
 
     @if($setting->site_title ==1)
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/style.css"/>
+        <link rel="stylesheet" href="{{asset('backEnd/')}}/css/rtl/style.css"/>
     @else
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/{{@activeStyle()->path_main_style}}"/>
+        <link rel="stylesheet" href="{{asset('backEnd/')}}/css/{{@activeStyle()->path_main_style}}"/>
     @endif
 
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/fullcalendar.min.css">
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/fullcalendar.print.css">
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/fullcalendar.min.css">
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/fullcalendar.print.css">
 
     <link rel="stylesheet" href="{{asset('public/')}}/frontend/css/infix.css"/>
 
-    <script src="{{asset('public/backEnd/')}}/vendors/js/jquery-3.2.1.min.js">
+    <script src="{{asset('backEnd/')}}/vendors/js/jquery-3.2.1.min.js">
     </script>
     <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
     <script>
@@ -485,25 +485,25 @@
 </footer>
 <!--================End Footer Area =================-->
 
-{{-- <script src="{{asset('public/backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script> --}}
-<script src="{{asset('public/backEnd/')}}/vendors/js/jquery-ui.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/popper.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/nice-select.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/jquery.magnific-popup.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/raphael-min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/morris.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/owl.carousel.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/moment.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/print/bootstrap-datetimepicker.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap-datepicker.min.js"></script>
+{{-- <script src="{{asset('backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script> --}}
+<script src="{{asset('backEnd/')}}/vendors/js/jquery-ui.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/popper.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/bootstrap.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/nice-select.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/jquery.magnific-popup.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/raphael-min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/morris.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/owl.carousel.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/moment.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/print/bootstrap-datetimepicker.min.js"></script>
+<script src="{{asset('backEnd/')}}/vendors/js/bootstrap-datepicker.min.js"></script>
 
 
 <script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyDs3mrTgrYd6_hJS50x4Sha1lPtS2T-_JA"></script>
-<script src="{{asset('public/backEnd/')}}/js/main.js"></script>
-<script src="{{asset('public/backEnd/')}}/js/custom.js"></script>
+<script src="{{asset('backEnd/')}}/js/main.js"></script>
+<script src="{{asset('backEnd/')}}/js/custom.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="{{asset('public/backEnd/')}}/js/developer.js"></script>
+<script src="{{asset('backEnd/')}}/js/developer.js"></script>
 {!! Toastr::message() !!}
 @yield('script')
 

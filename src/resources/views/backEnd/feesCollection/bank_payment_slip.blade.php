@@ -55,7 +55,7 @@
                                         @endif
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_section_loader">
-                                        <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
+                                        <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
                                     </div>
                                     @if ($errors->has('section'))
                                     <span class="invalid-feedback invalid-select" role="alert">

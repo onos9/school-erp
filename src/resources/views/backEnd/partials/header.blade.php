@@ -25,53 +25,53 @@ $generalSetting = generalSetting();
     <meta name="_token" content="{!! csrf_token() !!}" />
     <!-- Bootstrap CSS -->
     @if(userRtlLtl() ==1)
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/bootstrap.min.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/css/rtl/bootstrap.min.css" />
     @else
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/bootstrap.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/bootstrap.css" />
     @endif
-    <script src="{{asset('public/backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script>
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/jquery-ui.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/jquery.data-tables.css">
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/buttons.dataTables.min.css">
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/rowReorder.dataTables.min.css">
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/responsive.dataTables.min.css">
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/bootstrap-datepicker.min.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/bootstrap-datetimepicker.min.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/themify-icons.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/flaticon.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/nice-select.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/magnific-popup.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/fastselect.min.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/toastr.min.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/js/select2/select2.css" />
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/fullcalendar.min.css">
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/daterangepicker.css">
+    <script src="{{asset('backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/jquery-ui.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/jquery.data-tables.css">
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/rowReorder.dataTables.min.css">
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/responsive.dataTables.min.css">
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/bootstrap-datepicker.min.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/themify-icons.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/flaticon.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/nice-select.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/magnific-popup.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/fastselect.min.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/toastr.min.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/js/select2/select2.css" />
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/fullcalendar.min.css">
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/daterangepicker.css">
 
     <link rel="stylesheet" href="{{asset('public/chat/css/notification.css')}}">
-    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/editor/summernote-bs4.css">
-    <link rel="stylesheet" href="{{asset('public/backEnd/css/metisMenu.css')}}">
-    <link rel="stylesheet" href="{{asset('public/backEnd/css/preloader.css')}}">
+    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/editor/summernote-bs4.css">
+    <link rel="stylesheet" href="{{asset('backEnd/css/metisMenu.css')}}">
+    <link rel="stylesheet" href="{{asset('backEnd/css/preloader.css')}}">
 
 
     @if(request()->route()->getPrefix() == '/chat')
         <link rel="stylesheet" href="{{asset('public/chat/css/style.css')}}">
     @endif
-    <link rel="stylesheet" href="{{asset('public/backEnd/css/menu.css')}}">
+    <link rel="stylesheet" href="{{asset('backEnd/css/menu.css')}}">
     @yield('css')
 
-    <link rel="stylesheet" href="{{asset('public/backEnd/css/loade.css')}}" />
+    <link rel="stylesheet" href="{{asset('backEnd/css/loade.css')}}" />
 
     @if(userRtlLtl() ==1)
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/style.css" />
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/rtl/infix.css" />
+        <link rel="stylesheet" href="{{asset('backEnd/')}}/css/rtl/style.css" />
+        <link rel="stylesheet" href="{{asset('backEnd/')}}/css/rtl/infix.css" />
     <!-- new for lawn green v  -->
 
     @endif
 
     @if(userRtlLtl() != 1 || (userRtlLtl() && activeStyle()->path_main_style != "style.css"))
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/{{activeStyle()->path_main_style}}" />
-        <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/{{activeStyle()->path_infix_style}}" />
+        <link rel="stylesheet" href="{{asset('backEnd/')}}/css/{{activeStyle()->path_main_style}}" />
+        <link rel="stylesheet" href="{{asset('backEnd/')}}/css/{{activeStyle()->path_infix_style}}" />
         @endif
     <style>
         .dataTables_wrapper .dataTables_paginate .paginate_button.current,
@@ -98,7 +98,7 @@ $generalSetting = generalSetting();
         }
     </style>
 
-    <script src="{{asset('public/backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script>
+    <script src="{{asset('backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script>
     <script>
         window.Laravel = {
             "baseUrl": '{{ url('/') }}'+'/',
@@ -112,7 +112,7 @@ $generalSetting = generalSetting();
 </head>
 <?php
 if (empty(dashboardBackground())) {
-    $css = "background: url('/public/backEnd/img/body-bg.jpg')  no-repeat center; background-size: cover; ";
+    $css = "background: url('/backEnd/img/body-bg.jpg')  no-repeat center; background-size: cover; ";
 } else {
     if (!empty(dashboardBackground()->image)) {
         $css = "background: url('" . url(dashboardBackground()->image) . "')  no-repeat center; background-size: cover; ";

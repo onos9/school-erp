@@ -32,7 +32,7 @@ class CreateSmBackgroundSettingsTable extends Migration
                 'id'            => 1,
                 'title'         => 'Dashboard Background',
                 'type'          => 'image',
-                'image'         => 'public/backEnd/img/body-bg.jpg',
+                'image'         => 'backEnd/img/body-bg.jpg',
                 'color'         => '',
                 'is_default'    => 1,
 
@@ -42,7 +42,7 @@ class CreateSmBackgroundSettingsTable extends Migration
                 'id'            => 2,
                 'title'         => 'Login Background',
                 'type'          => 'image',
-                'image'         => 'public/backEnd/img/login-bg.jpg',
+                'image'         => 'backEnd/img/login-bg.jpg',
                 'color'         => '',
                 'is_default'    => 0,
 

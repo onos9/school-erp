@@ -459,7 +459,7 @@ class LoginController extends Controller
         $login_background = SmBackgroundSetting::where([['is_default', 1], ['title', 'Login Background']])->first();
 
         if (empty($login_background)) {
-            $data['css'] = "background: url(" . url('public/backEnd/login2/img/login-bg.png') . ")  no-repeat center; background-size: cover; ";
+            $data['css'] = "background: url(" . url('backEnd/login2/img/login-bg.png') . ")  no-repeat center; background-size: cover; ";
         } else {
             if (!empty($login_background->image)) {
                 $data['css'] = "background: url('" . url($login_background->image) . "')  no-repeat center;  background-size: cover;";
@@ -492,7 +492,7 @@ class LoginController extends Controller
         $login_background = SmBackgroundSetting::where([['is_default', 1], ['title', 'Login Background']])->first();
 
         if (empty($login_background)) {
-            $css = "background: url(" . url('public/backEnd/img/login-bg.jpg') . ")  no-repeat center; background-size: cover; ";
+            $css = "background: url(" . url('backEnd/img/login-bg.jpg') . ")  no-repeat center; background-size: cover; ";
         } else {
             if (!empty($login_background->image)) {
                 $css = "background: url('" . url($login_background->image) . "')  no-repeat center;  background-size: cover;";

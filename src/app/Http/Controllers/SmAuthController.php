@@ -99,7 +99,7 @@ class SmAuthController extends Controller
             $login_background = SmBackgroundSetting::where([['is_default', 1], ['title', 'Login Background']])->first();
 
             if (empty($login_background)) {
-                $css = "background: url(" . url('public/backEnd/img/login-bg.jpg') . ")  no-repeat center; background-size: cover; ";
+                $css = "background: url(" . url('backEnd/img/login-bg.jpg') . ")  no-repeat center; background-size: cover; ";
             } else {
                 if (!empty($login_background->image)) {
                     $css = "background: url('" . url($login_background->image) . "')  no-repeat center;  background-size: cover;";

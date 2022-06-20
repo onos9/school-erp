@@ -24,7 +24,7 @@
     }
     .user_id_card .user_body{
         padding: 30px;
-        /* background-image: url({{asset('public/backEnd/img/student/id-card-img.jpg') }}); */
+        /* background-image: url({{asset('backEnd/img/student/id-card-img.jpg') }}); */
         background-repeat: no-repeat;
         background-size: 100% 100%;
         background-position:top center;
@@ -682,25 +682,25 @@
                     <div class="mt-10">
 
                         <div id="horizontal" style="margin: 0; padding: 0; font-family: 'Poppins', sans-serif; font-weight: 500;  font-size: 12px; line-height:1.02 ; color: #000">
-                            <div class="horizontal__card" style="line-height:1.02; background-image: url({{asset('public/backEnd/id_card/img/vertical_bg.png')}}); width: 57.15mm; height: 88.89999999999999mm; margin: auto; background-size: 100% 100%; background-position: center center; position: relative; background-color: #fff;">
+                            <div class="horizontal__card" style="line-height:1.02; background-image: url({{asset('backEnd/id_card/img/vertical_bg.png')}}); width: 57.15mm; height: 88.89999999999999mm; margin: auto; background-size: 100% 100%; background-position: center center; position: relative; background-color: #fff;">
                                 <div class="horizontal_card_header" style="line-height:1.02; display: flex; align-items:center; justify-content:space-between; padding:8px 12px">
-                                    <div class="logo__img logoImage hLogo" style="line-height:1.02; width: 80px; background-image: url('{{asset('public/backEnd/img/logo.png')}}');height: 30px;
+                                    <div class="logo__img logoImage hLogo" style="line-height:1.02; width: 80px; background-image: url('{{asset('backEnd/img/logo.png')}}');height: 30px;
                                     background-size: cover;
                                     background-repeat: no-repeat;
                                     background-position: center center;">
                                         {{-- <img class="logoImage hLogo" src=""  alt="" style="line-height:1.02; width: 100%;"> --}}
                                     </div>
                                     <div class="qr__img" style="line-height:1.02; width: 30px;">
-                                        <img src="{{asset('public/backEnd/id_card/img/dd.png')}}" alt="" style="line-height:1.02; width: 100%;">
+                                        <img src="{{asset('backEnd/id_card/img/dd.png')}}" alt="" style="line-height:1.02; width: 100%;">
                                     </div>
                                 </div>
                                 <div class="horizontal_card_body" style="line-height:1.02; display:block; padding-top: 2.5mm; padding-bottom: 2.5mm; padding-right: 3mm ; padding-left: 3mm; flex-direction: column;">
-                                    <div class="thumb hRoundImg hSize photo hImg hRoundImg" style=" background-image: url('{{asset('public/backEnd/id_card/img/thumb2.png')}}');background-size: cover;
+                                    <div class="thumb hRoundImg hSize photo hImg hRoundImg" style=" background-image: url('{{asset('backEnd/id_card/img/thumb2.png')}}');background-size: cover;
                                     background-position: center center;
                                     background-repeat: no-repeat; line-height:1.02; width: 21.166666667mm; flex: 80px 0 0; height: 21.166666667mm; margin: auto;border-radius: 50%; padding: 3px; align-content: center;
                                     justify-content: center;
                                     display: flex; border: 3px solid #fff;">
-                                        {{-- <img class="" src="{{asset('public/backEnd/id_card/img/thumb2.png')}}" alt="" style="line-height:1.02; width: 100%;  border-radius: 50%; "> --}}
+                                        {{-- <img class="" src="{{asset('backEnd/id_card/img/thumb2.png')}}" alt="" style="line-height:1.02; width: 100%;  border-radius: 50%; "> --}}
                                     </div>
 
                                     <div class="card_text" style="line-height:1.02; display: flex; align-items: center; justify-content: space-between; width: 100%; flex-direction: column;">
@@ -759,7 +759,7 @@
                                     </div>
                                 </div>
                                 <div class="horizontal_card_footer" style="line-height:1.02; text-align: right;">
-                                    <div class="singnature_img signPhoto hSign" style="background-image:url('{{asset('public/backEnd/id_card/img/Signature.png')}}');line-height:1.02; width: 50px; flex: 50px 0 0; margin-left: auto; position: absolute; right: 10px; bottom: 7px;height: 25px;
+                                    <div class="singnature_img signPhoto hSign" style="background-image:url('{{asset('backEnd/id_card/img/Signature.png')}}');line-height:1.02; width: 50px; flex: 50px 0 0; margin-left: auto; position: absolute; right: 10px; bottom: 7px;height: 25px;
                                     background-size: cover;
                                     background-repeat: no-repeat;
                                     background-position: center center;">
@@ -770,19 +770,19 @@
                         </div>
 
                         <div id="vertical" class="d-none" style="margin: 0; padding: 0; font-family: 'Poppins', sans-serif;  font-size: 12px; line-height:1.02 ;">
-                            <div class="vertical__card" style="line-height:1.02; background-image: url({{asset('public/backEnd/id_card/img/horizontal_bg.png')}}); width: 86mm; height: 54mm; margin: auto; background-size: 100% 100%; background-position: center center; position: relative;">
+                            <div class="vertical__card" style="line-height:1.02; background-image: url({{asset('backEnd/id_card/img/horizontal_bg.png')}}); width: 86mm; height: 54mm; margin: auto; background-size: 100% 100%; background-position: center center; position: relative;">
                                 <div class="horizontal_card_header" style="line-height:1.02; display: flex; align-items:center; justify-content:space-between; padding: 12px">
-                                    <div class="logo__img logoImage vLogo" style="line-height:1.02; width: 80px; background-image: url('{{asset('public/backEnd/img/logo.png')}}');background-size: cover;
+                                    <div class="logo__img logoImage vLogo" style="line-height:1.02; width: 80px; background-image: url('{{asset('backEnd/img/logo.png')}}');background-size: cover;
                                     height: 30px;background-position: center center;
                                     background-repeat: no-repeat;">
                                         {{-- <img class="" src=""  alt="" style="line-height:1.02; width: 100%;"> --}}
                                     </div>
 <!--                                    <div class="qr__img" style="line-height:1.02; width: 30px;">
-                                        <img src="{{asset('public/backEnd/id_card/img/qr.png')}}" alt="" style="line-height:1.02; width: 100%;">
+                                        <img src="{{asset('backEnd/id_card/img/qr.png')}}" alt="" style="line-height:1.02; width: 100%;">
                                     </div>-->
                                 </div>
                                 <div class="vertical_card_body" style="line-height:1.02; display:flex; padding-top: 2.5mm; padding-bottom: 2.5mm; padding-right: 3mm ; padding-left: 3mm;">
-                                    <div class="thumb vSize vSizeX photo vImg vRoundImg" style="background-image: url('{{asset('public/backEnd/id_card/img/thumb.png')}}'); line-height:1.02; width: 13.229166667mm; height: 13.229166667mm; flex-basis: 13.229166667mm; flex-grow: 0; flex-shrink: 0; margin-right: 30px; background-size: cover;
+                                    <div class="thumb vSize vSizeX photo vImg vRoundImg" style="background-image: url('{{asset('backEnd/id_card/img/thumb.png')}}'); line-height:1.02; width: 13.229166667mm; height: 13.229166667mm; flex-basis: 13.229166667mm; flex-grow: 0; flex-shrink: 0; margin-right: 30px; background-size: cover;
                                     background-position: center center;">
                                         {{-- <img class="" src="" alt="" style="line-height:1.02; width: 100%; padding: 3px; background: #fff"> --}}
                                     </div>
@@ -842,7 +842,7 @@
                                     </div>
                                 </div>
                                 <div class="horizontal_card_footer" style="line-height:1.02; text-align: right;">
-                                    <div class="singnature_img signPhoto vSign" style="background-image: url('{{asset('public/backEnd/id_card/img/Signature.png')}}'); line-height:1.02; width: 50px; flex: 50px 0 0; margin-left: auto; position: absolute; right: 10px; bottom: 7px;
+                                    <div class="singnature_img signPhoto vSign" style="background-image: url('{{asset('backEnd/id_card/img/Signature.png')}}'); line-height:1.02; width: 50px; flex: 50px 0 0; margin-left: auto; position: absolute; right: 10px; bottom: 7px;
                                     height: 25px;
                                     background-size: cover;
                                     background-repeat: no-repeat;
@@ -855,7 +855,7 @@
 
                         {{-- <div class="user_body">
                             <div class="user_thumb">
-                                <img src="{{asset('public/backEnd/img/student/id-card-img.jpg') }}" id="photo" alt="" class="img_style">
+                                <img src="{{asset('backEnd/img/student/id-card-img.jpg') }}" id="photo" alt="" class="img_style">
                             </div>
                             <div class="user_info_details">
                                 <div class="single_info studentName">
@@ -893,12 +893,12 @@
                                 <div class="single_info">
                                     <span id="disSign">@lang('admin.signature') :</span>
                                     <div class="thumb_singnature">
-                                        <img src="{{asset('public/backEnd/img/student/id-card-img.jpg') }}" alt="" id="signPhoto">
+                                        <img src="{{asset('backEnd/img/student/id-card-img.jpg') }}" alt="" id="signPhoto">
                                     </div>
                                 </div>
                                 <div class="user_logo">
                                     <div class="logo_img">
-                                        <img src="{{asset('public/backEnd/img/student/id-card-img.jpg') }}" alt="" id="logoImage">
+                                        <img src="{{asset('backEnd/img/student/id-card-img.jpg') }}" alt="" id="logoImage">
                                     </div>
                                     <p id="address">@lang('common.address'), @lang('common.email'), @lang('common.phone')</p>
                                 </div>
@@ -1263,9 +1263,9 @@ $( document ).ready(function() {
         $('#backgroundImage').attr("placeholder", "@lang('admin.background_image')");
         
         if(pageLayout == "horizontal"){
-            $('.horizontal__card').css('background-image','url({{asset('public/backEnd/id_card/img/vertical_bg.png')}})');
+            $('.horizontal__card').css('background-image','url({{asset('backEnd/id_card/img/vertical_bg.png')}})');
         }else{
-            $('.vertical__card').css('background-image','url({{asset('public/backEnd/id_card/img/horizontal_bg.png')}})');
+            $('.vertical__card').css('background-image','url({{asset('backEnd/id_card/img/horizontal_bg.png')}})');
         }
     });
 
@@ -1275,9 +1275,9 @@ $( document ).ready(function() {
         $('#profileImage').attr("placeholder", "@lang('admin.profile_image')");
 
         if(pageLayout == "horizontal"){
-            $('.hImg').css('background-image','url({{asset('public/backEnd/id_card/img/thumb2.png')}})');
+            $('.hImg').css('background-image','url({{asset('backEnd/id_card/img/thumb2.png')}})');
         }else{
-            $('.vImg').css('background-image','url({{asset('public/backEnd/id_card/img/thumb.png')}})');
+            $('.vImg').css('background-image','url({{asset('backEnd/id_card/img/thumb.png')}})');
         }
     });
 
@@ -1286,9 +1286,9 @@ $( document ).ready(function() {
         $('#placeholderFileThreeName').removeAttr('placeholder');
         $('#placeholderFileThreeName').attr("placeholder", "@lang('admin.logo')");
         if(pageLayout == "horizontal"){
-            $('.hLogo').attr('src',"{{asset('public/backEnd/id_card/img/logo.png')}}");
+            $('.hLogo').attr('src',"{{asset('backEnd/id_card/img/logo.png')}}");
         }else{
-            $('.vLogo').attr('src',"{{asset('public/backEnd/id_card/img/logo.png')}}");
+            $('.vLogo').attr('src',"{{asset('backEnd/id_card/img/logo.png')}}");
         }
     });
 
@@ -1298,9 +1298,9 @@ $( document ).ready(function() {
         $('#placeholderFileFourName').attr("placeholder", "@lang('admin.signature')");
 
         if(pageLayout == "horizontal"){
-            $('.hSign').attr('src',"{{asset('public/backEnd/id_card/img/Signature.png')}}");
+            $('.hSign').attr('src',"{{asset('backEnd/id_card/img/Signature.png')}}");
         }else{
-            $('.vSign').attr('src',"{{asset('public/backEnd/id_card/img/Signature.png')}}");
+            $('.vSign').attr('src',"{{asset('backEnd/id_card/img/Signature.png')}}");
         }
     });
 </script>

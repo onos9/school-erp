@@ -58,7 +58,7 @@
                          <span class="focus-border"></span>
                          <label id="teacher_label">@lang('common.teacher') <span>*</span></label>
                          <div class="pull-right loader loader_style" id="select_teacher_loader">
-                            <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
+                            <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
                         </div>
                         <span class="text-danger" role="alert" id="teacher_error">
                         </span>
@@ -84,7 +84,7 @@
 
                     </div>
                     <div class="dloader dloader_style mt-2 text-center" id="select_day_loader">
-                        <img class="dloader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
+                        <img class="dloader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
                     </div>
                @endif
             </div>
