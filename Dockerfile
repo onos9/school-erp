@@ -10,6 +10,7 @@ RUN apk add --no-cache \
   curl \
   nginx \
   php81 \
+  # php81-xdebug \
   php81-pdo \
   php81-pdo_mysql \
   php81-json \
@@ -37,12 +38,18 @@ RUN apk add --no-cache \
 # Create symlink so programs depending on `php` still function
 RUN ln -s /usr/bin/php81 /usr/bin/php
 
+# Installing composer
+RUN curl -sS https://getcomposer.org/installer -o composer-setup.php
+RUN php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+RUN rm -rf composer-setup.php
+
 # Configure nginx
 COPY config/nginx.conf /etc/nginx/nginx.conf
 
 # Configure PHP-FPM
 COPY config/fpm-pool.ini /etc/php81/php-fpm.d/www.conf
 COPY config/php.ini /etc/php81/conf.d/custom.ini
+# COPY config/xdebug.ini /etc/php81/conf.d/xdebug.ini
 
 # Configure supervisord
 COPY config/supervisord.ini /etc/supervisor.d/supervisord.ini
@@ -55,13 +62,14 @@ USER nobody
 
 # Add application
 COPY --chown=nobody ./src/ .
+# RUN composer install --no-dev
 RUN chown -R nobody.nobody .
 
 # Configure Laravel
 RUN find . -type f -exec chmod 644 {} \;
 RUN find . -type d -exec chmod 755 {} \;
-RUN chmod -R 777 storage
-RUN chmod -R 777 bootstrap/cache/
+RUN chmod -R 775 storage
+RUN chmod -R 775 bootstrap/cache/
 
 # Expose the port nginx is reachable on
 EXPOSE 8080
@@ -71,4 +79,3 @@ HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-pin
 
 # Let supervisord start nginx & php-fpm
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor.d/supervisord.ini"]
-

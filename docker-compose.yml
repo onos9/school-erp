@@ -2,7 +2,8 @@ version: "3.8"
 
 networks:
   school_net:
-    driver: bridge
+    external:
+      name: database_net
 
 services:
   app:
@@ -12,9 +13,10 @@ services:
       dockerfile: Dockerfile
     image: school-erp
     container_name: erp-app
-    ports:
-      - 3000:8080
     volumes:
       - ./src:/var/www/html
+    ports:
+      - 3000:8080
+
     networks:
       - school_net

@@ -48,14 +48,14 @@ $generalSetting = generalSetting();
     <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/fullcalendar.min.css">
     <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/daterangepicker.css">
 
-    <link rel="stylesheet" href="{{asset('public/chat/css/notification.css')}}">
+    <link rel="stylesheet" href="{{asset('chat/css/notification.css')}}">
     <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/editor/summernote-bs4.css">
     <link rel="stylesheet" href="{{asset('backEnd/css/metisMenu.css')}}">
     <link rel="stylesheet" href="{{asset('backEnd/css/preloader.css')}}">
 
 
     @if(request()->route()->getPrefix() == '/chat')
-        <link rel="stylesheet" href="{{asset('public/chat/css/style.css')}}">
+        <link rel="stylesheet" href="{{asset('chat/css/style.css')}}">
     @endif
     <link rel="stylesheet" href="{{asset('backEnd/css/menu.css')}}">
     @yield('css')

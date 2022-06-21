@@ -4,7 +4,7 @@
 @endsection
 
 
-<link rel="stylesheet" href="{{ asset('/Modules/RolePermission/public/css/style.css') }}">
+<link rel="stylesheet" href="{{ asset('/Modules/RolePermission/css/style.css') }}">
 <style type="text/css">
     .erp_role_permission_area {
         display: block !important;
@@ -172,7 +172,6 @@
         -o-transition: all 0.15s ease-in-out;
         transition: all 0.15s ease-in-out;
     }
-
 </style>
 @section('mainContent')
     <section class="sms-breadcrumb mb-40 white-box up_breadcrumb">
@@ -207,10 +206,8 @@
                                 <h3 class="mb-30">
                                     @if (isset($admin_setup))
                                         @lang('admin.edit_admin_setup')
-
                                     @else
                                         @lang('admin.add_admin_setup')
-
                                     @endif
 
                                 </h3>
@@ -279,8 +276,7 @@
                                     <div class="row mt-25">
                                         <div class="col-lg-12">
                                             <div class="input-effect">
-                                                <textarea class="primary-input form-control" cols="0" rows="4"
-                                                    name="description">{{ isset($admin_setup) ? $admin_setup->description : '' }}</textarea>
+                                                <textarea class="primary-input form-control" cols="0" rows="4" name="description">{{ isset($admin_setup) ? $admin_setup->description : '' }}</textarea>
                                                 <label>@lang('common.description') <span></span></label>
                                                 <span class="focus-border textarea"></span>
                                             </div>
@@ -369,7 +365,8 @@
                                                                 <ul class="option">
                                                                     @foreach ($values as $index => $admin_setup)
                                                                         <li>
-                                                                            <div class="module_link_option_div" id="">
+                                                                            <div class="module_link_option_div"
+                                                                                id="">
 
                                                                                 <div class="dropdown p-2">
                                                                                     <button type="button"
@@ -385,7 +382,8 @@
                                                                                         @endif
                                                                                         @if (userPermission(44))
                                                                                             <a class="dropdown-item deleteSetupAdminModal"
-                                                                                                href="#" data-toggle="modal"
+                                                                                                href="#"
+                                                                                                data-toggle="modal"
                                                                                                 data-target="#deleteSetupAdminModal"
                                                                                                 data-id="{{ @$admin_setup->id }}">@lang('common.delete')</a>
                                                                                         @endif
