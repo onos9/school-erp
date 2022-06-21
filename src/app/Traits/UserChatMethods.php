@@ -22,17 +22,17 @@ trait UserChatMethods{
                 // return $this->getProfileAttribute();
                 if($this->role_id == 2){
                     $student = SmStudent::whereUserId($this->id)->first();
-                    return $student->student_photo ?? 'chat/images/spondon-icon.png';
+                    return $student->student_photo ?? 'public/chat/images/spondon-icon.png';
                 }elseif($this->role_id == 3){
                     $parent = SmParent::whereUserId($this->id)->first();
-                    return $parent->guardians_photo ?? 'chat/images/spondon-icon.png';
+                    return $parent->guardians_photo ?? 'public/chat/images/spondon-icon.png';
                 }else{
                     $staff = $this->staff;
-                    return $staff->staff_photo ?? 'chat/images/spondon-icon.png';
+                    return $staff->staff_photo ?? 'public/chat/images/spondon-icon.png';
                 }
              }
         }
-        return 'chat/images/spondon-icon.png';
+        return 'public/chat/images/spondon-icon.png';
 
     
        

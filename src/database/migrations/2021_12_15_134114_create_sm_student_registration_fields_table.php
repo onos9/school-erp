@@ -267,7 +267,7 @@ class CreateSmStudentRegistrationFieldsTable extends Migration
                     $b->title = 'Dashboard Background';
                     $b->type = 'image';
                     $b->color = '';
-                    $b->image = 'backEnd/img/body-bg.jpg';
+                    $b->image = 'public/backEnd/img/body-bg.jpg';
                     $b->is_default = 1;
                     $b->save();
                 }
@@ -277,7 +277,7 @@ class CreateSmStudentRegistrationFieldsTable extends Migration
                     $b->title = 'Login Background';
                     $b->type = 'image';
                     $b->color = '';
-                    $b->image = 'backEnd/img/login-bg.jpg';
+                    $b->image = 'public/backEnd/img/login-bg.jpg';
                     $b->is_default = 1;
                     $b->save();
                 }

@@ -1,7 +1,7 @@
 @extends('backEnd.master')
 @section('mainContent')
 @push('css')
-<script src="{{asset('backEnd/')}}/css/jquery.nestable.min.css"></script>
+<script src="{{asset('public/backEnd/')}}/css/jquery.nestable.min.css"></script>
 <style>
     .dd {
         position: relative;
@@ -418,7 +418,7 @@
     {{-- Delete Modal End --}}
 </section>
 @push('script')
-<script src="{{asset('backEnd/')}}/js/jquery.nestable.min.js"></script>
+<script src="{{asset('public/backEnd/')}}/js/jquery.nestable.min.js"></script>
 <script>
     $( document ).ready(function() {
         $(document).on('click', '#add_page_btn', function(event){

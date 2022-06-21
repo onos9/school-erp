@@ -3,7 +3,7 @@
 @lang('exam.merit_list_report')
 @endsection
 @section('mainContent')
-<link rel="stylesheet" href="{{ asset('/') }}backEnd/css/custom_result/style.css">
+<link rel="stylesheet" href="{{ asset('/') }}public/backEnd/css/custom_result/style.css">
 <style>
     tr{
         border: 1px solid #351681;
@@ -148,7 +148,7 @@ hr{
                                     <option data-display="@lang('common.select_section') *" value="">@lang('common.select_section') *</option>
                                 </select>
                                 <div class="pull-right loader loader_style" id="select_section_loader">
-                                    <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                    <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                 </div>
                                 @if ($errors->has('section'))
                                 <span class="invalid-feedback invalid-select" role="alert">

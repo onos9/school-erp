@@ -1,4 +1,4 @@
-<script type="text/javascript" src="{{asset('backEnd/js/main.js')}}"></script>
+<script type="text/javascript" src="{{asset('public/backEnd/js/main.js')}}"></script>
 <div class="container-fluid">
    {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'saveToDoData',
    'method' => 'POST', 'enctype' => 'multipart/form-data', 'onsubmit' => 'return validateToDoForm()']) }}

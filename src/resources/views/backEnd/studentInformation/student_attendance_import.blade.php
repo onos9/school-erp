@@ -26,7 +26,7 @@
                 </div>
 
                 <div class="offset-lg-3 col-lg-3 text-right mb-20">
-                    <a href="{{url('/backEnd/bulkxl/student_attendance.xlsx')}}">
+                    <a href="{{url('/public/backEnd/bulkxl/student_attendance.xlsx')}}">
                         <button class="primary-btn tr-bg text-uppercase bord-rad">
                             @lang('student.download_sample_file')
                             <span class="pl ti-download"></span>
@@ -87,7 +87,7 @@
                                         </option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_section_loader">
-                                        <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                        <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                     </div>
                                     @if ($errors->has('section'))
                                         <span class="invalid-feedback invalid-select" role="alert">

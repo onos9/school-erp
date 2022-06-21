@@ -1,4 +1,4 @@
-<script src="{{asset('backEnd/')}}/js/main.js"></script>
+<script src="{{asset('public/backEnd/')}}/js/main.js"></script>
 
 {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'online_exam_question_edit',
                                 'method' => 'POST', 'enctype' => 'multipart/form-data', 'id' => 'online_add_question_edit']) }}

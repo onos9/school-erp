@@ -3,12 +3,12 @@ $setting = generalSetting();
 if(isset($setting->copyright_text)){ generalSetting()->copyright_text = $setting->copyright_text; }else{ generalSetting()->copyright_text = 'Copyright © 2019 All rights reserved | This application is made with by Codethemes'; }
 if(isset($setting->logo)) { generalSetting()->logo = $setting->logo; } else{ generalSetting()->logo = 'public/uploads/settings/logo.png'; }
 
-if(isset($setting->favicon)) { generalSetting()->favicon = $setting->favicon; } else{ generalSetting()->favicon = 'backEnd/img/favicon.png'; }
+if(isset($setting->favicon)) { generalSetting()->favicon = $setting->favicon; } else{ generalSetting()->favicon = 'public/backEnd/img/favicon.png'; }
  
 $login_background = App\SmBackgroundSetting::where([['is_default',1],['title','Login Background']])->where('school_id', app('school')->id)->first();
  
 if(empty($login_background)){
-    $css = "background: url(".url('backEnd/img/login-bg.png').")  no-repeat center; background-size: cover; ";
+    $css = "background: url(".url('public/backEnd/img/login-bg.png').")  no-repeat center; background-size: cover; ";
 }else{
     if(!empty($login_background->image)){
         $css = "background: url('". url($login_background->image) ."')  no-repeat center;  background-size: cover;";
@@ -29,9 +29,9 @@ $ttl_rtl = $setting->ttl_rtl;
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="{{asset('backEnd/login')}}/css/4_3_1_bootstrap.min.css">
-    <link rel="stylesheet" href="{{asset('backEnd/login')}}/css/themify-icons.css">
-    <link rel="stylesheet" href="{{asset('backEnd/login')}}/css/style.css">
+    <link rel="stylesheet" href="{{asset('public/backEnd/login')}}/css/4_3_1_bootstrap.min.css">
+    <link rel="stylesheet" href="{{asset('public/backEnd/login')}}/css/themify-icons.css">
+    <link rel="stylesheet" href="{{asset('public/backEnd/login')}}/css/style.css">
   </head>
   <body >
     
@@ -130,9 +130,9 @@ $ttl_rtl = $setting->ttl_rtl;
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="{{asset('backEnd/login')}}/js/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="{{asset('backEnd/login')}}/js/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="{{asset('backEnd/login')}}/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="{{asset('public/backEnd/login')}}/js/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="{{asset('public/backEnd/login')}}/js/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="{{asset('public/backEnd/login')}}/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   
 </body>
 </html>

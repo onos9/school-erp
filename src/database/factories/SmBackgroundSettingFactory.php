@@ -25,7 +25,7 @@ class SmBackgroundSettingFactory extends Factory
         return [
             'title' => 'Dashboard Background',
             'type' => 'image',
-            'image' => 'backEnd/img/body-bg.jpg',
+            'image' => 'public/backEnd/img/body-bg.jpg',
             'color' => '',          
             'is_default' => 1,
         ];

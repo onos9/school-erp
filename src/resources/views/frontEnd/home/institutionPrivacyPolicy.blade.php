@@ -6,7 +6,7 @@ $setting = generalSetting();
 if(isset($setting->copyright_text)){ $copyright_text = $setting->copyright_text; }else{ $copyright_text = 'Copyright © 2020 All rights reserved | This application is made with by Codethemes'; }
 if(isset($setting->logo)) { $logo = $setting->logo; } else{ $logo = 'public/uploads/settings/logo.png'; }
 
-if(isset($setting->favicon)) { $favicon = $setting->favicon; } else{ $favicon = 'backEnd/img/favicon.png'; }
+if(isset($setting->favicon)) { $favicon = $setting->favicon; } else{ $favicon = 'public/backEnd/img/favicon.png'; }
 
 $login_background = App\SmBackgroundSetting::where([['is_default',1],['title','Login Background']])->first();
 
@@ -91,7 +91,7 @@ $ttl_rtl = $setting->ttl_rtl;
 @endsection
 
 @section('script')
-<script src="{{asset('backEnd/')}}/vendors/js/gmap3.min.js"></script>
+<script src="{{asset('public/backEnd/')}}/vendors/js/gmap3.min.js"></script>
 <script>
     $('.map')
       .gmap3({

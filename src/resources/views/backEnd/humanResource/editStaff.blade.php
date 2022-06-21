@@ -3,7 +3,7 @@
     @lang('hr.edit_staff')
 @endsection
 @section('css')
-    <link rel="stylesheet" type="text/css" href="{{ asset('backEnd/') }}/css/croppie.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('public/backEnd/') }}/css/croppie.css">
 @endsection
 @section('mainContent')
     <style type="text/css">
@@ -931,8 +931,8 @@
     </div>
 @endsection
 @section('script')
-    <script src="{{ asset('backEnd/') }}/js/croppie.js"></script>
-    <script src="{{ asset('backEnd/') }}/js/editStaff.js"></script>
+    <script src="{{ asset('public/backEnd/') }}/js/croppie.js"></script>
+    <script src="{{ asset('public/backEnd/') }}/js/editStaff.js"></script>
     <script>
         $(document).ready(function() {
             $(document).on('change', '.cutom-photo', function() {

@@ -14,9 +14,8 @@ services:
     image: school-erp
     container_name: erp-app
     volumes:
-      - ./src:/var/www/html
+      - ./InfixEduv6.5.7:/var/www/html
     ports:
-      - 3000:8080
-
+      - 3000:3000
     networks:
       - school_net

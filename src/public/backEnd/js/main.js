@@ -1,8 +1,9 @@
 (function ($) {
   $(window).on("load", () => {
-    $(".preloader").fadeOut("slow", function () {
-      $(this).hide();
-    });
+    $(".preloader")
+      .fadeOut("slow", function () {
+        $(this).hide();
+      });
   });
   $(document).ready(function () {
     // metisMenu
@@ -1436,8 +1437,8 @@
       nav: true,
       rtl: _rtl,
       navText: [
-        "<img src='backEnd/img/client/prev.png' />",
-        "<img src='backEnd/img/client/next.png' />",
+        "<img src='public/backEnd/img/client/prev.png' />",
+        "<img src='public/backEnd/img/client/next.png' />",
       ],
     });
   }
@@ -1738,10 +1739,10 @@
     });
   });
 
-  $(document).on("submit", "form", function () {
+  $(document).on('submit', 'form', function(){
     $(".prelaoder_wrapper").fadeOut("slow", function () {
-      $(this).show();
-    });
+          $(this).show();
+        });
   });
 
   ("use strict");

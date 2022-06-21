@@ -3581,8 +3581,8 @@ CREATE TABLE `sm_background_settings` (
 --
 
 INSERT INTO `sm_background_settings` (`id`, `title`, `type`, `image`, `color`, `is_default`, `school_id`, `created_at`, `updated_at`) VALUES
-(1, 'Dashboard Background', 'image', 'backEnd/img/body-bg.jpg', '', 1, 1, NULL, NULL),
-(2, 'Login Background', 'image', 'backEnd/img/login-bg.jpg', '', 0, 1, NULL, NULL);
+(1, 'Dashboard Background', 'image', 'public/backEnd/img/body-bg.jpg', '', 1, 1, NULL, NULL),
+(2, 'Login Background', 'image', 'public/backEnd/img/login-bg.jpg', '', 0, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -5282,7 +5282,7 @@ CREATE TABLE `sm_home_page_settings` (
 --
 
 INSERT INTO `sm_home_page_settings` (`id`, `title`, `long_title`, `short_description`, `link_label`, `link_url`, `image`, `created_at`, `updated_at`) VALUES
-(1, 'THE ULTIMATE EDUCATION ERP', 'INFIX', 'Managing various administrative tasks in one place is now quite easy and time savior with this INFIX and Give your valued time to your institute that will increase next generation productivity for our society.', 'Learn More About Us', 'http://infixedu.com/about', 'backEnd/img/client/home-banner1.jpg', '2021-04-20 05:46:54', '2021-04-20 05:46:54');
+(1, 'THE ULTIMATE EDUCATION ERP', 'INFIX', 'Managing various administrative tasks in one place is now quite easy and time savior with this INFIX and Give your valued time to your institute that will increase next generation productivity for our society.', 'Learn More About Us', 'http://infixedu.com/about', 'public/backEnd/img/client/home-banner1.jpg', '2021-04-20 05:46:54', '2021-04-20 05:46:54');
 
 -- --------------------------------------------------------
 

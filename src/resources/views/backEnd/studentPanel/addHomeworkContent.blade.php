@@ -1,4 +1,4 @@
-<script src="{{asset('backEnd/')}}/js/custom.js"></script>
+<script src="{{asset('public/backEnd/')}}/js/custom.js"></script>
 <div class="modal-body">
                                         <div class="container-fluid">
                                             {{ Form::open(['class' => 'form-horizontal', 'files' => true, 'route' => 'upload-homework-content',

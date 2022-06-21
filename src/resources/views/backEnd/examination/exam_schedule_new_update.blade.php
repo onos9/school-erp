@@ -67,7 +67,7 @@
                                         @endisset
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_section_loader">
-                                        <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                        <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                     </div>
                                     @if ($errors->has('section'))
                                     <span class="invalid-feedback invalid-select" role="alert">
@@ -219,7 +219,7 @@
                                                 
                                             </select>
                                             <div class="pull-right loader loader_style" id="select_teacher_loader">
-                                                <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                                <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                             </div>
                                             <span class="text-danger" role="alert" id="teacher_error"></span>
                                         </div>
@@ -421,7 +421,7 @@
                                              
                                                     </select>
                                                     <div class="pull-right loader loader_style select_section_promote" id="select_section_promote">
-                                                        <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                                        <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                                     </div>  
                                                     @if ($errors->has('section'))
                                                     <span class="invalid-feedback invalid-select" role="alert">
@@ -445,7 +445,7 @@
                                                 
                                             </select>
                                             <div class="pull-right loader loader_style" id="select_teacher_loader">
-                                                <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                                <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                             </div>
                                             <span class="text-danger" role="alert" id="teacher_error"></span>
                                         </div>

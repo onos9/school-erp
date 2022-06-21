@@ -2,11 +2,13 @@ ARG ALPINE_VERSION=3.16
 FROM alpine:${ALPINE_VERSION}
 LABEL Maintainer="Onojeta Brown <onosbrown.save@gmail.com>"
 LABEL Description="Lightweight container with Nginx 1.22 & PHP 8.1 based on Alpine Linux."
+
 # Setup document root
 WORKDIR /var/www/html
 
 # Install packages and remove default server definition
 RUN apk add --no-cache \
+  ca-certificates \
   curl \
   nginx \
   php81 \
@@ -61,7 +63,7 @@ RUN chown -R nobody.nobody /var/www/html /run /var/lib/nginx /var/log/nginx
 USER nobody
 
 # Add application
-COPY --chown=nobody ./src/ .
+COPY --chown=nobody ./InfixEduv6.5.7/ .
 # RUN composer install --no-dev
 RUN chown -R nobody.nobody .
 
@@ -72,10 +74,10 @@ RUN chmod -R 775 storage
 RUN chmod -R 775 bootstrap/cache/
 
 # Expose the port nginx is reachable on
-EXPOSE 8080
+EXPOSE 3000
 
 # Configure a healthcheck to validate that everything is up&running
-HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
+HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:3000/fpm-ping
 
 # Let supervisord start nginx & php-fpm
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor.d/supervisord.ini"]

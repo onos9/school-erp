@@ -9,13 +9,13 @@ src/src/Homestead.json
 src/Homestead.yaml
 npm-debug.log
 yarn-error.log
-src//uploads
-src//storage/app/uploads
+src/uploads
+src/storage/app/uploads
+src/storage/logs
 src/modules_statuses.json
 src/docker-compose.override.yml
 src/.idea
 src/.vscode
 /nbproject/private/
-supervisord.log
-supervisord.pid
 src.bak
+InfixEduv6.5.7

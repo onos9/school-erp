@@ -740,10 +740,10 @@
 
             if (pageLayout == "horizontal") {
                 $('.horizontal__card').css('background-image',
-                    'url({{ asset('backEnd/id_card/img/vertical_bg.png') }})');
+                    'url({{ asset('public/backEnd/id_card/img/vertical_bg.png') }})');
             } else {
                 $('.vertical__card').css('background-image',
-                    'url({{ asset('backEnd/id_card/img/horizontal_bg.png') }})');
+                    'url({{ asset('public/backEnd/id_card/img/horizontal_bg.png') }})');
             }
         });
 
@@ -752,9 +752,9 @@
             $('#profileImage').attr("placeholder", "@lang('admin.profile_image')");
 
             if (pageLayout == "horizontal") {
-                $('.hImg').css('background-image', 'url({{ asset('backEnd/id_card/img/thumb2.png') }})');
+                $('.hImg').css('background-image', 'url({{ asset('public/backEnd/id_card/img/thumb2.png') }})');
             } else {
-                $('.vImg').css('background-image', 'url({{ asset('backEnd/id_card/img/thumb.png') }})');
+                $('.vImg').css('background-image', 'url({{ asset('public/backEnd/id_card/img/thumb.png') }})');
             }
         });
 
@@ -762,9 +762,9 @@
             $('#placeholderFileThreeName').removeAttr('placeholder');
             $('#placeholderFileThreeName').attr("placeholder", "@lang('common.logo')");
             if (pageLayout == "horizontal") {
-                $('.hLogo').css('background-image', 'url({{ asset('backEnd/img/logo.png') }})');
+                $('.hLogo').css('background-image', 'url({{ asset('public/backEnd/img/logo.png') }})');
             } else {
-                $('.vLogo').css('background-image', 'url({{ asset('backEnd/img/logo.png') }})');
+                $('.vLogo').css('background-image', 'url({{ asset('public/backEnd/img/logo.png') }})');
             }
         });
 
@@ -774,10 +774,10 @@
 
             if (pageLayout == "horizontal") {
                 $('.hSign').css('background-image',
-                'url({{ asset('backEnd/id_card/img/Signature.png') }})');
+                'url({{ asset('public/backEnd/id_card/img/Signature.png') }})');
             } else {
                 $('.vSign').css('background-image',
-                'url({{ asset('backEnd/id_card/img/Signature.png') }})');
+                'url({{ asset('public/backEnd/id_card/img/Signature.png') }})');
             }
         });
     </script>

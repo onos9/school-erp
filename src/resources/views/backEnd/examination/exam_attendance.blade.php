@@ -72,7 +72,7 @@
                                         <option data-display="@lang('common.select_section') *" value="">@lang('common.select_section') *</option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_section_loader">
-                                        <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                        <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                     </div>
                                     @if ($errors->has('section'))
                                     <span class="invalid-feedback invalid-select" role="alert">
@@ -85,7 +85,7 @@
                                         <option data-display="@lang('common.select_subjects') *" value="">@lang('common.select_subjects')*</option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_subject_loader">
-                                        <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                        <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                     </div>
                                     @if ($errors->has('subject'))
                                     <span class="invalid-feedback invalid-select" role="alert">
@@ -112,7 +112,7 @@
                                         <option data-display="@lang('common.select_subject') *" value="">@lang('common.select_subject') *</option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_class_subject_loader">
-                                        <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                        <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                     </div>
                                     @if ($errors->has('subject'))
                                     <span class="invalid-feedback invalid-select" role="alert">
@@ -125,7 +125,7 @@
                                         <option data-display="@lang('common.select_section') " value=" ">@lang('common.select_section') </option>
                                     </select>
                                     <div class="pull-right loader loader_style" id="select_section_loader">
-                                        <img class="loader_img_style" src="{{asset('backEnd/img/demo_wait.gif')}}" alt="loader">
+                                        <img class="loader_img_style" src="{{asset('public/backEnd/img/demo_wait.gif')}}" alt="loader">
                                     </div>
                                     @if ($errors->has('section'))
                                     <span class="invalid-feedback invalid-select" role="alert">

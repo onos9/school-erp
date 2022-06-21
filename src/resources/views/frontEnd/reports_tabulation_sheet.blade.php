@@ -86,7 +86,7 @@
                     <div class="card-header">
                         <div class="row align-items-center">
                             <div class="col-lg-4">
-                                <img class="logo-img" src="http://localhost/naim/schoolmanagementsystem/backEnd/img/logo.png" alt="">
+                                <img class="logo-img" src="http://localhost/naim/schoolmanagementsystem/public/backEnd/img/logo.png" alt="">
                             </div>
                             <div class="col-lg-4 text-left text-lg-center mt-30-md">
                                 <h4 class="text-white">Class: 01</h4>

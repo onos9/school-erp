@@ -3,7 +3,7 @@ $setting = generalSetting();
 if(isset($setting->copyright_text)){ generalSetting()->copyright_text = $setting->copyright_text; }else{ generalSetting()->copyright_text = 'Copyright © 2019 All rights reserved |  is made with by Codethemes'; }
 if(isset($setting->logo)) { generalSetting()->logo = $setting->logo; } else{ generalSetting()->logo = 'public/uploads/settings/logo.png'; }
 
-if(isset($setting->favicon)) { generalSetting()->favicon = $setting->favicon; } else{ generalSetting()->favicon = 'backEnd/img/favicon.png'; }
+if(isset($setting->favicon)) { generalSetting()->favicon = $setting->favicon; } else{ generalSetting()->favicon = 'public/backEnd/img/favicon.png'; }
 
 $login_background = App\SmBackgroundSetting::where([['is_default',1],['title','Login Background']])->first();
 
@@ -29,10 +29,10 @@ $ttl_rtl = $setting->ttl_rtl;
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="icon" href="{{asset(generalSetting()->favicon)}}" type="image/png"/>
     <title>{{__('Register')}} | {{@$setting->site_title}}</title>
-    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/bootstrap.css" />
-    <link rel="stylesheet" href="{{asset('backEnd/')}}/vendors/css/themify-icons.css" />
-    <link rel="stylesheet" href="{{asset('backEnd/')}}/css/style.css" />
-    <link rel="stylesheet" href="{{asset('backEnd/')}}/css/infix.css" />
+    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/bootstrap.css" />
+    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/vendors/css/themify-icons.css" />
+    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/style.css" />
+    <link rel="stylesheet" href="{{asset('public/backEnd/')}}/css/infix.css" />
 
     <style>
 
@@ -192,9 +192,9 @@ $ttl_rtl = $setting->ttl_rtl;
     <!--================ End Footer Area =================-->
 
 
-    <script src="{{asset('backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script>
-    <script src="{{asset('backEnd/')}}/vendors/js/popper.js"></script>
-    <script src="{{asset('backEnd/')}}/vendors/js/bootstrap.min.js"></script>
+    <script src="{{asset('public/backEnd/')}}/vendors/js/jquery-3.2.1.min.js"></script>
+    <script src="{{asset('public/backEnd/')}}/vendors/js/popper.js"></script>
+    <script src="{{asset('public/backEnd/')}}/vendors/js/bootstrap.min.js"></script>
     <script>
         $('.primary-btn').on('click', function(e) {
         // Remove any old one

@@ -116,7 +116,7 @@
                                     <div class="card-header">
                                         <div class="d-flex">
                                             <div>
-                                                <img class="logo-img" src="http://localhost/naim/schoolmanagementsystem/backEnd/img/logo.png" alt="">
+                                                <img class="logo-img" src="http://localhost/naim/schoolmanagementsystem/public/backEnd/img/logo.png" alt="">
                                             </div>
                                             <div class="ml-30">
                                                 <h3 class="text-white">School Management System</h3>
